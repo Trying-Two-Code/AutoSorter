@@ -1,0 +1,20 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Centralise bin/obj at the solution root (next to AutoSorter.slnx), one
+         dedicated folder per project, so a clean clone stays clean.
+
+         WPF compiles markup through a temporary shadow project that NuGet never
+         restores ('<Project>_<hash>_wpftmp'); that shadow project always lives in the
+         same directory as the real project.  Keying the folders on the project's
+         source-directory name - instead of $(MSBuildProjectName) - guarantees the
+         shadow project resolves the very same obj folder (and therefore the same
+         project.assets.json), avoiding NETSDK1004 "Assets file ... not found"
+         (dotnet/wpf#5679, dotnet/wpf#9524). -->
+    <_AutoSorterProjectFolder>$([System.IO.Path]::GetFileName('$(MSBuildProjectDirectory)'))</_AutoSorterProjectFolder>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)obj\$(_AutoSorterProjectFolder)\</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>$(MSBuildThisFileDirectory)obj\$(_AutoSorterProjectFolder)\</MSBuildProjectExtensionsPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)bin\$(_AutoSorterProjectFolder)\</BaseOutputPath>
+  </PropertyGroup>
+
+</Project>

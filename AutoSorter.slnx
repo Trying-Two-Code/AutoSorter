@@ -1,3 +1,6 @@
 <Solution>
-  <Project Path="AutoSorter.csproj" />
+  <Project Path="app/App.csproj" />
+  <Project Path="core/Core.csproj" />
+  <Project Path="file-system/FileSystem.csproj" />
+  <Project Path="helpers/Helpers.csproj" />
 </Solution>
