@@ -5,10 +5,10 @@ A solution to the unorganized mess that is a gamers pc.
 
 ```
 AutoSorter/
-├── app/          # WPF application: UI, composition, orchestration
-├── core/         # Domain / business logic (no WPF, no Win32)
-├── file-system/  # Filesystem abstraction and operations
-├── helpers/      # Windows / Win32 platform-specific helpers
+├── App/          # WPF application: UI, composition, orchestration
+├── Core/         # Domain / business logic (no WPF, no Win32)
+├── FileSystem/  # Filesystem abstraction and operations
+├── Helpers/      # Windows / Win32 platform-specific helpers
 ├── bin/          # Build output, centralised at the solution root (one folder per project)
 └── obj/          # Intermediate build files, centralised at the solution root (one folder per project)
 ```
