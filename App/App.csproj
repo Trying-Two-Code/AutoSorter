@@ -16,5 +16,11 @@
     <ProjectReference Include="..\FileSystem\FileSystem.csproj" />
     <ProjectReference Include="..\helpers\Helpers.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Ui\Assets\Visual\logo.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
   
 </Project>
