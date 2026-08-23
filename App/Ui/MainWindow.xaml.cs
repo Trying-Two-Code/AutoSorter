@@ -18,7 +18,13 @@ namespace AutoSorter
     {
         public MainWindow()
         {
+            DataContext = this;
             InitializeComponent();
+        }
+
+        private void startButton_Click(object sender, RoutedEventArgs e)
+        {
+            
         }
     }
 }
