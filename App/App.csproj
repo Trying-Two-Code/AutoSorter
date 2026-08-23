@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\core\Core.csproj" />
-    <ProjectReference Include="..\file-system\FileSystem.csproj" />
+    <ProjectReference Include="..\FileSystem\FileSystem.csproj" />
     <ProjectReference Include="..\helpers\Helpers.csproj" />
   </ItemGroup>
   
