@@ -1,0 +1,12 @@
+# Build artifacts
+bin/
+obj/
+
+# IDE — Visual Studio
+.vs/
+*.user
+*.suo
+
+# OS
+Thumbs.db
+Desktop.ini
