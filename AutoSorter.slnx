@@ -1,6 +1,6 @@
 <Solution>
-  <Project Path="app/App.csproj" />
-  <Project Path="core/Core.csproj" />
-  <Project Path="file-system/FileSystem.csproj" />
-  <Project Path="helpers/Helpers.csproj" />
+  <Project Path="App/App.csproj" />
+  <Project Path="Core/Core.csproj" />
+  <Project Path="FileSystem/FileSystem.csproj" />
+  <Project Path="Helpers/Helpers.csproj" />
 </Solution>
