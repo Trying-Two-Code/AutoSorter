@@ -17,14 +17,11 @@ AutoSorter/
 AutoSorter is intentionally separated into domain logic, filesystem operations,
 platform helpers, and the WPF application layer.
 
-- **App** owns the WPF user interface and application composition/orchestration.
-  It references Core, FileSystem, and Helpers.
-- **Core** contains domain/business logic. It is independent of WPF and of
-  Win32/platform-specific implementation, and references no other project.
-- **FileSystem** provides filesystem abstractions and filesystem operations.
-  It references no other project.
-- **Helpers** provides Windows/Win32 platform-specific helpers. It references
-  no other project.
+- **App** provides the WPF user interface and application composition. It uses Core and Helpers through the application backend.
+
+- **Core** contains the main algorithms and business logic of AutoSorter. It is independent of WPF and platform-specific implementation details.
+
+- **Helpers** provides low-level helper functionality such as Win32 APIs, filesystem operations, and other platform-specific utilities. It does not depend on other projects.
 
 Dependency direction:
 
