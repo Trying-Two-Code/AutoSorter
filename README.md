@@ -34,8 +34,8 @@ Dependency direction:
                     └─────┬─────┘
                           │
            ┌──────────────┼──────────────┐
-           ↓              ↓              ↓
-        Core         FileSystem       Helpers
+           ↓                             ↓
+        Core                          Helpers
 ```
 
 Core, FileSystem, and Helpers never reference App, and circular dependencies
