@@ -12,6 +12,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Ui\Assets\Audio\SFX-Success1.mp3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Ui\Assets\Audio\SFX-Success1.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\core\Core.csproj" />
     <ProjectReference Include="..\FileSystem\FileSystem.csproj" />
     <ProjectReference Include="..\helpers\Helpers.csproj" />
