@@ -42,4 +42,4 @@ are not allowed.
 Make AutoSorter accessible to everyone, easy to use and install, and useful to gamers.
 
 ## How to install
-Go to steam page, or the install/program.zip
+Installation instructions will be added once a stable release is available.
