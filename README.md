@@ -7,8 +7,7 @@ A solution to the unorganized mess that is a gamers pc.
 AutoSorter/
 ├── App/          # WPF application: UI, composition, orchestration
 ├── Core/         # Domain / business logic (no WPF, no Win32)
-├── FileSystem/  # Filesystem abstraction and operations
-├── Helpers/      # Windows / Win32 platform-specific helpers
+├── Helpers/      # Windows,Filesystem,...  helpers
 ├── bin/          # Build output, centralised at the solution root (one folder per project)
 └── obj/          # Intermediate build files, centralised at the solution root (one folder per project)
 ```
