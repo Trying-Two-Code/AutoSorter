@@ -14,9 +14,6 @@ AutoSorter/
 
 ## Architecture
 
-AutoSorter is intentionally separated into domain logic, filesystem operations,
-platform helpers, and the WPF application layer.
-
 - **App** provides the WPF user interface and application composition. It uses Core and Helpers through the application backend.
 
 - **Core** contains the main algorithms and business logic of AutoSorter. It is independent of WPF and platform-specific implementation details.
@@ -35,7 +32,7 @@ Dependency direction:
         Core                          Helpers
 ```
 
-Core, FileSystem, and Helpers never reference App, and circular dependencies
+Core, and Helpers never reference App, and circular dependencies
 are not allowed.
 
 ## Goals
