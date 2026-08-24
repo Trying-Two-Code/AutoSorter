@@ -42,23 +42,54 @@ public class AutoSorter
 
     private void OnFileCreated(string path)
     {
+        // Data Gather
+
         // Algorithm
     }
 
     private void OnFileModified(string path)
     {
+        // Data Gather
+
         // Algorithm
     }
 
     private void OnFileDeleted(string path)
     {
+        // Data Gather
+
         // Algorithm
     }
 
     private void OnFileRenamed(string path)
     {
+        // Data Gather
+
         // Algorithm
     }
+
+    //Idea: PsuedoCode for a datagathering function
+    //What file should handle this?
+    /// <DataGatherFunctionSummary>
+    /// 
+    /// struct fileStruct{
+    ///     //data needed for files
+    /// }
+    /// 
+    /// public const string dataFilePath = "\data\userData.json"
+    /// 
+    /// public fileStructInstance gatherData(string path){
+    ///     //find file using path
+    ///     //gather data using file
+    ///     //gather existing data from getFileDataFromJSON(dataFilePath)[file.name]
+    ///     //return data
+    /// }
+    /// 
+    /// public file getFileDataFromJSON(string JSONPath){
+    ///     //return file data from the JSON file
+    /// }
+    /// 
+    /// </DataGatherFunctionSummary>
 
     public void Start()
     {
