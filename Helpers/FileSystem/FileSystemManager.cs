@@ -38,6 +38,8 @@ public class FileSystemManager
         _watcher.Renamed += (_, e) =>
             FileChanged?.Invoke(
                 new FileChange(FileChangeType.Renamed, e.FullPath));
+
+        _watcher.Error += OnError;
     }
 
     public void Start()
@@ -53,5 +55,10 @@ public class FileSystemManager
     public void Move(string source, string destination)
     {
         File.Move(source, destination);
+    }
+
+    public void OnError(object _, ErrorEventArgs e)
+    {
+        Console.WriteLine(e.GetException());
     }
 }
