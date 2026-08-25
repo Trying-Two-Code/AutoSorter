@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using Helper.DataGathering;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 
 namespace App.Ui.UiComponents;
 
@@ -33,13 +35,30 @@ public partial class StartStopButton : UserControl
     {
         _isRunning = !_isRunning;
 
-        StartStopButtonInst.Content =
-            _isRunning ? "STOP" : "START";
+        /*StartStopButtonInst.Content =
+            _isRunning ? "STOP" : "START";*/
+
+        const string StartSource = @"\Ui\Assets\Visual\start.png";
+        const string PauseSource = @"\Ui\Assets\Visual\pause.png";
+
+        StartStopButtonInstImage.Source =
+            _isRunning ? GetSource(PauseSource) : GetSource(StartSource);
 
         var args = new RoutedEventArgs(
             ClickEvent,
             this);
 
         RaiseEvent(args);
+    }
+
+    private System.Windows.Media.ImageSource GetSource(string path, int width = 200, int height = 200)
+    {
+        BitmapImage image = new BitmapImage();
+        image.BeginInit();
+        Uri _uri = new Uri(path, UriKind.RelativeOrAbsolute);
+        image.UriSource = _uri;
+        image.EndInit();
+
+        return image;
     }
 }

@@ -7,11 +7,15 @@
 
     <Grid>
         <Button x:Name="StartStopButtonInst"
-                Content="START"
                 MaxHeight="300"
                 MaxWidth="400"
                 FontSize="100"
-                Click="StartStopButtonInst_Click"/>
+                Click="StartStopButtonInst_Click"
+                Background="Transparent"
+                BorderThickness="0">
+
+            <Image x:Name="StartStopButtonInstImage" Height="200" Width="200" Source="/Ui/Assets/Visual/start.png"/>
+        </Button>
     </Grid>
 
 </UserControl>
