@@ -17,6 +17,8 @@ public record ClipboardChange(
 
 public class ClipboardWatcher : IDisposable
 {
+    private ClipboardChange? _lastChange;
+
     private const uint CF_HDROP = 15;
 
     private const string PreferredDropEffect =
@@ -50,6 +52,19 @@ public class ClipboardWatcher : IDisposable
         if (_hwnd == IntPtr.Zero)
             throw new InvalidOperationException(
                 "Failed to create clipboard watcher window.");
+    }
+    private void NotifyClipboardChanged(ClipboardChange change)
+    {
+        if (_lastChange != null &&
+            _lastChange.Operation == change.Operation &&
+            _lastChange.Paths.SequenceEqual(change.Paths))
+        {
+            return;
+        }
+
+        _lastChange = change;
+
+        ClipboardChanged?.Invoke(change);
     }
 
     public void Start()
@@ -158,8 +173,8 @@ public class ClipboardWatcher : IDisposable
 
             ClipboardOperation operation =
                 ReadDropEffect();
-
-            ClipboardChanged?.Invoke(
+                
+            NotifyClipboardChanged(
                 new ClipboardChange(
                     operation,
                     paths));

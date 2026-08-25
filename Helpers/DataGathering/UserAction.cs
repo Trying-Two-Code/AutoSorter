@@ -5,7 +5,8 @@ using System.Text.Json;
 public enum Action
 {
     Move,
-    Rename
+    Rename,
+    Copy
 }
 
 public class UserActionGatherLine
@@ -46,6 +47,20 @@ public class UserActionGather
         {
             Action = Action.Rename,
             Content = $"rename from:{from} to:{to}",
+            Timestamp = DateTime.UtcNow
+        });
+
+        writeFileDataToJSON(data);
+    }
+
+    public void appendCopy(string from, string to)
+    {
+        UserActionGatherFile data = getFileDataFromJSON();
+
+        data.Lines.Add(new UserActionGatherLine
+        {
+            Action = Action.Copy,
+            Content = $"copy from:{from} to:{to}",
             Timestamp = DateTime.UtcNow
         });
 
