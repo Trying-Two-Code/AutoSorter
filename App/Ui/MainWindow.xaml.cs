@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using BCore;
 using App.Ui.UiComponents;
+using Syroot.Windows.IO;
 
 namespace AutoSorter;
 
@@ -14,9 +15,15 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        string path = @"C:\Users\Admin\Downloads";
+        string path = DownloadFolder();
 
         _app = new AppAPI(path);
+    }
+
+    private static string DownloadFolder()
+    {
+        string downloadsPath = KnownFolders.Downloads.Path;
+        return downloadsPath;
     }
 
     private void StartStopButton_Click(
