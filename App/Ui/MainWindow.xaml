@@ -9,7 +9,7 @@
         Title="AutoSorter" 
         Height="450" 
         Width="800"
-        Icon="/Ui/Assets/Visual/logo.ico"
+        Icon="/Ui/Assets/Visual/logox32.png"
         AllowsTransparency="True"
         WindowStyle="None">
     <Window.Background>
