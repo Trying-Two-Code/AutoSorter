@@ -46,6 +46,21 @@ public partial class MainWindow : Window
         }
     }
 
+    private void CloseButton_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        if(sender is not TopbarButton button)
+            return;
+
+        Shutdown();
+    }
+
+    private void Shutdown()
+    {
+        DEBUGGGERRR.Text = "working";
+    }
+
     private void CreateSound(string soundFilePath)
     {
         var player = new MediaPlayer();

@@ -16,7 +16,18 @@
         <SolidColorBrush Opacity="1.0" Color="White"/>
     </Window.Background>
     <Grid>
-        <components:StartStopButton
-            Click="StartStopButton_Click"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="23*"></RowDefinition>
+            <RowDefinition Height="113*"></RowDefinition>
+            <RowDefinition Height="14*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBlock Name="DEBUGGGERRR"></TextBlock>
+        <components:TopbarButton
+            x:Name="CloseButton"
+            Grid.Row="0"
+            Click="CloseButton_Click"/>
+        <!--components:StartStopButton
+            Grid.Row="1"
+            Click="StartStopButton_Click"/-->
     </Grid>
 </Window>
