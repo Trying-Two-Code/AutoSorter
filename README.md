@@ -32,7 +32,7 @@ Dependency direction:
         Core                          Helpers
 ```
 
-Core, and Helpers never reference App, and circular dependencies
+Core and Helpers never reference App, and circular dependencies
 are not allowed.
 
 ## Goals
