@@ -1,45 +1,60 @@
-﻿using System.IO;
-using System.Media;
-using System.Text;
+﻿using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes; 
+using BCore;
+using App.Ui.UiComponents;
 
-namespace AutoSorter
+namespace AutoSorter;
+
+public partial class MainWindow : Window
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    private readonly AppAPI _app;
+
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            DataContext = this;
-            InitializeComponent();
-        }
+        InitializeComponent();
 
-        private void startButton_Click(object sender, RoutedEventArgs e)
-        {
-            createSound(@"Ui\Assets\Audio\SFX-Success1.mp3");
-        }
+        string path = @"C:\Users\Admin\Downloads";
 
-        private void createSound(string soundFilePath)
-        {
-            //Debug::: if not making sound :::
-            //1. right click audio file in solution explorer;
-            //2. properties > Build action: Content;
-            //3. properties > Copy to output directory: always
-            Uri uri = new Uri(soundFilePath, UriKind.RelativeOrAbsolute);
-            MediaPlayer player = new MediaPlayer();
+        _app = new AppAPI(path);
+    }
 
-            player.Open(uri);
-            player.Play();
+    private void StartStopButton_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        if (sender is not StartStopButton button)
+            return;
+
+        if (button.IsRunning)
+        {
+            _app.Start();
+
+            CreateSound(
+                @"Ui\Assets\Audio\SFX-Success1.mp3");
         }
+        else
+        {
+            _app.Stop();
+        }
+    }
+
+    private void CreateSound(string soundFilePath)
+    {
+        var player = new MediaPlayer();
+
+        player.Open(
+            new Uri(
+                soundFilePath,
+                UriKind.RelativeOrAbsolute));
+
+        player.Play();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _app.Stop();
+
+        base.OnClosed(e);
     }
 }

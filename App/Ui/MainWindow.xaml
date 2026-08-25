@@ -4,13 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AutoSorter"
-        xmlns:userControls="clr-namespace:App.Ui.UiComponents"
+        xmlns:components="clr-namespace:App.Ui.UiComponents"
         mc:Ignorable="d"
         Title="AutoSorter" 
         Height="450" 
         Width="800"
         Icon="/Ui/Assets/Visual/logo.ico">
 
-<Grid>
-        <userControls:startButton Click="startButton_Click"/>
-    </Grid></Window>
+    <Grid>
+        <components:StartStopButton
+            Click="StartStopButton_Click"/>
+    </Grid>
+</Window>

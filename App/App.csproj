@@ -9,6 +9,7 @@
     <!-- ThemeInfo is declared manually in Properties/AssemblyInfo.cs; the WPF SDK
          would otherwise generate a duplicate copy and fail the build with CS0579. -->
     <GenerateThemeInfo>false</GenerateThemeInfo>
+    <UserSecretsId>3d61d3d4-09fe-46a9-9c96-6774a736cb38</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,4 +1,6 @@
-﻿namespace Helper.FileSystem;
+﻿using Helper.DataGathering;
+
+namespace Helper.FileSystem;
 
 public enum FileChangeType
 {
@@ -10,7 +12,8 @@ public enum FileChangeType
 
 public record FileChange(
     FileChangeType Type,
-    string Path
+    string Path,
+    string? OldPath = null
 );
 
 public class FileSystemManager
@@ -37,7 +40,10 @@ public class FileSystemManager
 
         _watcher.Renamed += (_, e) =>
             FileChanged?.Invoke(
-                new FileChange(FileChangeType.Renamed, e.FullPath));
+                new FileChange(
+                    FileChangeType.Renamed,
+                    e.FullPath,
+                    e.OldFullPath));
 
         _watcher.Error += OnError;
     }
@@ -55,10 +61,13 @@ public class FileSystemManager
     public void Move(string source, string destination)
     {
         File.Move(source, destination);
+
+        Log.AppendLog($"Move from {source} to {destination}");
     }
 
     public void OnError(object _, ErrorEventArgs e)
     {
-        Console.WriteLine(e.GetException());
+        //Console.WriteLine(e.GetException()); stdout
+        Log.AppendLog(e.GetException().ToString());
     }
 }

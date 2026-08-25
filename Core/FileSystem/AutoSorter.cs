@@ -1,14 +1,19 @@
 using Helper.FileSystem;
+using Helper.DataGathering;
 
 namespace Core.FileSystem;
 
 public class AutoSorter
 {
     private readonly FileSystemManager _fileSystem;
+    private readonly ClipboardWatcher _clipboardWatcher;
+
+    private readonly UserActionGather _userActionGather = new();
 
     public AutoSorter(string path)
     {
         _fileSystem = new FileSystemManager(path);
+        _clipboardWatcher = new ClipboardWatcher();
 
         SetCallbacks();
     }
@@ -16,6 +21,14 @@ public class AutoSorter
     private void SetCallbacks()
     {
         _fileSystem.FileChanged += OnFileChanged;
+        _clipboardWatcher.ClipboardChanged += OnClipboardChanged;
+    }
+
+    private void OnClipboardChanged(ClipboardChange change)
+    {
+        Log.AppendLog(
+            $"Clipboard {change.Operation}: " +
+            string.Join(", ", change.Paths));
     }
 
     private void OnFileChanged(FileChange change)
@@ -35,69 +48,59 @@ public class AutoSorter
                 break;
 
             case FileChangeType.Renamed:
-                OnFileRenamed(change.Path);
+            {
+                if (change.OldPath == null)
+                {
+                    Log.AppendLog(
+                        $"Can't get old path, current path is {change.Path}");
+                    return;
+                }
+
+                OnFileRenamed(
+                    change.OldPath,
+                    change.Path);
+
                 break;
+            }
         }
     }
 
     private void OnFileCreated(string path)
     {
         // Data Gather
-
         // Algorithm
     }
 
     private void OnFileModified(string path)
     {
         // Data Gather
-
         // Algorithm
     }
 
     private void OnFileDeleted(string path)
     {
         // Data Gather
-
         // Algorithm
     }
 
-    private void OnFileRenamed(string path)
+    private void OnFileRenamed(string oldPath, string newPath)
     {
-        // Data Gather
+        _userActionGather.appendRename(
+            oldPath,
+            newPath);
 
         // Algorithm
     }
-
-    //Idea: PsuedoCode for a datagathering function
-    //What file should handle this?
-    /// <DataGatherFunctionSummary>
-    /// 
-    /// struct fileStruct{
-    ///     //data needed for files
-    /// }
-    /// 
-    /// public const string dataFilePath = "\data\userData.json"
-    /// 
-    /// public fileStructInstance gatherData(string path){
-    ///     //find file using path
-    ///     //gather data using file
-    ///     //gather existing data from getFileDataFromJSON(dataFilePath)[file.name]
-    ///     //return data
-    /// }
-    /// 
-    /// public file getFileDataFromJSON(string JSONPath){
-    ///     //return file data from the JSON file
-    /// }
-    /// 
-    /// </DataGatherFunctionSummary>
 
     public void Start()
     {
         _fileSystem.Start();
+        _clipboardWatcher.Start();
     }
 
     public void Stop()
     {
         _fileSystem.Stop();
+        _clipboardWatcher.Stop();
     }
 }
