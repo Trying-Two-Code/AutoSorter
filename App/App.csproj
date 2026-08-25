@@ -20,17 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Ui\Assets\Audio\SFX-CloseApp1.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Ui\Assets\Audio\SFX-Success1.mp3">
+    <Content Include="Ui\Assets\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Ui\Assets\Visual\pause.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Ui\Assets\Visual\start.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
