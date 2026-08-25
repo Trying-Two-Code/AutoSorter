@@ -9,8 +9,12 @@
         Title="AutoSorter" 
         Height="450" 
         Width="800"
-        Icon="/Ui/Assets/Visual/logo.ico">
-
+        Icon="/Ui/Assets/Visual/logo.ico"
+        AllowsTransparency="True"
+        WindowStyle="None">
+    <Window.Background>
+        <SolidColorBrush Opacity="1.0" Color="White"/>
+    </Window.Background>
     <Grid>
         <components:StartStopButton
             Click="StartStopButton_Click"/>
