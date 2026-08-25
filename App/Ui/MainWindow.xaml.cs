@@ -53,12 +53,7 @@ public partial class MainWindow : Window
         if(sender is not TopbarButton button)
             return;
 
-        Shutdown();
-    }
-
-    private void Shutdown()
-    {
-        DEBUGGGERRR.Text = "working";
+        System.Windows.Application.Current.Shutdown();
     }
 
     private void CreateSound(string soundFilePath)

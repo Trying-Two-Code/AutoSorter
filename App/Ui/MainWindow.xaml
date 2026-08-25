@@ -21,13 +21,13 @@
             <RowDefinition Height="113*"></RowDefinition>
             <RowDefinition Height="14*"></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBlock Name="DEBUGGGERRR"></TextBlock>
         <components:TopbarButton
             x:Name="CloseButton"
             Grid.Row="0"
-            Click="CloseButton_Click"/>
-        <!--components:StartStopButton
+            Click="CloseButton_Click"
+            Source="\Ui\Assets\Visual\x.png"/>
+        <components:StartStopButton
             Grid.Row="1"
-            Click="StartStopButton_Click"/-->
+            Click="StartStopButton_Click"/>
     </Grid>
 </Window>

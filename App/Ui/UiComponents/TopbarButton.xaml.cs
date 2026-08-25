@@ -23,6 +23,44 @@ namespace App.Ui.UiComponents
             InitializeComponent();
         }
 
+        public static readonly DependencyProperty SourceProperty =
+        DependencyProperty.Register(
+            "Source",
+            typeof(string),
+            typeof(TopbarButton),
+            new PropertyMetadata(
+                OnSourceChanged)
+            );
+
+        public static void OnSourceChanged(
+            DependencyObject d, 
+            DependencyPropertyChangedEventArgs e
+            )
+        {
+            TopbarButton content = (TopbarButton)d;
+
+            content.StartStopButtonInstImage.Source = content.getImageFromPath((string)e.NewValue);
+        }
+
+        public string Source
+        {
+            get => (string)GetValue(SourceProperty);
+            set => SetValue(SourceProperty, value);
+        }
+
+        private ImageSource getImageFromPath(string path)
+        {
+            // Copied from microsoft docs
+            // Create source.
+            BitmapImage bi = new BitmapImage();
+            // BitmapImage.UriSource must be in a BeginInit/EndInit block.
+            bi.BeginInit();
+            bi.UriSource = new Uri(path, UriKind.RelativeOrAbsolute);
+            bi.EndInit();
+
+            return bi;
+        }
+
         public static readonly RoutedEvent ClickEvent =
         EventManager.RegisterRoutedEvent(
             name: "Click",
