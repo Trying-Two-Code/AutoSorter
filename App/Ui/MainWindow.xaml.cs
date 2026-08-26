@@ -73,8 +73,8 @@ public partial class MainWindow : Window
 
     private void SendToTray()
     {
-        ShowInTaskbar = false;
         WindowState = WindowState.Minimized;
+        ShowInTaskbar = false;
     }
 
     private void CreateSound(string soundFilePath)
@@ -114,6 +114,6 @@ public partial class MainWindow : Window
         if (!window.Activate())
             Debug.WriteLine("Could not bring to foreground.");
         
-        window.Background.Opacity = transparent ? 0.1f : 1.0f;
+        window.Opacity = transparent ? 0.1f : 1.0f;
     }
 }
