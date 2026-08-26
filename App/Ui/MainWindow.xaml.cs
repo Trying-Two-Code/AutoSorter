@@ -4,6 +4,7 @@ using System.Windows.Media;
 using BCore;
 using App.Ui.UiComponents;
 using Syroot.Windows.IO;
+using System.Diagnostics;
 
 namespace AutoSorter;
 
@@ -16,8 +17,22 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         string path = DownloadFolder();
-
         _app = new AppAPI(path);
+
+        Loaded += new RoutedEventHandler(Window_Loaded);
+        System.Diagnostics.Debug.WriteLine("started.");
+    }
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        Setup_Window_Position();
+    }
+
+    private void Setup_Window_Position()
+    {
+
+        var desktopWorkingArea = SystemParameters.WorkArea;
+        Left = desktopWorkingArea.Right - Width;
+        Top = desktopWorkingArea.Bottom - Height;
     }
 
     private static string DownloadFolder()
@@ -73,5 +88,27 @@ public partial class MainWindow : Window
         _app.Stop();
 
         base.OnClosed(e);
+    }
+
+    private void Window_Deactivated(object sender, EventArgs e)
+    {
+        BringBackWindow(sender, e, true);
+    }
+
+    private void Window_Activated(object sender, EventArgs e)
+    {
+        BringBackWindow(sender, e, false);
+        System.Diagnostics.Debug.WriteLine("Got Focus!!");
+    }
+
+    private void BringBackWindow(object sender, EventArgs e, bool transparent)
+    {
+        var window = (Window)sender;
+        window.Topmost = true;
+
+        if (!window.Activate())
+            Debug.WriteLine("Could not bring to foreground.");
+        
+        window.Background.Opacity = transparent ? 0.1f : 1.0f;
     }
 }

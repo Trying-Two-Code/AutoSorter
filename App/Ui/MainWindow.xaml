@@ -11,7 +11,9 @@
         Width="800"
         Icon="/Ui/Assets/Visual/logox32.png"
         AllowsTransparency="True"
-        WindowStyle="None">
+        WindowStyle="None"
+        Deactivated="Window_Deactivated"
+        Activated="Window_Activated">
     <Window.Background>
         <SolidColorBrush Opacity="1.0" Color="White"/>
     </Window.Background>
@@ -25,7 +27,9 @@
             x:Name="CloseButton"
             Grid.Row="0"
             Click="CloseButton_Click"
-            Source="\Ui\Assets\Visual\x.png"/>
+            Source="\Ui\Assets\Visual\x.png"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"/>
         <components:StartStopButton
             Grid.Row="1"
             Click="StartStopButton_Click"/>
