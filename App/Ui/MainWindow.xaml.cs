@@ -68,7 +68,13 @@ public partial class MainWindow : Window
         if(sender is not TopbarButton button)
             return;
 
-        System.Windows.Application.Current.Shutdown();
+        SendToTray();
+    }
+
+    private void SendToTray()
+    {
+        ShowInTaskbar = false;
+        WindowState = WindowState.Minimized;
     }
 
     private void CreateSound(string soundFilePath)
@@ -98,7 +104,6 @@ public partial class MainWindow : Window
     private void Window_Activated(object sender, EventArgs e)
     {
         BringBackWindow(sender, e, false);
-        System.Diagnostics.Debug.WriteLine("Got Focus!!");
     }
 
     private void BringBackWindow(object sender, EventArgs e, bool transparent)
