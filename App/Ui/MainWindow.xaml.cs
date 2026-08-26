@@ -75,6 +75,7 @@ public partial class MainWindow : Window
     {
         WindowState = WindowState.Minimized;
         ShowInTaskbar = false;
+        throw new NotImplementedException();
     }
 
     private void CreateSound(string soundFilePath)
