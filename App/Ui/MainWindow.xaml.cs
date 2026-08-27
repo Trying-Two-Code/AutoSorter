@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Forms;
 using BCore;
 using App.Ui.UiComponents;
 using Syroot.Windows.IO;
 using System.Diagnostics;
 using System.Timers;
+using App.Ui.Trayhandler;
 
 namespace AutoSorter;
 
@@ -76,7 +78,7 @@ public partial class MainWindow : Window
     {
         WindowState = WindowState.Minimized;
         ShowInTaskbar = false;
-        throw new NotImplementedException();
+        //throw new NotImplementedException();
     }
 
     private void CreateSound(string soundFilePath)
@@ -98,13 +100,16 @@ public partial class MainWindow : Window
         base.OnClosed(e);
     }
 
+    private TrayIconHandler TrayHandler = new TrayIconHandler();
     private void Window_Deactivated(object sender, EventArgs e)
     {
+        TrayHandler.ShowTrayIcon(true);
         BringBackWindow(sender, e, true);
     }
 
     private void Window_Activated(object sender, EventArgs e)
     {
+        TrayHandler.ShowTrayIcon(false);
         BringBackWindow(sender, e, false);
     }
 

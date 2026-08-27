@@ -16,7 +16,7 @@ namespace App.Ui.UiComponents
     /// <summary>
     /// Interaction logic for TopbarButton.xaml
     /// </summary>
-    public partial class TopbarButton : UserControl
+    public partial class TopbarButton : System.Windows.Controls.UserControl
     {
         public TopbarButton()
         {

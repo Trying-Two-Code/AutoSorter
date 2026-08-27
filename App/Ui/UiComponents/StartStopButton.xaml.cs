@@ -5,7 +5,7 @@ using System.Windows.Media.Imaging;
 
 namespace App.Ui.UiComponents;
 
-public partial class StartStopButton : UserControl
+public partial class StartStopButton : System.Windows.Controls.UserControl
 {
     //:::TODO::: isrunning variable should persist app close
     private bool _isRunning;
