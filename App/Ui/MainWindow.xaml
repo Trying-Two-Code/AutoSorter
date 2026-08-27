@@ -19,8 +19,9 @@
     </Window.Background>
     <Grid>
         <Grid.Background>
-            <SolidColorBrush Opacity="0.5" Color="#7a9ff0"/>
+            <SolidColorBrush Opacity="0.7" Color="#131219"/>
         </Grid.Background>
+        <Grid.
 
         <Grid.RowDefinitions>
             <RowDefinition Height="23*"></RowDefinition>
