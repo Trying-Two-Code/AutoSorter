@@ -21,6 +21,7 @@
         <Grid.Background>
             <SolidColorBrush Opacity="0.7" Color="#131219"/>
         </Grid.Background>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="23*"></RowDefinition>
             <RowDefinition Height="113*"></RowDefinition>
