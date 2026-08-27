@@ -145,11 +145,11 @@ public partial class MainWindow : Window
     {
         while(window.Opacity > 0f)
         {
-            window.Opacity -= .1f;
             if (fadeCancel.IsCancellationRequested)
             {
                 return;
             }
+            window.Opacity -= .1f;
             await Task.Delay(1000);
         }
 
