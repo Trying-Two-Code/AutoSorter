@@ -5,7 +5,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Forms;
 //https://possemeeg.wordpress.com/2007/09/06/minimize-to-tray-icon-in-wpf/
-namespace App.Ui.Trayhandler;
+namespace App.Ui.UiScripts;
 
 internal class TrayIconHandler
 {
