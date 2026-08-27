@@ -149,8 +149,8 @@ public partial class MainWindow : Window
             {
                 return;
             }
-            window.Opacity -= .1f;
-            await Task.Delay(1000);
+            window.Opacity -= .01f;
+            await Task.Delay(500);
         }
 
         return;
