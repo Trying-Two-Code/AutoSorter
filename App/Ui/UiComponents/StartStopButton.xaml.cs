@@ -38,8 +38,8 @@ public partial class StartStopButton : UserControl
         /*StartStopButtonInst.Content =
             _isRunning ? "STOP" : "START";*/
 
-        const string StartSource = @"\Ui\Assets\Visual\start.png";
-        const string PauseSource = @"\Ui\Assets\Visual\pause.png";
+        const string StartSource = @"\Ui\Assets\Visual\record.png";
+        const string PauseSource = @"\Ui\Assets\Visual\stop.png";
 
         StartStopButtonInstImage.Source =
             _isRunning ? GetSource(PauseSource) : GetSource(StartSource);

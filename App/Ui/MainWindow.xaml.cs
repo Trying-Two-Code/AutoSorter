@@ -5,6 +5,7 @@ using BCore;
 using App.Ui.UiComponents;
 using Syroot.Windows.IO;
 using System.Diagnostics;
+using System.Timers;
 
 namespace AutoSorter;
 
@@ -48,12 +49,12 @@ public partial class MainWindow : Window
         if (sender is not StartStopButton button)
             return;
 
+        CreateSound(
+            @"Ui\Assets\Audio\SFX-Click2.mp3");
+
         if (button.IsRunning)
         {
             _app.Start();
-
-            CreateSound(
-                @"Ui\Assets\Audio\SFX-Success1.mp3");
         }
         else
         {
@@ -107,14 +108,51 @@ public partial class MainWindow : Window
         BringBackWindow(sender, e, false);
     }
 
-    private void BringBackWindow(object sender, EventArgs e, bool transparent)
+    private void BringBackWindow(object sender, EventArgs e, bool translucent = false)
     {
         var window = (Window)sender;
         window.Topmost = true;
 
         if (!window.Activate())
             Debug.WriteLine("Could not bring to foreground.");
-        
-        window.Opacity = transparent ? 0.1f : 1.0f;
+
+        dealWithWindowOpacity(window, translucent);
+    }
+
+    CancellationTokenSource cts;
+
+    private void dealWithWindowOpacity(Window window, bool translucent)
+    {
+        const float highestOpacity = 1f;
+        if (translucent)
+        {
+            cts = new CancellationTokenSource();
+            Fadeout(window, cts.Token);
+        }
+        else if (window.Opacity <= highestOpacity)
+        {
+            if(cts != null)
+                cts.Cancel();
+            window.Opacity = highestOpacity;
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    async private void Fadeout(Window window, CancellationToken fadeCancel)
+    {
+        while(window.Opacity > 0f)
+        {
+            window.Opacity -= .1f;
+            if (fadeCancel.IsCancellationRequested)
+            {
+                return;
+            }
+            await Task.Delay(1000);
+        }
+
+        return;
     }
 }

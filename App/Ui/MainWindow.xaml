@@ -15,9 +15,13 @@
         Deactivated="Window_Deactivated"
         Activated="Window_Activated">
     <Window.Background>
-        <SolidColorBrush Opacity="1.0" Color="White"/>
+        <SolidColorBrush Opacity="0.0" Color="White"/>
     </Window.Background>
     <Grid>
+        <Grid.Background>
+            <SolidColorBrush Opacity="0.5" Color="#7a9ff0"/>
+        </Grid.Background>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="23*"></RowDefinition>
             <RowDefinition Height="113*"></RowDefinition>
@@ -33,5 +37,6 @@
         <components:StartStopButton
             Grid.Row="1"
             Click="StartStopButton_Click"/>
+        
     </Grid>
 </Window>
