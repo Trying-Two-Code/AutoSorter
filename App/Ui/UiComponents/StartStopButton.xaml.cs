@@ -7,6 +7,7 @@ namespace App.Ui.UiComponents;
 
 public partial class StartStopButton : UserControl
 {
+    //:::TODO::: isrunning variable should persist app close
     private bool _isRunning;
 
     public bool IsRunning => _isRunning;
@@ -34,9 +35,6 @@ public partial class StartStopButton : UserControl
         RoutedEventArgs e)
     {
         _isRunning = !_isRunning;
-
-        /*StartStopButtonInst.Content =
-            _isRunning ? "STOP" : "START";*/
 
         const string StartSource = @"\Ui\Assets\Visual\record.png";
         const string PauseSource = @"\Ui\Assets\Visual\stop.png";

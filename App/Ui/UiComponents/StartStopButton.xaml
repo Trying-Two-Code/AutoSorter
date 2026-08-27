@@ -14,7 +14,7 @@
                 Background="Transparent"
                 BorderThickness="0">
 
-            <Image x:Name="StartStopButtonInstImage" Height="200" Width="200" Source="/Ui/Assets/Visual/start.png"/>
+            <Image x:Name="StartStopButtonInstImage" Height="200" Width="200" Source="/Ui/Assets/Visual/record.png"/>
         </Button>
     </Grid>
 
