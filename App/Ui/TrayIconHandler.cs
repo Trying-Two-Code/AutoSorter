@@ -14,9 +14,9 @@ internal class TrayIconHandler
     public TrayIconHandler()
     {
         m_notifyIcon = new System.Windows.Forms.NotifyIcon();
-        m_notifyIcon.BalloonTipText = "The app has been minimised. Click the tray icon to show.";
-        m_notifyIcon.BalloonTipTitle = "The App";
-        m_notifyIcon.Text = "The App";
+        m_notifyIcon.BalloonTipText = "Autosorter has been minimised. Click the tray icon to show.";
+        m_notifyIcon.BalloonTipTitle = "Open Autosorter";
+        m_notifyIcon.Text = "Autosorter";
         m_notifyIcon.Icon = GetIcon("Ui/Assets/Visual/logo.ico"); // TODO null check
         m_notifyIcon.Click += new EventHandler(m_notifyIcon_Click);
     }
