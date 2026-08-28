@@ -15,6 +15,7 @@ public partial class MainWindow : Window
 {
     private readonly AppAPI _app;
 
+    private static UserSettings settings = new UserSettings();
     public MainWindow()
     {
         InitializeComponent();
@@ -23,8 +24,8 @@ public partial class MainWindow : Window
         _app = new AppAPI(path);
 
         Loaded += new RoutedEventHandler(Window_Loaded);
-        System.Diagnostics.Debug.WriteLine("started.");
     }
+
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
         Setup_Window_Position();
