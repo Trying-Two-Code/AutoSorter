@@ -16,7 +16,7 @@ class UserSettings
 
     public UserSettings()
     {
-        GetSettings();
+        
     }
 
     public static bool running = false;

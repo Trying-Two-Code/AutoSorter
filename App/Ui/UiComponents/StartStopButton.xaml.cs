@@ -34,6 +34,17 @@ public partial class StartStopButton : System.Windows.Controls.UserControl
         object sender,
         RoutedEventArgs e)
     {
+        ToggleRunning();
+
+        var args = new RoutedEventArgs(
+            ClickEvent,
+            this);
+
+        RaiseEvent(args);
+    }
+
+    public void ToggleRunning()
+    {
         _isRunning = !_isRunning;
 
         const string StartSource = @"\Ui\Assets\Visual\record.png";
@@ -41,12 +52,6 @@ public partial class StartStopButton : System.Windows.Controls.UserControl
 
         StartStopButtonInstImage.Source =
             _isRunning ? GetSource(PauseSource) : GetSource(StartSource);
-
-        var args = new RoutedEventArgs(
-            ClickEvent,
-            this);
-
-        RaiseEvent(args);
     }
 
     private System.Windows.Media.ImageSource GetSource(string path, int width = 200, int height = 200)

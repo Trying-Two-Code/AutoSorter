@@ -14,8 +14,6 @@ namespace AutoSorter;
 public partial class MainWindow : Window
 {
     private readonly AppAPI _app;
-
-    private static UserSettings settings = new UserSettings();
     public MainWindow()
     {
         InitializeComponent();
@@ -24,6 +22,15 @@ public partial class MainWindow : Window
         _app = new AppAPI(path);
 
         Loaded += new RoutedEventHandler(Window_Loaded);
+
+        UserSettings.GetSettings();
+        if (UserSettings.running)
+        {
+            System.Diagnostics.Debug.WriteLine("starting.");
+            _app.Start();
+            MainStartStopButton.ToggleRunning();
+        }
+        System.Diagnostics.Debug.WriteLine(UserSettings.running);
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -57,10 +64,12 @@ public partial class MainWindow : Window
 
         if (button.IsRunning)
         {
+            UserSettings.Set<bool>("running", true);
             _app.Start();
         }
         else
         {
+            UserSettings.Set<bool>("running", false);
             _app.Stop();
         }
     }

@@ -59,6 +59,7 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Top"/>
         <components:StartStopButton
+            x:Name="MainStartStopButton"
             Grid.Row="1"
             Click="StartStopButton_Click"/>
         
