@@ -41,27 +41,29 @@
     <Window.Background>
         <SolidColorBrush Opacity="0.0" Color="White"/>
     </Window.Background>
-    <Grid>
-        <Grid.Background>
-            <SolidColorBrush Opacity="0.7" Color="#131219"/>
-        </Grid.Background>
+    <Border BorderBrush="Black" BorderThickness="2" Name="MainGridBorder">
+        <Grid>
+            <Grid.Background>
+                <SolidColorBrush Opacity="0.7" Color="#131219"/>
+            </Grid.Background>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="23*"></RowDefinition>
+                <RowDefinition Height="113*"></RowDefinition>
+                <RowDefinition Height="14*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <components:TopbarButton
+        x:Name="CloseButton"
+        Grid.Row="0"
+        Click="CloseButton_Click"
+        Source="\Ui\Assets\Visual\x.png"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"/>
+            <components:StartStopButton
+        x:Name="MainStartStopButton"
+        Grid.Row="1"
+        Click="StartStopButton_Click"/>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="23*"></RowDefinition>
-            <RowDefinition Height="113*"></RowDefinition>
-            <RowDefinition Height="14*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <components:TopbarButton
-            x:Name="CloseButton"
-            Grid.Row="0"
-            Click="CloseButton_Click"
-            Source="\Ui\Assets\Visual\x.png"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"/>
-        <components:StartStopButton
-            x:Name="MainStartStopButton"
-            Grid.Row="1"
-            Click="StartStopButton_Click"/>
-        
-    </Grid>
+        </Grid>
+    </Border>
+    
 </Window>
