@@ -111,6 +111,8 @@ public class AutoSorter
 
         // Data Gather
         // Algorithm
+
+        _userActionGather.appendDelete(path);
     }
 
     private void OnFileCopy(
