@@ -4,9 +4,10 @@ using System.Text.Json;
 
 public enum Action
 {
-    Move,
+    Move = 0, //crl+ x
     Rename,
-    Copy
+    Copy,//crl+ c
+    Delete
 }
 
 public class UserActionGatherLine
@@ -67,6 +68,19 @@ public class UserActionGather
         writeFileDataToJSON(data);
     }
 
+    public void appendDelete(string file)
+    {
+        UserActionGatherFile data = getFileDataFromJSON();
+
+        data.Lines.Add(new UserActionGatherLine
+        {
+            Action = Action.Delete,
+            Content = $"delete {file}",
+            Timestamp = DateTime.UtcNow
+        });
+
+        writeFileDataToJSON(data);
+    }
 
     public UserActionGatherFile getFileDataFromJSON()
     {
