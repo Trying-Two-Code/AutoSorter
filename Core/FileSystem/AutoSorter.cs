@@ -48,7 +48,7 @@ public class AutoSorter
         switch (change.Type)
         {
             case FileChangeType.Created:
-                OnFileCreated(change.Path);
+                OnFileCreated(change.Path, change.OldPath);
                 break;
 
             case FileChangeType.Deleted:
@@ -86,10 +86,10 @@ public class AutoSorter
         }
     }
 
-    private void OnFileCreated(string path)
+    private void OnFileCreated(string path, string? oldpath = null)
     {
         Log.AppendLog(
-            $"[FileCreated] Path={path}");
+            $"[FileCreated] Path={path}; OldPath={oldpath}");
 
         // Data Gather
         // Algorithm
