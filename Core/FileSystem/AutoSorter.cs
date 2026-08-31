@@ -168,6 +168,9 @@ public class AutoSorter
         Log.AppendLog(
             $"[FileCreated] Path={path}; OldPath={oldpath}");
 
+        if(oldpath != null)
+            OnFileMove(path, oldpath);
+
         // Data Gather
         // Algorithm
     }
@@ -224,6 +227,17 @@ public class AutoSorter
             newPath);
 
         // Algorithm
+    }
+
+    public void OnFileMove(string newPath, string oldPath)
+    {
+        Log.AppendLog("[FileMoved] " +
+            $"From={oldPath}, " +
+            $"To={newPath}");
+
+        _userActionGather.appendMove(
+            oldPath,
+            newPath);
     }
 
     public void Start()

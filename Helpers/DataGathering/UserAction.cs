@@ -86,7 +86,7 @@ public class UserActionGather
         writeFileDataToJSON(data);
     }
 
-    
+
 
     public UserActionGatherFile getFileDataFromJSON()
     {
