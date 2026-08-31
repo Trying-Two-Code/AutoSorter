@@ -1,12 +1,15 @@
 namespace Helper.DataGathering;
 
+using System.Diagnostics;
 using System.Text.Json;
+using System.Windows;
+
 
 public enum Action
 {
     Move = 0, //crl+ x
     Rename,
-    Copy,//crl+ c
+    Copy, //crl+ c
     Delete
 }
 
@@ -72,15 +75,18 @@ public class UserActionGather
     {
         UserActionGatherFile data = getFileDataFromJSON();
 
-        data.Lines.Add(new UserActionGatherLine
+        UserActionGatherLine userActionGatherLine = new UserActionGatherLine
         {
             Action = Action.Delete,
             Content = $"delete {file}",
             Timestamp = DateTime.UtcNow
-        });
+        };
+        data.Lines.Add(userActionGatherLine);
 
         writeFileDataToJSON(data);
     }
+
+    
 
     public UserActionGatherFile getFileDataFromJSON()
     {

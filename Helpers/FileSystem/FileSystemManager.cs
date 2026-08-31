@@ -24,7 +24,17 @@ public class FileSystemManager
 
     public FileSystemManager(string path)
     {
-        _watcher = new FileSystemWatcher(path);
+        _watcher = new FileSystemWatcher(path)
+        {
+            IncludeSubdirectories = true,
+            EnableRaisingEvents = true,
+            NotifyFilter =    NotifyFilters.DirectoryName
+                            | NotifyFilters.FileName
+                            | NotifyFilters.Size
+                            | NotifyFilters.LastWrite
+                            | NotifyFilters.Attributes,
+            InternalBufferSize = 810000
+        };
 
         _watcher.Created += (_, e) =>
             FileChanged?.Invoke(

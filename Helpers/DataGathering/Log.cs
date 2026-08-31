@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Helper.DataGathering;
 
 public static class Log
@@ -9,10 +11,16 @@ public static class Log
         Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
 
         String timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-
-        File.AppendAllText(
-            _path,
-            $"[{timestamp}] {content}{Environment.NewLine}"
-        );
+        try
+        {
+            File.AppendAllText(
+                _path,
+                $"[{timestamp}] {content}{Environment.NewLine}"
+            );
+        }
+        catch ( Exception ex ) 
+        {
+            Debug.WriteLine( ex );
+        }
     }
 }

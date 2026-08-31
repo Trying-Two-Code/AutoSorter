@@ -1,13 +1,14 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Forms;
+﻿using App.Ui.UiComponents;
+using App.Ui.UiScripts;
 using BCore;
-using App.Ui.UiComponents;
+using Helper.DataGathering;
 using Syroot.Windows.IO;
+using System;
 using System.Diagnostics;
 using System.Timers;
-using App.Ui.UiScripts;
+using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Media;
 
 namespace AutoSorter;
 
@@ -18,8 +19,9 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        string path = DownloadFolder();
+        string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         _app = new AppAPI(path);
+        
 
         Loaded += new RoutedEventHandler(Window_Loaded);
 

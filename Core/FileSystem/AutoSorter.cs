@@ -1,5 +1,6 @@
-using Helper.FileSystem;
 using Helper.DataGathering;
+using Helper.FileSystem;
+using System.Diagnostics;
 
 namespace Core.FileSystem;
 
@@ -18,8 +19,6 @@ public class AutoSorter
         _clipboardWatcher = new ClipboardWatcher();
 
         SetCallbacks();
-
-        Log.AppendLog("AutoSorter initialized.");
     }
 
     private void SetCallbacks()
@@ -42,9 +41,56 @@ public class AutoSorter
         // Data Gather
         // Algorithm
     }
+    public static string[] KnownBackgroundFolders = [];
+    private static bool IsProbablyUserAction(string file)
+    {
+        bool output = true;
+        //check if file belongs to AutoSorter
+        if (file.Contains(@"AutoSorter\bin\App") || file.Contains(@"AutoSorter\.git\refs"))
+            return false;
+
+        //check if many actions are happening at once (too fast and it's probably not the user)
+
+
+        //check if the file belongs to any folders that are used in background
+        if (KnownBackgroundFolders.Any(KnownBackgroundFolder =>
+        {
+            return KnownBackgroundFolder.Contains(file);
+        }))
+        {
+            output = false;
+        }
+
+        //check if the filetype is one of the types that gamers usually edit
+        string[] UserFileType = ["image", "text", "audio", "video", "font", "application/zip"];
+        string extension = Path.GetExtension(file);
+        string mimeType = MimeTypes.GetMimeType(extension);
+        if (!UserFileType.Any(_fileType => 
+        { return mimeType.Contains(_fileType); }
+        ))
+        {
+            output = false;
+        }
+        
+
+        //check if file belongs to apps
+        if (file.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)))
+            output = false;
+            //Debug.WriteLine("file belongs to app:" + Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+
+        if (output)
+        {
+            Log.AppendLog("Check Mime: " + mimeType + " ::: TYPE - Path ::: " + file);
+        }
+
+        return output;
+    }
 
     private void OnFileChanged(FileChange change)
     {
+        if (!IsProbablyUserAction(change.Path))
+            return;
+
         switch (change.Type)
         {
             case FileChangeType.Created:
