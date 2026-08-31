@@ -38,7 +38,7 @@ public class FileSystemManager
 
         _watcher.Created += (_, e) =>
             FileChanged?.Invoke(
-                new FileChange(FileChangeType.Created, e.FullPath, FindOldPath(e)));
+                new FileChange(FileChangeType.Created, e.FullPath));
 
         _watcher.Changed += (_, e) =>
             FileChanged?.Invoke(
@@ -47,9 +47,6 @@ public class FileSystemManager
         _watcher.Deleted += (_, e) =>
             FileChanged?.Invoke(
                 new FileChange(FileChangeType.Deleted, e.FullPath));
-
-        _watcher.Deleted += (_, e) =>
-            LastDeletedFile = e;
 
         _watcher.Renamed += (_, e) =>
             FileChanged?.Invoke(
@@ -61,19 +58,6 @@ public class FileSystemManager
         _watcher.Error += OnError;
     }
 
-    public static FileSystemEventArgs? LastDeletedFile;
-    public static string? FindOldPath(FileSystemEventArgs e)
-    {
-        bool CheckEqual(FileSystemEventArgs? e1, FileSystemEventArgs? e2)
-        {
-            if (e1 != null && e2 != null)
-                return (e1.Name == e2.Name);
-            else
-                return false;
-        }
-
-        return CheckEqual(e, LastDeletedFile) ? LastDeletedFile.FullPath : null;
-    }
 
     public void Start()
     {

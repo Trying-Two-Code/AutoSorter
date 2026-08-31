@@ -76,7 +76,18 @@ public class AutoSorter
         //check if file belongs to apps
         if (file.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)))
             output = false;
-            //Debug.WriteLine("file belongs to app:" + Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+        //Debug.WriteLine("file belongs to app:" + Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+
+        //check if file has blacklisted (non human) extension
+        string[] BlacklistedExtensions = [".log"];
+        if (BlacklistedExtensions.Any(_blackExtension =>
+        { return extension.Contains(_blackExtension); }
+        ))
+        {
+            output = false;
+        }
+
+
 
         if (output)
         {
@@ -84,6 +95,24 @@ public class AutoSorter
         }
 
         return output;
+    }
+
+    public static string? LastDeletedFile;
+    public static string? FindOldPath(string e)
+    {
+        //TODO: add timeout; add size checking;
+        string? e1 = Path.GetFileName(e);
+        string? e2 = Path.GetFileName(LastDeletedFile);
+
+        bool CheckEqual(string? e1, string? e2)
+        {
+            if (e1 != null && e2 != null)
+                return (e1 == e2);
+            else
+                return false;
+        }
+
+        return CheckEqual(e1, e2) ? LastDeletedFile : null;
     }
 
     private void OnFileChanged(FileChange change)
@@ -94,7 +123,7 @@ public class AutoSorter
         switch (change.Type)
         {
             case FileChangeType.Created:
-                OnFileCreated(change.Path, change.OldPath);
+                OnFileCreated(change.Path);
                 break;
 
             case FileChangeType.Deleted:
@@ -132,8 +161,10 @@ public class AutoSorter
         }
     }
 
-    private void OnFileCreated(string path, string? oldpath = null)
+    private void OnFileCreated(string path)
     {
+        string? oldpath = FindOldPath(path);
+
         Log.AppendLog(
             $"[FileCreated] Path={path}; OldPath={oldpath}");
 
@@ -152,6 +183,8 @@ public class AutoSorter
 
     private void OnFileDeleted(string path)
     {
+        LastDeletedFile = path;
+
         Log.AppendLog(
             $"[FileDeleted] Path={path}");
 
