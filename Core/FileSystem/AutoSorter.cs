@@ -1,6 +1,5 @@
 using Helper.DataGathering;
 using Helper.FileSystem;
-using System.Diagnostics;
 
 namespace Core.FileSystem;
 
@@ -11,12 +10,18 @@ public class AutoSorter
 
     private readonly UserActionGather _userActionGather = new();
 
-    public AutoSorter(string path)
-    {
-        Log.AppendLog($"AutoSorter initializing: {path}");
+    private readonly MoveCorrelator _moveCorrelator;
 
-        _fileSystem = new FileSystemManager(path);
+    public AutoSorter(
+        string watchRoot,
+        string sourceRoot)
+    {
+        Log.AppendLog(
+            $"AutoSorter initializing: watch={watchRoot}, sourceRoot={sourceRoot}");
+
+        _fileSystem = new FileSystemManager(watchRoot);
         _clipboardWatcher = new ClipboardWatcher();
+        _moveCorrelator = new MoveCorrelator(sourceRoot);
 
         SetCallbacks();
     }
@@ -33,207 +38,104 @@ public class AutoSorter
 
     private void OnClipboardChanged(ClipboardChange change)
     {
-        Log.AppendLog(
-            $"[ClipboardChanged] " +
-            $"Operation={change.Operation}, " +
-            $"Paths=[{string.Join(", ", change.Paths)}]");
+        // A clipboard Copy must never be treated as a move.
+        if (change.Operation != ClipboardOperation.Cut)
+            return;
 
-        // Data Gather
-        // Algorithm
-    }
-    public static string[] KnownBackgroundFolders = [];
-    private static bool IsProbablyUserAction(string file)
-    {
-        bool output = true;
-        //check if file belongs to AutoSorter
-        if (file.Contains(@"AutoSorter\bin\App") || file.Contains(@"AutoSorter\.git\refs"))
-            return false;
+        int queued = 0;
 
-        //check if many actions are happening at once (too fast and it's probably not the user)
-
-
-        //check if the file belongs to any folders that are used in background
-        if (KnownBackgroundFolders.Any(KnownBackgroundFolder =>
+        foreach (string path in change.Paths)
         {
-            return KnownBackgroundFolder.Contains(file);
-        }))
-        {
-            output = false;
+            // Only sources inside the configured root (e.g. Downloads) are
+            // tracked; cuts of files anywhere else are ignored quietly.
+            if (_moveCorrelator.RecordCutSource(path, TryGetSize(path)))
+                queued++;
         }
 
-        //check if the filetype is one of the types that gamers usually edit
-        string[] UserFileType = ["image", "text", "audio", "video", "font", "application/zip"];
-        string extension = Path.GetExtension(file);
-        string mimeType = MimeTypes.GetMimeType(extension);
-        if (!UserFileType.Any(_fileType => 
-        { return mimeType.Contains(_fileType); }
-        ))
-        {
-            output = false;
-        }
-        
-
-        //check if file belongs to apps
-        if (file.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)))
-            output = false;
-        //Debug.WriteLine("file belongs to app:" + Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
-
-        //check if file has blacklisted (non human) extension
-        string[] BlacklistedExtensions = [".log"];
-        if (BlacklistedExtensions.Any(_blackExtension =>
-        { return extension.Contains(_blackExtension); }
-        ))
-        {
-            output = false;
-        }
-
-
-
-        if (output)
-        {
-            Log.AppendLog("Check Mime: " + mimeType + " ::: TYPE - Path ::: " + file);
-        }
-
-        return output;
-    }
-
-    public static string? LastDeletedFile;
-    public static string? FindOldPath(string e)
-    {
-        //TODO: add timeout; add size checking;
-        string? e1 = Path.GetFileName(e);
-        string? e2 = Path.GetFileName(LastDeletedFile);
-
-        bool CheckEqual(string? e1, string? e2)
-        {
-            if (e1 != null && e2 != null)
-                return (e1 == e2);
-            else
-                return false;
-        }
-
-        return CheckEqual(e1, e2) ? LastDeletedFile : null;
+        if (queued > 0)
+            Log.AppendLog($"[PendingMove] Queued {queued} cut source(s).");
     }
 
     private void OnFileChanged(FileChange change)
     {
-        if (!IsProbablyUserAction(change.Path))
+        // Keep the system quiet: when nothing has been cut from the monitored
+        // folder, unrelated filesystem activity is ignored entirely.
+        if (!_moveCorrelator.HasActivePending())
             return;
 
         switch (change.Type)
         {
-            case FileChangeType.Created:
-                OnFileCreated(change.Path);
-                break;
-
             case FileChangeType.Deleted:
-                OnFileDeleted(change.Path);
+            {
+                if (_moveCorrelator.NotifyDeleted(change.Path))
+                    Log.AppendLog($"[PendingMove] Source deleted: {change.Path}");
+
                 break;
+            }
+
+            case FileChangeType.Created:
+            {
+                // Cheap check before a size lookup: unrelated creations must
+                // still not produce any logging or extra work.
+                if (!_moveCorrelator.IsCandidateCreated(change.Path))
+                    break;
+
+                MoveCorrelationResult? correlated =
+                    _moveCorrelator.NotifyCreated(
+                        change.Path,
+                        TryGetSize(change.Path));
+
+                if (correlated != null)
+                    OnFileMove(correlated.NewPath, correlated.OldPath);
+
+                break;
+            }
 
             case FileChangeType.Renamed:
             {
                 if (change.OldPath == null)
-                {
-                    Log.AppendLog(
-                        $"[FileRenamed] Missing old path: {change.Path}");
+                    break;
 
-                    return;
-                }
+                // Same-volume cut-and-paste shows up as a rename; the old path
+                // of the event directly identifies the pending source.
+                MoveCorrelationResult? correlated =
+                    _moveCorrelator.NotifyRenamed(
+                        change.OldPath,
+                        change.Path,
+                        TryGetSize(change.Path));
 
-                OnFileRenamed(
-                    change.OldPath,
-                    change.Path);
+                if (correlated != null)
+                    OnFileMove(correlated.NewPath, correlated.OldPath);
 
                 break;
             }
 
             case FileChangeType.Modified:
-
-                // FileSystemWatcher can emit multiple
-                // Changed events during one operation.
-                // Ignore directory modifications for now.
-
-                if (Directory.Exists(change.Path))
-                    return;
-
-                OnFileModified(change.Path);
+                // Not used for move correlation.
                 break;
         }
     }
 
-    private void OnFileCreated(string path)
+    private static long TryGetSize(string path)
     {
-        string? oldpath = FindOldPath(path);
+        try
+        {
+            if (File.Exists(path))
+                return new FileInfo(path).Length;
+        }
+        catch
+        {
+            // Size unavailable (for example a folder or a locked file).
+            // The correlator treats unknown sizes as non-conflicting.
+        }
 
-        Log.AppendLog(
-            $"[FileCreated] Path={path}; OldPath={oldpath}");
-
-        if(oldpath != null)
-            OnFileMove(path, oldpath);
-
-        // Data Gather
-        // Algorithm
-    }
-
-    private void OnFileModified(string path)
-    {
-        Log.AppendLog(
-            $"[FileModified] Path={path}");
-
-        // Data Gather
-        // Algorithm
-    }
-
-    private void OnFileDeleted(string path)
-    {
-        LastDeletedFile = path;
-
-        Log.AppendLog(
-            $"[FileDeleted] Path={path}");
-
-        // Data Gather
-        // Algorithm
-
-        _userActionGather.appendDelete(path);
-    }
-
-
-    //it un use now because algorithm is not implemented yet
-    private void OnFileCopy(
-        string oldPath,
-        string newPath)
-    {
-        Log.AppendLog(
-            $"[FileCopy] " +
-            $"From={oldPath}, " +
-            $"To={newPath}");
-
-        _userActionGather.appendCopy(
-            oldPath,
-            newPath);
-
-        // Algorithm
-    }
-
-    private void OnFileRenamed(
-        string oldPath,
-        string newPath)
-    {
-        Log.AppendLog(
-            $"[FileRenamed] " +
-            $"From={oldPath}, " +
-            $"To={newPath}");
-
-        _userActionGather.appendRename(
-            oldPath,
-            newPath);
-
-        // Algorithm
+        return -1;
     }
 
     public void OnFileMove(string newPath, string oldPath)
     {
-        Log.AppendLog("[FileMoved] " +
+        Log.AppendLog(
+            "[FileMoved] " +
             $"From={oldPath}, " +
             $"To={newPath}");
 

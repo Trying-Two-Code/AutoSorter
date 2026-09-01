@@ -16,9 +16,9 @@ public class CoreAlgorithm
 
     private readonly AutoSorter _autoSorter;
 
-    public CoreAlgorithm(String path)
+    public CoreAlgorithm(String path, String sourceRoot)
     {
-        _autoSorter = new AutoSorter(path);
+        _autoSorter = new AutoSorter(path, sourceRoot);
     }
 
     public void Start()

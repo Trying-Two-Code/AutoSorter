@@ -20,7 +20,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        _app = new AppAPI(path);
+        _app = new AppAPI(path, DownloadFolder());
         
 
         Loaded += new RoutedEventHandler(Window_Loaded);
