@@ -168,19 +168,16 @@ public class MoveCorrelator
 
             DateTime now = _clock();
 
-            bool MakeMatch()
+            void MakeMatch()
             {
                 match = new PendingMove
                 {
-                    SourcePath = normalized,
-                    DeletedAtUtc = now,
-                    UpdatedAtUtc = now
+                    SourcePath = normalized
                 };
                 _pending.Add(match);
-                return true;
             }
             if (match == null)
-                return MakeMatch();
+                MakeMatch();
 
             match.DeletedAtUtc = now;
             match.UpdatedAtUtc = now;
