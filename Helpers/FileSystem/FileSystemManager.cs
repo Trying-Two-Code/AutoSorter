@@ -79,6 +79,11 @@ public class FileSystemManager
         Log.AppendLog($"Move from {source} to {destination}");
     }
 
+    public void MoveList(List<string> sourceList, string destinationDirectory)
+    {
+        foreach (string source in sourceList)
+            Move(source, destinationDirectory);
+    }
 
     public void OnError(object _, ErrorEventArgs e)
     {
