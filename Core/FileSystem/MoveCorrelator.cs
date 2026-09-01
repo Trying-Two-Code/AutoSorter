@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -41,8 +42,8 @@ public class MoveCorrelationResult
 }
 
 /// <summary>
-/// Correlates clipboard Cut operations with filesystem events so the real
-/// destination of a move can be found.
+/// Correlates clipboard Cut operations / filesystem Delete events with 
+/// filesystem create events so the destination of a move can be found.
 ///
 /// Only sources located inside the configured source root (the monitored
 /// folder, e.g. Downloads) are ever tracked. The destination of a tracked
@@ -162,16 +163,40 @@ public class MoveCorrelator
                 p.DeletedAtUtc == null &&
                 p.SourcePath.Equals(normalized, StringComparison.OrdinalIgnoreCase));
 
-            if (match == null)
+            if (match == null && !UserDeleted(path))
                 return false;
 
             DateTime now = _clock();
+
+            bool MakeMatch()
+            {
+                match = new PendingMove
+                {
+                    SourcePath = normalized,
+                    DeletedAtUtc = now,
+                    UpdatedAtUtc = now
+                };
+                _pending.Add(match);
+                return true;
+            }
+            if (match == null)
+                return MakeMatch();
 
             match.DeletedAtUtc = now;
             match.UpdatedAtUtc = now;
 
             return true;
         }
+    }
+
+    /// <summary>
+    /// Filter used to detect if a user drag moved a file. Returns false
+    /// if the path belongs to a background process.
+    /// </summary>
+    public bool UserDeleted(string path)
+    {
+        //TODO: check if deletion is background process or user action
+        return true;
     }
 
     /// <summary>
