@@ -197,6 +197,8 @@ public class AutoSorter
         _userActionGather.appendDelete(path);
     }
 
+
+    //it un use now because algorithm is not implemented yet
     private void OnFileCopy(
         string oldPath,
         string newPath)

@@ -69,12 +69,16 @@ public class FileSystemManager
         _watcher.EnableRaisingEvents = false;
     }
 
-    public void Move(string source, string destination)
+    public void Move(string source, string destinationDirectory)
     {
+        string destination =
+            Path.Combine(destinationDirectory, Path.GetFileName(source));
+
         File.Move(source, destination);
 
         Log.AppendLog($"Move from {source} to {destination}");
     }
+
 
     public void OnError(object _, ErrorEventArgs e)
     {
