@@ -47,11 +47,25 @@ public partial class StartStopButton : System.Windows.Controls.UserControl
     {
         _isRunning = !_isRunning;
 
+
+        ToggleLooks();
+    }
+
+    public void ToggleLooks()
+    {
+        //SOURCE IMAGE
         const string StartSource = @"\Ui\Assets\Visual\record.png";
         const string PauseSource = @"\Ui\Assets\Visual\stop.png";
 
         StartStopButtonInstImage.Source =
             _isRunning ? GetSource(PauseSource) : GetSource(StartSource);
+
+        //LABEL
+        const string StartLabelContent = "On";
+        const string PauseLabelContent = "Off";
+
+        StartStopLabelInst.Content =
+            _isRunning ? StartLabelContent : PauseLabelContent;
     }
 
     private System.Windows.Media.ImageSource GetSource(string path, int width = 200, int height = 200)

@@ -6,13 +6,21 @@
              mc:Ignorable="d">
 
     <Grid>
+        <Label x:Name="StartStopLabelInst" 
+               Foreground="White" 
+               FontSize="48"
+               VerticalAlignment="Top"
+               HorizontalAlignment="Center"
+               Margin="0, 20"
+               FontFamily="Bahnschrift">ON</Label>
         <Button x:Name="StartStopButtonInst"
                 MaxHeight="300"
                 MaxWidth="400"
                 FontSize="100"
                 Click="StartStopButtonInst_Click"
                 Background="Transparent"
-                BorderThickness="0">
+                BorderThickness="0"
+                ToolTip="toggle">
 
             <Image x:Name="StartStopButtonInstImage" Height="200" Width="200" Source="/Ui/Assets/Visual/record.png"/>
         </Button>

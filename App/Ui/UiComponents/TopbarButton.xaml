@@ -9,8 +9,8 @@
     <Grid>
         <Button 
          x:Name="TopbarButtonInst"
-         MaxHeight="45"
-         MaxWidth="45"
+         MaxHeight="64"
+         MaxWidth="64"
          FontSize="10"
          Click="TopbarButtonInst_Click"
          Background="Transparent"
@@ -18,9 +18,11 @@
 
             <Image 
                 x:Name="StartStopButtonInstImage" 
-                Height="45" 
-                Width="45" 
-                Source="/Ui/Assets/Visual/logo.ico"/>
+                Height="64" 
+                Width="64" 
+                Source="/Ui/Assets/Visual/logo.ico"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"/>
         </Button>
     </Grid>
 </UserControl>
