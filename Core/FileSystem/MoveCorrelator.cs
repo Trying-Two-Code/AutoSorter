@@ -193,6 +193,31 @@ public class MoveCorrelator
     public bool UserDeleted(string path)
     {
         //TODO: check if deletion is background process or user action
+        
+        //TODO: Is in background process path:
+        string AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        string LocalAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string[] BackgroundPaths = [AppDataPath]; //TODO: add more
+        if(BackgroundPaths.Any(
+            _BackgroundPath => 
+            { 
+                return path.Contains(_BackgroundPath);
+            }))
+        {
+            return false;
+        }
+
+        //TODO: Is a background extension:
+        string[] BackgroundExtensions = [".tmp"];
+        if(BackgroundExtensions.Any(
+            _BackgroundExtension =>
+            {
+                return Path.GetExtension(path) == _BackgroundExtension;
+            }))
+        {
+            return false;
+        }
+
         return true;
     }
 
