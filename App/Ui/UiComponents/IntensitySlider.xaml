@@ -297,7 +297,8 @@
                 BorderThickness="5"
                 Foreground="White"
                 ToolTip="intensity"
-                
+                x:Name="IntensitySliderInst"
+                ValueChanged="IntensitySliderInst_ValueChanged"
                 >
             
         </Slider>

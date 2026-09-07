@@ -19,36 +19,56 @@ class UserSettings
         
     }
 
+    public static object _lock = new();
     public static bool running = false;
     public static int promptUserAmm = 50;
     public static bool muted = false;
     public static void GetSettings()
     {
-        running =       JsonFileReader.Read<bool>("running");
-        promptUserAmm = JsonFileReader.Read<int>("promptUserAmm");
-        muted =         JsonFileReader.Read<bool>("muted");
+        lock (_lock)
+        {
+            running = JsonFileReader.Read<bool>("running");
+            promptUserAmm = JsonFileReader.Read<int>("promptUserAmm");
+            muted = JsonFileReader.Read<bool>("muted");
+        }
     }
 
 
     public static T Set<T>(string key, T value)
     {
-        JsonFileWriter.FilePath = UserFileDataPath;
-        return JsonFileWriter.Write<T>(key, value);
+        lock (_lock)
+        {
+            JsonFileWriter.FilePath = UserFileDataPath;
+            return JsonFileWriter.Write<T>(key, value);
+        }
     }
 
     public static class JsonFileReader
     {
         public static T Read<T>(string filePath, string key)
         {
-            string json = File.ReadAllText(filePath);
-            dynamic jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-            return (T)jsonObj[key];
+            lock (_lock)
+            {
+                string json = File.ReadAllText(filePath);
+                dynamic jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+                return (T)jsonObj[key];
+            }
         }
         public static T Read<T>(string key)
         {
-            string json = File.ReadAllText(UserFileDataPath);
-            dynamic jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-            return (T)jsonObj[key];
+            lock (_lock)
+            {
+                string json = File.ReadAllText(UserFileDataPath);
+                dynamic jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+                try
+                {
+                    return (T)jsonObj[key];
+                }
+                catch
+                {
+                    return default;
+                }
+            }
         }
     }
 
@@ -57,18 +77,40 @@ class UserSettings
         public static string? FilePath;
         public static T Write<T>(string key, T value)
         {
-            if (FilePath == null) return default;
+            lock (_lock)
+            {
+                if (FilePath == null) return default;
 
-            string json = File.ReadAllText(FilePath);
-            if (json == null) return default;
+                string json = File.ReadAllText(FilePath);
+                if (json == null) return default;
 
-            dynamic jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-            if (jsonObj == null) return default;
+                dynamic jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+                if (jsonObj == null) return default;
 
-            jsonObj[key] = value;
-            string output = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Newtonsoft.Json.Formatting.Indented);
-            File.WriteAllText(FilePath, output);
-            return value;
+                jsonObj[key] = value;
+                string output = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Newtonsoft.Json.Formatting.Indented);
+                File.WriteAllText(FilePath, output);
+                return value;
+            }
+        }
+
+        public static T Write<T>(string path, string key, T value)
+        {
+            lock (_lock)
+            {
+                if (path == null) return default;
+
+                string json = File.ReadAllText(path);
+                if (json == null) return default;
+
+                dynamic jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+                if (jsonObj == null) return default;
+
+                jsonObj[key] = value;
+                string output = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Newtonsoft.Json.Formatting.Indented);
+                File.WriteAllText(path, output);
+                return value;
+            }
         }
     }
 }

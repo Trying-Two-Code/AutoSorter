@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Diagnostics;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using App.Ui.UiScripts;
 
 namespace App.Ui.UiComponents
 {
@@ -17,20 +8,30 @@ namespace App.Ui.UiComponents
     /// Interaction logic for IntensitySlider.xaml
     /// </summary>
     public partial class IntensitySlider : System.Windows.Controls.UserControl
-    { 
+    {
         public IntensitySlider()
         {
             InitializeComponent();
+            UserSettings.GetSettings();
+            int oldValue = UserSettings.promptUserAmm;
+            if(oldValue != null)
+            {
+                IntensitySliderInst.Value = oldValue;
+            }
+            else
+            {
+                IntensitySliderInst.Value = 50;
+            }
         }
 
-        private void RepeatButton_Click(object sender, RoutedEventArgs e)
+        static int oldSliderValue = 0;
+        private void IntensitySliderInst_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            int _newValue = (int)Convert.ToInt32(e.NewValue);
 
-        }
-
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-
+            if (oldSliderValue != _newValue)  
+                oldSliderValue = _newValue;
+                UserSettings.JsonFileWriter.Write<int>("Ui/UserSettings/userSettings.json", "promptUserAmm", _newValue);
         }
     }
 }
