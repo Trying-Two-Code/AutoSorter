@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 using App.Ui.UiScripts;
 
 namespace App.Ui.UiComponents
@@ -27,10 +28,12 @@ namespace App.Ui.UiComponents
         static int oldSliderValue = 0;
         private void IntensitySliderInst_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            Slider _sender = (Slider)sender;
             int _newValue = (int)Convert.ToInt32(e.NewValue);
 
             if (oldSliderValue != _newValue)  
                 oldSliderValue = _newValue;
+                IntensityLabel.Content = _newValue;
                 UserSettings.JsonFileWriter.Write<int>("Ui/UserSettings/userSettings.json", "promptUserAmm", _newValue);
         }
     }

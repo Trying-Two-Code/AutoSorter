@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:App.Ui.UiComponents"
              mc:Ignorable="d" 
-             d:DesignHeight="43" d:DesignWidth="406">
+             d:DesignHeight="73" d:DesignWidth="406">
     <UserControl.Resources>
         <Style x:Key="RepeatButtonTransparent" TargetType="{x:Type RepeatButton}">
             <Setter Property="OverridesDefaultStyle" Value="true"/>
@@ -288,6 +288,13 @@
         </Style>
     </UserControl.Resources>
     <Grid>
+        <Label VerticalAlignment="Top"
+               HorizontalAlignment="Center"
+               Margin="0, -50"
+               Foreground="White"
+               FontFamily="Bahnschrift"
+               x:Name="IntensityLabel"
+               FontSize="40">20</Label>
         <Slider Style="{DynamicResource SliderStyle1}"
                 Width="406" Height="43"
                 SmallChange="5" LargeChange="10"
