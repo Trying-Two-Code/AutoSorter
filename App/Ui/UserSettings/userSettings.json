@@ -1,4 +1,5 @@
-﻿{
+﻿/*A way for the app to save user interactions*/
+{
   "running": false,
   "promptUserAmm": 50,
   "muted": false
