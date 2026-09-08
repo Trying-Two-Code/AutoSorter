@@ -65,6 +65,20 @@
                 Grid.Column="1"  
                 HorizontalAlignment="Center" 
                 VerticalAlignment="Center"  />
+                <Button 
+                    Grid.Column="2"
+                    Name="ShowUserdata" 
+                    Click="ShowUserdata_Click" 
+                    BorderThickness="0"
+                    Height="170"
+                    Width="170"
+                    Margin="-20"
+                    ToolTip="see all data"
+                    Background="Transparent">
+
+                    <Image Source="/Ui/Assets/Visual/userdata.png"></Image>
+                </Button>
+                
             </Grid>
 
             <components:TopbarButton

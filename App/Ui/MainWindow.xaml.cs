@@ -5,6 +5,7 @@ using Helper.DataGathering;
 using Syroot.Windows.IO;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Timers;
 using System.Windows;
 using System.Windows.Forms;
@@ -169,5 +170,15 @@ public partial class MainWindow : Window
         }
 
         return;
+    }
+
+    private void ShowUserdata_Click(object sender, RoutedEventArgs e)
+    {
+        string log = "data/log.txt";
+        string userAction = "data/userAction.json";
+        string showUsing = "notepad.exe";
+
+        Process.Start(showUsing, log);
+        Process.Start(showUsing, userAction);
     }
 }
