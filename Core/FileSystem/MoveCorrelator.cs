@@ -201,7 +201,11 @@ public class MoveCorrelator
             string AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             string AppDataPath2 = Environment.ExpandEnvironmentVariables("%AppData%");
             string LocalAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string[] BackgroundPaths = [AppDataPath, LocalAppDataPath, AppDataPath2]; //TODO: add more
+            string AutosorterPath = Environment.ProcessPath;
+            string[] BackgroundPaths = [
+                AppDataPath, LocalAppDataPath, 
+                AppDataPath2, AutosorterPath]; //TODO: add more
+
             if (BackgroundPaths.Any(
                 _BackgroundPath =>
                 {
@@ -215,7 +219,7 @@ public class MoveCorrelator
         //TODO: Is a background extension:
         bool IsBackgroundExtension()
         {
-            string[] BackgroundExtensions = [".tmp"];
+            string[] BackgroundExtensions = [".tmp", ".lock"];
             if (BackgroundExtensions.Any(
                 _BackgroundExtension =>
                 {
