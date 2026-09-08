@@ -58,10 +58,11 @@ public class AutoSorter
 
     private void OnFileChanged(FileChange change)
     {
+        // Problem: totally bypasses drag and drop
         // Keep the system quiet: when nothing has been cut from the monitored
         // folder, unrelated filesystem activity is ignored entirely.
-        if (!_moveCorrelator.HasActivePending())
-            return;
+        //if (!_moveCorrelator.HasActivePending())
+        //    return;
 
         switch (change.Type)
         {

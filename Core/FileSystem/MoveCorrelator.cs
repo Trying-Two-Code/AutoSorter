@@ -163,7 +163,8 @@ public class MoveCorrelator
                 p.DeletedAtUtc == null &&
                 p.SourcePath.Equals(normalized, StringComparison.OrdinalIgnoreCase));
 
-            if (match == null && !UserDeleted(path))
+            bool isUserDeleted = UserDeleted(path);
+            if (match == null && !isUserDeleted)
                 return false;
 
             DateTime now = _clock();
@@ -229,7 +230,7 @@ public class MoveCorrelator
             IsBackgroundPath(), 
             IsBackgroundExtension()];
 
-        return !DependantMethods.Contains(false); //only return true if everything is false
+        return !DependantMethods.Contains(true); //only return true if everything is false
     }
 
     /// <summary>
