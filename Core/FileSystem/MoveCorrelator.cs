@@ -195,30 +195,41 @@ public class MoveCorrelator
         //TODO: check if deletion is background process or user action
         
         //TODO: Is in background process path:
-        string AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        string LocalAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        string[] BackgroundPaths = [AppDataPath]; //TODO: add more
-        if(BackgroundPaths.Any(
-            _BackgroundPath => 
-            { 
-                return path.Contains(_BackgroundPath);
-            }))
+        bool IsBackgroundPath()
         {
-            return false;
+            string AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string AppDataPath2 = Environment.ExpandEnvironmentVariables("%AppData%");
+            string LocalAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string[] BackgroundPaths = [AppDataPath, LocalAppDataPath, AppDataPath2]; //TODO: add more
+            if (BackgroundPaths.Any(
+                _BackgroundPath =>
+                {
+                    return path.Contains(_BackgroundPath);
+                }))
+                return true;
+            else
+                return false;
         }
 
         //TODO: Is a background extension:
-        string[] BackgroundExtensions = [".tmp"];
-        if(BackgroundExtensions.Any(
-            _BackgroundExtension =>
-            {
-                return Path.GetExtension(path) == _BackgroundExtension;
-            }))
+        bool IsBackgroundExtension()
         {
-            return false;
+            string[] BackgroundExtensions = [".tmp"];
+            if (BackgroundExtensions.Any(
+                _BackgroundExtension =>
+                {
+                    return Path.GetExtension(path) == _BackgroundExtension;
+                }))
+                return true;
+            else 
+                return false;
         }
 
-        return true;
+        bool[] DependantMethods = [
+            IsBackgroundPath(), 
+            IsBackgroundExtension()];
+
+        return !DependantMethods.Contains(false); //only return true if everything is false
     }
 
     /// <summary>
