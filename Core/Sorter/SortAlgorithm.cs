@@ -22,7 +22,8 @@ namespace Core.Sorter
     }
 
     /// <summary>
-    /// Contains many paramaters, and 
+    /// Contains many paramaters, and a Method for detecting if those paramaters
+    /// all match the paramater of a given file.
     /// </summary>
     class Rule()
     {
@@ -67,11 +68,19 @@ namespace Core.Sorter
             return [null];
         }
         /// <summary>
-        /// Generates a list of all possible rules
+        /// Generates a list of all possible rules given the old data and new file data.
         /// </summary>
         /// <returns>The best possible rule, only if it is worth prompting the user.</returns>
-        static Rule? ManageRules()
+        static Rule? ManageRules(/*old data*/)
         {
+            //sort old data for only those files that match the start folder and end destination paths
+
+            //generate a list of rules
+
+            //remove any rules if they already exist
+
+            //return best rule if applicable
+
             return null;
         }
 
