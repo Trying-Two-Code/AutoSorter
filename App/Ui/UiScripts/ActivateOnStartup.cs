@@ -13,8 +13,8 @@ namespace App.Ui.UiScripts
             if (FileArguments.Contains("--open-closed"))
             {
                 int index = Array.IndexOf(FileArguments, "--open-closed");
-                if (FileArguments[index + 1] == "1")
-                    return true;
+                bool OpenClosedTrue = index + 1 <= FileArguments.Length && FileArguments[index + 1] == "1";
+                return OpenClosedTrue;
             }
             return false;
         }
@@ -24,20 +24,20 @@ namespace App.Ui.UiScripts
             string RegistryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
             RegistryKey regKey = Registry.CurrentUser.OpenSubKey(RegistryPath, true);
-           // Debug.WriteLine("going to regKey: " + regKey);
 
-            string ExecutionPath = System.Windows.Forms.Application.ExecutablePath.ToString();
-            //ExecutionPath = @"C:\Users\Drago\source\repos\AutoSorter\bin\App\Debug\net10.0-windows\App.exe";
+            string ExecutionPath = Application.ExecutablePath.ToString();
 
-            if (regKey.GetValue("AutoSorter") != ExecutionPath)
+            if (regKey.GetValue("AutoSorter") == ExecutionPath)
             {
-                regKey.SetValue("AutoSorter", System.Windows.Forms.Application.ExecutablePath.ToString() + "--open - closed \"1\"");
-                Debug.WriteLine("set regKey value: " + regKey.GetValue("AutoSorter"));
+                //Already registered.
             }
+            else
+            {
+                regKey.SetValue("AutoSorter", $"{ExecutionPath} --open-closed \"1\"");
 
-            //as a backup, make a shortcut in startup folder
-            string StartupFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-            CreateShortcut(StartupFolder, ExecutionPath);
+                //In future, users may manually call if needed:
+                //CreateShortcut(StartupFolder, ExecutionPath);
+            }
         }
 
         public static void CreateShortcut(string shortCutPath, string shortCutReferences)
@@ -46,7 +46,7 @@ namespace App.Ui.UiScripts
             string shortcutAddress = Path.Combine(shortCutPath, @"AutoSorter.lnk");
             IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
             shortcut.Description = "Shortcut to AutoSorter";
-            shortcut.Arguments = "--open-closed \"1\"";
+            shortcut.Arguments = "--open-closed \"1\""; //makes sure it starts closed.
             shortcut.TargetPath = shortCutReferences;
             shortcut.WorkingDirectory = Path.GetDirectoryName(shortCutReferences);
             shortcut.Save();

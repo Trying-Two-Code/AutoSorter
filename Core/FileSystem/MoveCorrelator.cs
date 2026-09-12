@@ -226,7 +226,7 @@ public class MoveCorrelator
                     return Path.GetExtension(path) == _BackgroundExtension;
                 }))
                 return true;
-            else 
+            else
                 return false;
         }
 
