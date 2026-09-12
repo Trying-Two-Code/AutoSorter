@@ -13,7 +13,7 @@ namespace App.Ui.UiScripts
             if (FileArguments.Contains("--open-closed"))
             {
                 int index = Array.IndexOf(FileArguments, "--open-closed");
-                if (FileArguments[index + 1] == "true")
+                if (FileArguments[index + 1] == "1")
                     return true;
             }
             return false;

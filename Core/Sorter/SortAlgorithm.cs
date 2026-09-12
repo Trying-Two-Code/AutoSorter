@@ -8,6 +8,9 @@
 // - A param of ({FileProperty = "extension", PropertyContains = ".txt", PropertyNotContains = null})
 // - StartPath == C://Downloads/A && EndPath == C://Downloads/B
 //is returned
+using System.Diagnostics;
+using static Core.FileSystem.AutoSorter;
+
 namespace Core.Sorter
 {
 
@@ -38,6 +41,18 @@ namespace Core.Sorter
             return false;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    class FilterData()
+    {
+        public static object Filter(object data)
+        {
+            return new object();
+        }
+    }
+
     internal class SortAlgorithm
     {
         /// <summary>
@@ -67,13 +82,17 @@ namespace Core.Sorter
         {
             return [null];
         }
+
+        static object oldData = new();
+
         /// <summary>
         /// Generates a list of all possible rules given the old data and new file data.
         /// </summary>
         /// <returns>The best possible rule, only if it is worth prompting the user.</returns>
-        static Rule? ManageRules(/*old data*/)
+        static Rule? ManageRules(object newData)
         {
             //sort old data for only those files that match the start folder and end destination paths
+            object FilterFiles = FilterData.Filter(newData);
 
             //generate a list of rules
 
@@ -82,12 +101,16 @@ namespace Core.Sorter
             //return best rule if applicable
 
             return null;
+            oldData = newData;
         }
 
         //Called when, for example, a data entry is added to userAction.json
-        static void OnDataGained()
+        public void OnDataGained(object sender, EventArgs e)
         {
-            ManageRules();
+            object newData = (object)e;
+            OnFileMoveEventArgs fileMoveArgs = (OnFileMoveEventArgs)e;
+            Debug.WriteLine("Data Gained!: " + fileMoveArgs.oldPath + fileMoveArgs.newPath);
+            ManageRules(newData);
         }
     }
 }

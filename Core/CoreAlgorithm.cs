@@ -1,5 +1,5 @@
 ﻿using Core.FileSystem;
-
+using Core.Sorter;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,10 +15,13 @@ public class CoreAlgorithm
     // without putting their implementation directly into this class.
 
     private readonly AutoSorter _autoSorter;
+    private readonly SortAlgorithm _sortAlgorithm;
 
     public CoreAlgorithm(String path, String sourceRoot)
     {
         _autoSorter = new AutoSorter(path, sourceRoot);
+        _sortAlgorithm = new SortAlgorithm();
+        _autoSorter.OnFileMoveEvent += _sortAlgorithm.OnDataGained;
     }
 
     public void Start()

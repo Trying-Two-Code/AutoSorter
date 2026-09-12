@@ -12,6 +12,14 @@ public class AutoSorter
 
     private readonly MoveCorrelator _moveCorrelator;
 
+    public event EventHandler<OnFileMoveEventArgs> OnFileMoveEvent;
+    public class OnFileMoveEventArgs : EventArgs
+    {
+        public string oldPath { get; set; }
+        public string newPath { get; set; }
+        public object allNewData { get; set; }
+    }
+
     public AutoSorter(
         string watchRoot,
         string sourceRoot)
@@ -143,6 +151,12 @@ public class AutoSorter
         _userActionGather.appendMove(
             oldPath,
             newPath);
+
+        //TODO: pass all new data or send/get all data another way
+        OnFileMoveEvent?.Invoke(this, 
+            new OnFileMoveEventArgs
+            { newPath = newPath, 
+              oldPath = oldPath}); 
     }
 
     public void Start()
