@@ -1,5 +1,11 @@
 using Helper.DataGathering;
 using Helper.FileSystem;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using static Core.FileSystem.AutoSorter;
+using static Core.FileSystem.SendAllData;
 
 namespace Core.FileSystem;
 
@@ -11,14 +17,6 @@ public class AutoSorter
     private readonly UserActionGather _userActionGather = new();
 
     private readonly MoveCorrelator _moveCorrelator;
-
-    public event EventHandler<OnFileMoveEventArgs> OnFileMoveEvent;
-    public class OnFileMoveEventArgs : EventArgs
-    {
-        public string oldPath { get; set; }
-        public string newPath { get; set; }
-        public object allNewData { get; set; }
-    }
 
     public AutoSorter(
         string watchRoot,
@@ -153,11 +151,10 @@ public class AutoSorter
             newPath);
 
         //TODO: pass all new data or send/get all data another way
-        OnFileMoveEvent?.Invoke(this, 
-            new OnFileMoveEventArgs
-            { newPath = newPath, 
-              oldPath = oldPath}); 
+        SendAllDataInstance.SendData(newPath, oldPath);
     }
+
+    
 
     public void Start()
     {
@@ -178,4 +175,138 @@ public class AutoSorter
 
         Log.AppendLog("AutoSorter stopped.");
     }
+
+    public SendAllData SendAllDataInstance = new();
+}
+
+public class OnFileMoveEventArgs : EventArgs
+{
+    public FileInfo NewFile { get; set; }
+    public FileMoveData[] AllData { get; set; }
+}
+
+/// <summary>
+/// A class that allows the autosorter to pass along relavent data
+/// whenever user data is received.
+/// </summary>
+public class SendAllData()
+{
+
+    public struct FileMoveData()
+    {
+        public string OldPath { get; set; }
+        public string NewPath { get; set; }
+    }
+
+    public event EventHandler<OnFileMoveEventArgs> OnFileMoveEvent;
+
+    public void SendData(string newPath, string oldPath)
+    {
+        OnFileMoveEvent?.Invoke(this,
+            new OnFileMoveEventArgs
+            {
+                NewFile = new FileInfo(newPath),
+                AllData = AllData(newPath, oldPath)
+            });
+    }
+
+    /// <summary>
+    /// Utility function that quickly creates a new FileMoveData object.
+    /// </summary>
+    /// <param name="newPath">new path of the file</param>
+    /// <param name="oldPath">old path of the file</param>
+    /// <returns>A FileMoveData object that contains the old and new file</returns>
+    static FileMoveData CreateFileMoveData(string newPath, string oldPath)
+    {
+        FileMoveData NewData = new()
+        {
+            OldPath = oldPath,
+            NewPath = newPath
+        };
+        return NewData;
+    }
+
+    public static FileMoveData[] AllData(string newPath, string oldPath)
+    {
+        List<FileMoveData> allData = [];
+
+        //Add the new stuff
+        FileMoveData newData = CreateFileMoveData(newPath, oldPath);
+        allData.Add(newData);
+
+        //Add the old stuff
+        allData.AddRange(OldData());
+
+        return allData.ToArray();
+    }
+
+    static List<JSONDataStructure> JsonData { get; set; }
+    public static List<FileMoveData> OldData(string? dataPath = null)
+    {
+        RootJSONStructure rootData = FetchJsonData(dataPath);
+        if(rootData != null)
+        {
+            List<FileMoveData> oldData = new List<FileMoveData>();
+            List<JSONDataStructure> Lines = rootData.Lines;
+
+            foreach (JSONDataStructure data in Lines)
+            {
+                FileMoveData fileMoveData = new()
+                {
+                    NewPath = data.To,
+                    OldPath = data.From
+                };
+                oldData.Add(fileMoveData);
+            }
+            return oldData;
+        }
+        else
+        {
+            return default;
+        }
+    }
+
+    static readonly string DefaultUserActionPath = Path.Combine(AppContext.BaseDirectory, "data/UserAction.json");
+    public static RootJSONStructure FetchJsonData(string? dataPath)
+    {
+        dataPath = (dataPath == null) ? DefaultUserActionPath : dataPath;
+
+        if (!File.Exists(dataPath)) return default;
+
+        RootJSONStructure data;
+
+        using (StreamReader r = new StreamReader(dataPath))
+        {
+            string json = r.ReadToEnd();
+            data = JsonSerializer.Deserialize<RootJSONStructure>(json);
+        }
+
+        return data;
+    }
+
+    //<THIS MUST MATCH JSON>
+    public class RootJSONStructure()
+    {
+        [JsonPropertyName("Lines")]
+        public List<JSONDataStructure> Lines { get; set; } = new();
+    }
+
+    public class JSONDataStructure()
+    {
+        [JsonPropertyName("Action")]
+        public int Action {  get; set; }
+
+        [JsonPropertyName("Content")]
+        public string Content { get; set; }
+
+        [JsonPropertyName("From")]
+        public string From { get; set; }
+
+        [JsonPropertyName("To")]
+        public string To { get; set; }
+
+        [JsonPropertyName("Timestamp")]
+        public string Timestamp { get; set; }
+    }
+    //</THIS MUST MATCH JSON>
 }

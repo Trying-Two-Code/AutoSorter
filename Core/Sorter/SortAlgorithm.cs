@@ -8,6 +8,7 @@
 // - A param of ({FileProperty = "extension", PropertyContains = ".txt", PropertyNotContains = null})
 // - StartPath == C://Downloads/A && EndPath == C://Downloads/B
 //is returned
+using Core.FileSystem;
 using System.Diagnostics;
 using static Core.FileSystem.AutoSorter;
 
@@ -43,11 +44,18 @@ namespace Core.Sorter
     }
 
     /// <summary>
-    /// 
+    /// Class to get rid of useless data.
     /// </summary>
     class FilterData()
     {
-        public static object Filter(object data)
+        /// <summary>
+        /// Filters for only files that moved to and from the same path
+        /// as datapoint.
+        /// </summary>
+        /// <param name="data">all old data</param>
+        /// <param name="datapoint">just the newest datapoint</param>
+        /// <returns>The dataset minus extra datapoints.</returns>
+        public static object Filter(object data, object datapoint)
         {
             return new object();
         }
@@ -86,13 +94,13 @@ namespace Core.Sorter
         static object oldData = new();
 
         /// <summary>
-        /// Generates a list of all possible rules given the old data and new file data.
+        /// Generates a list of all possible Rules given the old data and new file data.
         /// </summary>
-        /// <returns>The best possible rule, only if it is worth prompting the user.</returns>
-        static Rule? ManageRules(object newData)
+        /// <returns>The best possible Rule, only if it is worth prompting the user.</returns>
+        static Rule? ManageRules(object oldData, OnFileMoveEventArgs newData)
         {
             //sort old data for only those files that match the start folder and end destination paths
-            object FilterFiles = FilterData.Filter(newData);
+            object FilterFiles = FilterData.Filter(oldData, newData);
 
             //generate a list of rules
 
@@ -105,12 +113,21 @@ namespace Core.Sorter
         }
 
         //Called when, for example, a data entry is added to userAction.json
-        public void OnDataGained(object sender, EventArgs e)
+        public void OnDataGained(object sender, OnFileMoveEventArgs e)
         {
-            object newData = (object)e;
-            OnFileMoveEventArgs fileMoveArgs = (OnFileMoveEventArgs)e;
-            Debug.WriteLine("Data Gained!: " + fileMoveArgs.oldPath + fileMoveArgs.newPath);
-            ManageRules(newData);
+            Debug.WriteLine("recieved data:");
+            int i = 0;
+            foreach (var datapoint in e.AllData)
+            {
+                i++;
+                Debug.WriteLine(i);
+                Debug.WriteLine("old path of datapoint:");
+                Debug.WriteLine(datapoint.OldPath);
+                Debug.WriteLine("new path of datapoint:");
+                Debug.WriteLine(datapoint.NewPath);
+            }
+            Debug.WriteLine(e);
+            //ManageRules(e);
         }
     }
 }

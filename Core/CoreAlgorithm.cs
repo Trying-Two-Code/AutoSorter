@@ -21,7 +21,7 @@ public class CoreAlgorithm
     {
         _autoSorter = new AutoSorter(path, sourceRoot);
         _sortAlgorithm = new SortAlgorithm();
-        _autoSorter.OnFileMoveEvent += _sortAlgorithm.OnDataGained;
+        _autoSorter.SendAllDataInstance.OnFileMoveEvent += _sortAlgorithm.OnDataGained;
     }
 
     public void Start()
