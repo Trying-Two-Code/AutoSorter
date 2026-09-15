@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
@@ -23,7 +24,7 @@ internal class TrayIconHandler
 
     static public Icon? GetIcon(string path)
     {
-        string fullPath = System.IO.Path.GetFullPath(path);
+        string fullPath = Path.Combine(AppContext.BaseDirectory, path);
         Icon? appIcon = Icon.ExtractAssociatedIcon(fullPath);
         return appIcon;
     }

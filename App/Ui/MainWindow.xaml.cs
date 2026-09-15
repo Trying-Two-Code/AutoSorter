@@ -38,7 +38,7 @@ public partial class MainWindow : Window
         }
         System.Diagnostics.Debug.WriteLine(UserSettings.running);
 
-        ActivateOnStartup.RunOnStartup();
+        ActivateOnStartup.RegisterApp();
         if(ActivateOnStartup.DetectClose())
             SendToTray();
 
