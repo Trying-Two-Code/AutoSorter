@@ -17,6 +17,8 @@ public class UserActionGatherLine
 {
     public Action Action { get; set; }
     public string Content { get; set; } = "";
+    public string? From { get; set; } = null;
+    public string? To   { get; set; } = null;
     public DateTime Timestamp { get; set; }
 }
 
@@ -32,11 +34,13 @@ public class UserActionGather
     public void appendMove(string from, string to)
     {
         UserActionGatherFile data = getFileDataFromJSON();
-
+        
         data.Lines.Add(new UserActionGatherLine
         {
             Action = Action.Move,
             Content = $"move from:{from} to:{to}",
+            From = from,
+            To = to,
             Timestamp = DateTime.UtcNow
         });
 
@@ -51,6 +55,8 @@ public class UserActionGather
         {
             Action = Action.Rename,
             Content = $"rename from:{from} to:{to}",
+            From = from,
+            To = to,
             Timestamp = DateTime.UtcNow
         });
 
@@ -60,11 +66,13 @@ public class UserActionGather
     public void appendCopy(string from, string to)
     {
         UserActionGatherFile data = getFileDataFromJSON();
-
+        
         data.Lines.Add(new UserActionGatherLine
         {
             Action = Action.Copy,
             Content = $"copy from:{from} to:{to}",
+            From = from,
+            To = to,
             Timestamp = DateTime.UtcNow
         });
 
@@ -79,6 +87,7 @@ public class UserActionGather
         {
             Action = Action.Delete,
             Content = $"delete {file}",
+            From = file,
             Timestamp = DateTime.UtcNow
         };
         data.Lines.Add(userActionGatherLine);
