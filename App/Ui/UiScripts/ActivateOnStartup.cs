@@ -18,26 +18,23 @@ namespace App.Ui.UiScripts
             }
             return false;
         }
-        public static void RunOnStartup()
+
+        public static readonly string? AppDirectory = Environment.ProcessPath;
+        public static readonly string RegistryKeyPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+        public static readonly string AppName = "AutoSorter";
+        /// <summary>
+        /// Registers app to windows registry, making it start on startup
+        /// Note: Only for current user, not all users.
+        /// </summary>
+        public static void RegisterApp()
         {
-            //Send to registry
-            string RegistryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+            RegistryKey? registryKey = Registry.CurrentUser.OpenSubKey
+                (RegistryKeyPath, true);
 
-            RegistryKey regKey = Registry.CurrentUser.OpenSubKey(RegistryPath, true);
+            if (registryKey == null || AppDirectory == null) return;
 
-            string ExecutionPath = Application.ExecutablePath.ToString();
-
-            if (regKey.GetValue("AutoSorter") == ExecutionPath)
-            {
-                //Already registered.
-            }
-            else
-            {
-                regKey.SetValue("AutoSorter", $"{ExecutionPath} --open-closed \"1\"");
-
-                //In future, users may manually call if needed:
-                //CreateShortcut(StartupFolder, ExecutionPath);
-            }
+            if (registryKey.GetValue(AppName) != AppDirectory)
+                registryKey.SetValue(AppName, AppDirectory);
         }
 
         public static void CreateShortcut(string shortCutPath, string shortCutReferences)
