@@ -22,6 +22,8 @@ public partial class MainWindow : Window
     private readonly AppAPI _app;
     public MainWindow()
     {
+        Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+
         InitializeComponent();
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -32,7 +34,6 @@ public partial class MainWindow : Window
         UserSettings.GetSettings();
         if (UserSettings.running)
         {
-            System.Diagnostics.Debug.WriteLine("starting.");
             _app.Start();
             MainStartStopButton.ToggleRunning();
         }
@@ -179,8 +180,8 @@ public partial class MainWindow : Window
 
     private void ShowUserdata_Click(object sender, RoutedEventArgs e)
     {
-        string log = "data/log.txt";
-        string userAction = "data/userAction.json";
+        string log = Path.Combine(AppContext.BaseDirectory, "data/log.txt");
+        string userAction = Path.Combine(AppContext.BaseDirectory, "data/userAction.json");
         string showUsing = "notepad.exe";
 
         Process.Start(showUsing, log);

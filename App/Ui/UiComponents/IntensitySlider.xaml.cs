@@ -34,7 +34,7 @@ namespace App.Ui.UiComponents
             if (oldSliderValue != _newValue)  
                 oldSliderValue = _newValue;
                 IntensityLabel.Content = _newValue;
-                UserSettings.JsonFileWriter.Write<int>("Ui/UserSettings/userSettings.json", "promptUserAmm", _newValue);
+                UserSettings.JsonFileWriter.Write<int>("promptUserAmm", _newValue);
         }
     }
 }
