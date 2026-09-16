@@ -70,6 +70,10 @@ public class AutoSorter
         //if (!_moveCorrelator.HasActivePending())
         //    return;
 
+        //TODO: replace the above with some filter?
+
+        //TODO: pass an event to the rule executer whenever a file is created or moved
+
         switch (change.Type)
         {
             case FileChangeType.Deleted:
@@ -214,7 +218,6 @@ public class SendAllData()
     {
         List<FileMoveData> allData = [];
 
-        //Add the old stuff
         List<FileMoveData>? oldData = OldData();
         if(oldData != null)
             allData.AddRange(oldData);
