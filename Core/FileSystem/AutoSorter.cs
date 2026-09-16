@@ -230,10 +230,6 @@ public class SendAllData()
     {
         List<FileMoveData> allData = [];
 
-        //Add the new stuff
-        FileMoveData newData = CreateFileMoveData(newPath, oldPath);
-        allData.Add(newData);
-
         //Add the old stuff
         allData.AddRange(OldData());
 
