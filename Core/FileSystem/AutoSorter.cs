@@ -181,8 +181,8 @@ public class AutoSorter
 
 public class OnFileMoveEventArgs : EventArgs
 {
-    public FileInfo NewFile { get; set; }
-    public FileMoveData[] AllData { get; set; }
+    public FileInfo? NewFile { get; set; }
+    public FileMoveData[]? AllData { get; set; }
 }
 
 /// <summary>
@@ -194,11 +194,11 @@ public class SendAllData()
 
     public struct FileMoveData()
     {
-        public string OldPath { get; set; }
-        public string NewPath { get; set; }
+        public string OldPath { get; set; } = "";
+        public string NewPath { get; set; } = "";
     }
 
-    public event EventHandler<OnFileMoveEventArgs> OnFileMoveEvent;
+    public event EventHandler<OnFileMoveEventArgs>? OnFileMoveEvent;
 
     public void SendData(string newPath, string oldPath)
     {
@@ -210,66 +210,50 @@ public class SendAllData()
             });
     }
 
-    /// <summary>
-    /// Utility function that quickly creates a new FileMoveData object.
-    /// </summary>
-    /// <param name="newPath">new path of the file</param>
-    /// <param name="oldPath">old path of the file</param>
-    /// <returns>A FileMoveData object that contains the old and new file</returns>
-    static FileMoveData CreateFileMoveData(string newPath, string oldPath)
-    {
-        FileMoveData NewData = new()
-        {
-            OldPath = oldPath,
-            NewPath = newPath
-        };
-        return NewData;
-    }
-
     public static FileMoveData[] AllData(string newPath, string oldPath)
     {
         List<FileMoveData> allData = [];
 
         //Add the old stuff
-        allData.AddRange(OldData());
+        List<FileMoveData>? oldData = OldData();
+        if(oldData != null)
+            allData.AddRange(oldData);
 
         return allData.ToArray();
     }
 
-    static List<JSONDataStructure> JsonData { get; set; }
-    public static List<FileMoveData> OldData(string? dataPath = null)
+    static List<JSONDataStructure>? JsonData { get; set; }
+    public static List<FileMoveData>? OldData(string? dataPath = null)
     {
-        RootJSONStructure rootData = FetchJsonData(dataPath);
-        if(rootData != null)
+        if (JsonData == null)
         {
-            List<FileMoveData> oldData = new List<FileMoveData>();
-            List<JSONDataStructure> Lines = rootData.Lines;
+            RootJSONStructure? rootData = FetchJsonData(dataPath);
+            JsonData = rootData?.Lines;
+        }
 
-            foreach (JSONDataStructure data in Lines)
-            {
-                FileMoveData fileMoveData = new()
-                {
-                    NewPath = data.To,
-                    OldPath = data.From
-                };
-                oldData.Add(fileMoveData);
-            }
-            return oldData;
-        }
-        else
+        List <FileMoveData> oldData = new List<FileMoveData>();
+
+        foreach (JSONDataStructure data in JsonData)
         {
-            return default;
+            FileMoveData fileMoveData = new()
+            {
+                NewPath = data.To,
+                OldPath = data.From
+            };
+            oldData.Add(fileMoveData);
         }
+
+        return oldData;
     }
 
     static readonly string DefaultUserActionPath = Path.Combine(AppContext.BaseDirectory, "data/UserAction.json");
-    public static RootJSONStructure FetchJsonData(string? dataPath)
+    public static RootJSONStructure? FetchJsonData(string? dataPath)
     {
         dataPath = (dataPath == null) ? DefaultUserActionPath : dataPath;
 
-        if (!File.Exists(dataPath)) return default;
+        if (!File.Exists(dataPath)) return null;
 
-        RootJSONStructure data;
+        RootJSONStructure? data;
 
         using (StreamReader r = new StreamReader(dataPath))
         {
@@ -293,16 +277,16 @@ public class SendAllData()
         public int Action {  get; set; }
 
         [JsonPropertyName("Content")]
-        public string Content { get; set; }
+        public string Content { get; set; } = "";
 
         [JsonPropertyName("From")]
-        public string From { get; set; }
+        public string From { get; set; } = "";
 
         [JsonPropertyName("To")]
-        public string To { get; set; }
+        public string To { get; set; } = "";
 
         [JsonPropertyName("Timestamp")]
-        public string Timestamp { get; set; }
+        public string Timestamp { get; set; } = "";
     }
     //</THIS MUST MATCH JSON>
 }
