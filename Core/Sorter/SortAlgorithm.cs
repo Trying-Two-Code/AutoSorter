@@ -17,57 +17,30 @@ namespace Core.Sorter;
 /// <summary>
 /// Contains one paramater for a file, and what the parameter should or should not be.
 /// </summary>
-public struct Param()
+public struct Param(string FileProperty)
 {
-    string FileProperty { get; set; } = "name";
-    string? PropertyContains { get; set; }
-    string? PropertyNotContains { get; set; }
+    public static readonly string[] AllParamaters = [
+        "CreationTime",
+        "Extension",
+        "IsReadOnly",
+        "LastAccessTime",
+        "Length",
+        "Name"
+    ];
+
+    public string FileProperty { get; set; } = FileProperty;
+    public string? PropertyContains { get; set; }
+    public string? PropertyNotContains { get; set; }
 }
 
 /// <summary>
 /// Contains many paramaters, and a Method for detecting if those paramaters
 /// all match the paramater of a given file.
 /// </summary>
-public class Rule()
-{
-    List<Param> Paramaters { get; set; } = [];
-    public string StartPath { get; set; }
-    public string EndPath { get; set; }
-    /// <summary>
-    /// the ammount of times the rule has been executed
-    /// </summary>
-    public int Strength { get; set; } = 0; 
-
-    public bool ShouldMove(FileInfo fileInfo, string currentPath)
-    {
-        if (currentPath != StartPath) return false;
-
-        return false;
-    }
-}
 
 public class OnRuleMadeEventArgs : EventArgs
 {
     required public Rule rule { get; set; }
-}
-
-
-/// <summary>
-/// Class to get rid of useless data.
-/// </summary>
-class FilterData()
-{
-    /// <summary>
-    /// Filters for only files that moved to and from the same path
-    /// as datapoint.
-    /// </summary>
-    /// <param name="data">all old data</param>
-    /// <param name="datapoint">just the newest datapoint</param>
-    /// <returns>The dataset minus extra datapoints.</returns>
-    public static object Filter(object data, object datapoint)
-    {
-        return new object();
-    }
 }
 
 internal class SortAlgorithm
@@ -85,17 +58,23 @@ internal class SortAlgorithm
     /// Creates a potential rule based on the params given.
     /// </summary>
     /// <returns>Returns the created rule.</returns>
-    static Rule? GenerateRule(List<Param> parameters)
+    static Rule? GenerateRule(List<Param> parameters, Param mainParamater)
     {
         return null;
     }
+
+    static T? GenerateRule<T>(List<Param> paramaters, T mainParamater)
+    {
+        return default;
+    }
+
 
     /// <summary>
     /// Creates a list of every possible Rule that could be made based on the paramaters
     /// given.
     /// </summary>
     /// <returns>The created list of Rules.</returns>
-    static List<Rule?> GenerateRules()
+    static List<Rule?> GenerateRules(List<FileInfo> allData, FileInfo newData)
     {
         return [null];
     }
@@ -106,37 +85,48 @@ internal class SortAlgorithm
     /// Generates a list of all possible Rules given the old data and new file data.
     /// </summary>
     /// <returns>The best possible Rule, only if it is worth prompting the user.</returns>
-    static Rule? ManageRules(object oldData, OnFileMoveEventArgs newData)
+    static Rule? ManageRules(List<FileInfo>? allData, FileInfo newData)
     {
         //sort old data for only those files that match the start folder and end destination paths
-        object FilterFiles = FilterData.Filter(oldData, newData);
+        List<FileInfo> FilteredFiles = FilterData.Filter(allData, newData);
 
         //generate a list of rules
+        List<Rule>? GeneratedRules = GenerateRules(FilteredFiles, newData);
 
         //remove any rules if they already exist
+        GeneratedRules = FilterData.DetectDuplicateRules(GeneratedRules);
 
-        //return best rule if applicable
+        //find the strongest rule
+        Rule StrongestRule = FilterData.StrongestRule(GeneratedRules);
 
-        return null;
-        oldData = newData;
+        //return strongest rule if applicable
+        return StrongestRule;
     }
 
     //Called when, for example, a data entry is added to userAction.json
     public void OnDataGained(object sender, OnFileMoveEventArgs e)
     {
         Debug.WriteLine("recieved data:");
-        int i = 0;
-        foreach (var datapoint in e.AllData)
-        {
-            i++;
-            Debug.WriteLine(i);
-            Debug.WriteLine("old path of datapoint:");
-            Debug.WriteLine(datapoint.OldPath);
-            Debug.WriteLine("new path of datapoint:");
-            Debug.WriteLine(datapoint.NewPath);
-        }
-        Debug.WriteLine(e);
-        //ManageRules(e);
+        FileMoveData[] AllData = e.AllData;
+        List<FileInfo> AllFileInfo = MultiConvertFileMoveData(AllData);
+        ManageRules(AllFileInfo, e.NewFile);
     }
-}
 
+
+    /// <UTILITY>
+    public FileInfo ConvertFileMoveData(FileMoveData fileMoveData)
+    {
+        FileInfo fileInfo = new(fileMoveData.NewPath);
+        return fileInfo;
+    }
+    public List<FileInfo> MultiConvertFileMoveData(FileMoveData[] fileMoveDataPoints)
+    {
+        List<FileInfo> allData = new();
+        foreach (FileMoveData fileMoveData in fileMoveDataPoints)
+        {
+            allData.Add(ConvertFileMoveData(fileMoveData));
+        }
+        return allData;
+    }
+    /// </UTILITY>
+}

@@ -190,17 +190,22 @@ public class OnFileMoveEventArgs : EventArgs
 }
 
 /// <summary>
+/// A struct that is made to easily and without much data hold
+/// important data pertaining to file movements. 
+/// </summary>
+public struct FileMoveData()
+{
+    public string OldPath { get; set; } = "";
+    public string NewPath { get; set; } = "";
+}
+
+/// <summary>
 /// A class that allows the autosorter to pass along relavent data
 /// whenever user data is received.
 /// </summary>
 public class SendAllData()
 {
 
-    public struct FileMoveData()
-    {
-        public string OldPath { get; set; } = "";
-        public string NewPath { get; set; } = "";
-    }
 
     public event EventHandler<OnFileMoveEventArgs>? OnFileMoveEvent;
 
