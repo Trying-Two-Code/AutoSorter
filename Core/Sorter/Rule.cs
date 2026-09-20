@@ -6,7 +6,7 @@ namespace Core.Sorter
 {
     public class Rule()
     {
-        List<Param> Paramaters { get; set; } = [];
+        public List<Param> Paramaters { get; set; } = [];
         public string StartPath { get; set; }
         public string EndPath { get; set; }
         /// <summary>
@@ -17,7 +17,23 @@ namespace Core.Sorter
 
         public bool ShouldMove(FileInfo fileInfo)
         {
-            if (fileInfo.DirectoryName == StartPath) return true;
+            if (fileInfo.DirectoryName != StartPath)
+            {
+                return false;
+            };
+
+            if (Paramaters.Any((parameter) =>
+            {
+                return parameter.Matches(fileInfo) == false;
+            }))
+            {
+                //A parameter didn't match the fileInfo.
+            }
+            else
+            {
+                //All parameters matched.
+                return true;
+            }
 
             return false;
         }

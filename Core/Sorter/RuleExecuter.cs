@@ -1,31 +1,56 @@
 ﻿//Overview: Executes on all the rules made by SortAlgorithm
 
 using Core.FileSystem;
+using Helper.FileSystem;
 using System.Diagnostics;
 
 namespace Core.Sorter
 {
-    internal class RuleExecuter
+    class RuleEditor
     {
-        public static void ExecuteRule(Rule rule, string currentPath)
+        public static void AddRule(Rule rule)
         {
-            FileInfo fileInfo = new FileInfo(currentPath);
 
-            Debug.Assert(rule.ShouldMove(fileInfo, currentPath));
         }
 
-        private static Rule? ShouldExecuteRule(List<Rule> allRules, string currentPath)
+        public static void RemoveRule(Rule rule) 
         {
-            FileInfo? currentFileInfo = null;
+            
+        }
 
+        public static List<Rule> GetRules()
+        {
+            List<Rule> AllRules = new();
+
+
+            return new();
+        }
+    }
+
+    internal class RuleExecuter
+    {
+        public static void ExecuteRule(Rule rule, FileInfo currentFileInfo)
+        {
+            Debug.Assert(rule.ShouldMove(currentFileInfo));
+
+            string fileName = currentFileInfo.Name;
+            string fullStartPath = rule.StartPath + fileName;
+            string fullEndPath = rule.EndPath + fileName;
+
+            FileSystemManager.Move(fullStartPath, fullEndPath);
+        }
+
+        private static Rule? ShouldExecuteRule(
+            List<Rule> allRules, 
+            string currentPath, 
+            FileInfo currentFileInfo)
+        {
             for (int i = 0; i < allRules.Count; i++)
             {
                 Rule rule = allRules[i];
                 if(rule.StartPath != currentPath) { continue; }
 
-                currentFileInfo ??= new FileInfo(currentPath);
-
-                if(rule.ShouldMove(currentFileInfo, currentPath))
+                if(rule.ShouldMove(currentFileInfo))
                 {
                     return rule;
                 }
@@ -47,36 +72,42 @@ namespace Core.Sorter
             foreach (string file in files)
             {
                 FileInfo fileInfo = new FileInfo(file);
-                if (rule.ShouldMove(fileInfo, file))
+                if (rule.ShouldMove(fileInfo))
                 {
-                    ExecuteRule(rule, file);
+                    ExecuteRule(rule, fileInfo);
                 }
             }
         }
 
-        void LoopThroughRules(List<Rule>? rules)
+        void LoopThroughRules(List<Rule>? rules, FileInfo file)
         {
             if(rules == null) return;
-            //for rule in rules:
-            //    if ShouldExecuteRule(rule):
-            //        ExecuteRule(rule)
+
+            Rule? rule = ShouldExecuteRule(rules, file.FullName, file);
+
+            if (rule != null)
+            {
+                ExecuteRule(rule, file);
+            }
         }
 
         void OnFileMove(object sender, OnFileMoveEventArgs e)
         {
-            LoopThroughRules(AllRules);
+            LoopThroughRules(AllRules, e.NewFile);
         }
 
         void OnFileCreated(object sender, OnFileMoveEventArgs e)
         {
-            LoopThroughRules(AllRules);
+            LoopThroughRules(AllRules, e.NewFile);
         }
 
-        static List<Rule>? AllRules {get; set;} = new List<Rule>();
-        static void OnRuleMade(object sender, OnRuleMadeEventArgs e)
+        static List<Rule>? AllRules {get; set;} = RuleEditor.GetRules();
+
+        public static void OnRuleMade(Rule rule)
         {
             if(AllRules == null)
-            ExecuteRuleOnFolder(e.rule, e.rule.StartPath);
+            ExecuteRuleOnFolder(rule, rule.StartPath);
+            RuleEditor.AddRule(rule);
         }
     }
 }

@@ -10,6 +10,7 @@
 //is returned
 using Core.FileSystem;
 using System.Diagnostics;
+using System.Xml.Linq;
 using static Core.FileSystem.AutoSorter;
 
 namespace Core.Sorter;
@@ -17,20 +18,38 @@ namespace Core.Sorter;
 /// <summary>
 /// Contains one paramater for a file, and what the parameter should or should not be.
 /// </summary>
-public struct Param(string FileProperty)
+public class Param(string FileProperty)
 {
-    public static readonly string[] AllParamaters = [
-        "CreationTime",
-        "Extension",
-        "IsReadOnly",
-        "LastAccessTime",
-        "Length",
-        "Name"
-    ];
+    public static readonly Dictionary<string, Type> AllParamaters = 
+        new Dictionary<string, Type>()
+        {
+            { "CreationTime", typeof(DateTime) },
+            { "LastAccessTime", typeof(DateTime) },
+            { "Extension", typeof(string)},
+            { "Name" , typeof(string) },
+            { "IsReadOnly", typeof(bool) },
+            { "Length" , typeof(long) },
+        };
 
     public string FileProperty { get; set; } = FileProperty;
     public string? PropertyContains { get; set; }
     public string? PropertyNotContains { get; set; }
+
+    /// <summary>
+    /// Detects if a file matches the paramater.
+    /// </summary>
+    /// <param name="fileInfo">The file detected.</param>
+    public bool? Matches(FileInfo fileInfo)
+    {
+        string? value = (string?)typeof(FileInfo)?.GetProperty(FileProperty)?.GetValue(fileInfo);
+
+        if(value == null) return null;
+         
+        bool HasProperContents =PropertyContains    == null ? true :  value.Contains(PropertyContains);
+        bool HasNoBadContents = PropertyNotContains == null ? true : !value.Contains(PropertyNotContains);
+
+        return HasProperContents && HasNoBadContents;
+    }
 }
 
 /// <summary>
@@ -54,29 +73,103 @@ internal class SortAlgorithm
         return 0;
     }
 
+
     /// <summary>
     /// Creates a potential rule based on the params given.
     /// </summary>
+    /// <param name="allData">All the old files that represent what the user wants</param>
+    /// <param name="newData">The new file that is being tested for rules</param>
+    /// <param name="requiredStrength">The required amount of files in all data that must match new data</param>
     /// <returns>Returns the created rule.</returns>
-    static Rule? GenerateRule(List<Param> parameters, Param mainParamater)
+    static Rule? GenerateRule(
+        List<FileInfo> allData,
+        FileInfo newData,
+        int requiredStrength = 10)
     {
-        return null;
+        //There is no possibility for a rule that matches the strength required
+        if (requiredStrength > allData.Count)
+            return null;
+
+        Rule? newRule = new();
+
+        foreach ((string name, Type type) in Param.AllParamaters)
+        {
+            int? StrengthOfCorralation = CorralationStrength(name, allData, newData);
+            if (StrengthOfCorralation != null && StrengthOfCorralation >= requiredStrength)
+            {
+                string? mainFileParamater = (string?)typeof(FileInfo)
+                                            ?.GetProperty(name)
+                                            ?.GetValue(newData);
+
+                Param newParameter = new()
+                {
+                    FileProperty = name,
+                    PropertyContains = mainFileParamater,
+                };
+
+                newRule.Strength += (int)StrengthOfCorralation;
+
+                newRule.Paramaters.Add(newParameter);
+            }
+        }
+
+        return newRule;
     }
 
-    static T? GenerateRule<T>(List<Param> paramaters, T mainParamater)
+    static private int? CorralationStrength(
+            string ParamaterTypeName,
+            List<FileInfo> allData,
+            FileInfo newData)
     {
-        return default;
-    }
+        int CorralationStrength = 0;
+        object? newFileParamater = typeof(FileInfo)
+                                    ?.GetProperty(ParamaterTypeName)
+                                    ?.GetValue(newData);
 
+        if (newFileParamater == null) return null;
+
+        foreach (FileInfo paramater in allData)
+        {
+            object? secondaryParamater = typeof(Param)
+                                        ?.GetProperty(ParamaterTypeName)
+                                        ?.GetValue(paramater);
+
+            if (secondaryParamater == null) { continue; }
+
+            if (secondaryParamater == newFileParamater)
+            {
+                CorralationStrength++;
+            }
+            else
+            {
+                CorralationStrength -= 10;
+            }
+        }
+
+        return CorralationStrength;
+    }
 
     /// <summary>
-    /// Creates a list of every possible Rule that could be made based on the paramaters
+    /// Creates a list of many possible Rules that could be made based on the paramaters
     /// given.
     /// </summary>
     /// <returns>The created list of Rules.</returns>
     static List<Rule?> GenerateRules(List<FileInfo> allData, FileInfo newData)
-    {
-        return [null];
+    {   
+        const int RequiredStrength = 10;
+        List<Rule>? newRules = new();
+
+        //TODO: generate more rules
+
+        Rule? newRule = GenerateRule(
+            allData: allData, 
+            newData: newData, 
+            requiredStrength: 10);
+
+        if(newRule != null)
+            newRules.Add(newRule);
+
+        return newRules;
     }
 
     static object oldData = new();
@@ -106,10 +199,13 @@ internal class SortAlgorithm
     //Called when, for example, a data entry is added to userAction.json
     public void OnDataGained(object sender, OnFileMoveEventArgs e)
     {
-        Debug.WriteLine("recieved data:");
         FileMoveData[] AllData = e.AllData;
         List<FileInfo> AllFileInfo = MultiConvertFileMoveData(AllData);
-        ManageRules(AllFileInfo, e.NewFile);
+
+        Rule? newRule = ManageRules(AllFileInfo, e.NewFile);
+
+        if(newRule != null)
+            RuleExecuter.OnRuleMade.Invoke(newRule);
     }
 
 
