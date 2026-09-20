@@ -1,3 +1,4 @@
+using Core.Sorter;
 using Helper.DataGathering;
 using Helper.FileSystem;
 using System.ComponentModel.DataAnnotations;
@@ -90,7 +91,10 @@ public class AutoSorter
                 // Cheap check before a size lookup: unrelated creations must
                 // still not produce any logging or extra work.
                 if (!_moveCorrelator.IsCandidateCreated(change.Path))
+                {
+                    RuleExecuter.OnFileCreated(change.Path);
                     break;
+                }
 
                 MoveCorrelationResult? correlated =
                     _moveCorrelator.NotifyCreated(
@@ -99,8 +103,9 @@ public class AutoSorter
 
                 if (correlated != null)
                     OnFileMove(correlated.NewPath, correlated.OldPath);
+                    RuleExecuter.OnFileMove(correlated.NewPath);
 
-                break;
+                    break;
             }
 
             case FileChangeType.Renamed:

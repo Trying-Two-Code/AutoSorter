@@ -9,7 +9,7 @@ namespace Core.Sorter
 {
     class RuleEditor
     {
-        readonly static string RuleDataPath = @"Core/Sorter/Rule.json";
+        readonly static string RuleDataPath = @"Sorter/Rule.json";
 
         public static void AddRule(Rule rule)
         {
@@ -48,15 +48,25 @@ namespace Core.Sorter
 
         public static List<Rule> GetRules()
         {
-            List<Rule>? oldData;
+            List<Rule> data = new();
 
-            using (StreamReader r = new StreamReader(RuleDataPath))
+            try
             {
-                string json = r.ReadToEnd();
-                oldData = JsonSerializer.Deserialize<List<Rule>>(json);
+                using (StreamReader r = new StreamReader(RuleDataPath))
+                {
+
+                    string json = r.ReadToEnd();
+                    List<Rule> jsonData = JsonSerializer.Deserialize<List<Rule>>(json);
+                    data = jsonData;
+                }
+            }
+            catch
+            {
+                //json is not valid, must be reset
+                SaveRules(data);
             }
 
-            return oldData;
+            return data;
         }
 
         public static void SaveRules(List<Rule> newData)
@@ -121,7 +131,7 @@ namespace Core.Sorter
             }
         }
 
-        void LoopThroughRules(List<Rule>? rules, FileInfo file)
+        public static void LoopThroughRules(List<Rule>? rules, FileInfo file)
         {
             if(rules == null) return;
 
@@ -133,14 +143,14 @@ namespace Core.Sorter
             }
         }
 
-        void OnFileMove(object sender, OnFileMoveEventArgs e)
+        public static void OnFileMove(string NewFilePath)
         {
-            LoopThroughRules(AllRules, e.NewFile);
+            LoopThroughRules(AllRules, new(NewFilePath));
         }
 
-        void OnFileCreated(object sender, OnFileMoveEventArgs e)
+        public static void OnFileCreated(string NewFilePath)
         {
-            LoopThroughRules(AllRules, e.NewFile);
+            LoopThroughRules(AllRules, new(NewFilePath));
         }
 
         static List<Rule>? AllRules {get; set;} = RuleEditor.GetRules();

@@ -74,7 +74,7 @@ internal class SortAlgorithm
     static Rule? GenerateRule(
         List<FileInfo> allData,
         FileInfo newData,
-        int requiredStrength = 10)
+        int requiredStrength = 0)
     {
         //There is no possibility for a rule that matches the strength required
         if (requiredStrength > allData.Count)
