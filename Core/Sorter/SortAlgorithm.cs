@@ -52,16 +52,6 @@ public class Param(string FileProperty)
     }
 }
 
-/// <summary>
-/// Contains many paramaters, and a Method for detecting if those paramaters
-/// all match the paramater of a given file.
-/// </summary>
-
-public class OnRuleMadeEventArgs : EventArgs
-{
-    required public Rule rule { get; set; }
-}
-
 internal class SortAlgorithm
 {
     /// <summary>
@@ -89,7 +79,8 @@ internal class SortAlgorithm
             {
                 string? mainFileParamater = (string?)typeof(FileInfo)
                                             ?.GetProperty(name)
-                                            ?.GetValue(newData);
+                                            ?.GetValue(newData)
+                                            ?.ToString();
 
                 Param newParameter = new(name)
                 {
@@ -157,7 +148,7 @@ internal class SortAlgorithm
         Rule? newRule = GenerateRule(
             allData: allData, 
             newData: newData, 
-            requiredStrength: 10);
+            requiredStrength: RequiredStrength);
 
         if(newRule != null)
             newRules.Add(newRule);
@@ -200,7 +191,6 @@ internal class SortAlgorithm
         if(newRule != null)
             RuleExecuter.OnRuleMade(newRule);
     }
-
 
     /// <UTILITY>
     public FileInfo ConvertFileMoveData(FileMoveData fileMoveData)

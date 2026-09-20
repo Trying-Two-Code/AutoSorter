@@ -31,9 +31,12 @@ namespace Core.Sorter
             return filtered;
         }
 
-        public static List<Rule>? DetectDuplicateRules(List<Rule> Rules)
+        public static List<Rule>? DetectDuplicateRules(List<Rule>? Rules)
         {
-            return null;
+            if (Rules == null)
+                return null;
+
+            return Rules.Distinct()?.ToList();
         }
 
         public static Rule? StrongestRule(List<Rule>? Rules)
