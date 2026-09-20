@@ -101,9 +101,8 @@ internal class SortAlgorithm
                                             ?.GetProperty(name)
                                             ?.GetValue(newData);
 
-                Param newParameter = new()
+                Param newParameter = new(name)
                 {
-                    FileProperty = name,
                     PropertyContains = mainFileParamater,
                 };
 
@@ -205,7 +204,7 @@ internal class SortAlgorithm
         Rule? newRule = ManageRules(AllFileInfo, e.NewFile);
 
         if(newRule != null)
-            RuleExecuter.OnRuleMade.Invoke(newRule);
+            RuleExecuter.OnRuleMade(newRule);
     }
 
 
