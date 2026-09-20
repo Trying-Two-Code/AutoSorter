@@ -12,6 +12,7 @@ namespace Core.FileSystem;
 public class AutoSorter
 {
     private readonly FileSystemManager _fileSystem;
+
     private readonly ClipboardWatcher _clipboardWatcher;
 
     private readonly UserActionGather _userActionGather = new();
@@ -157,8 +158,6 @@ public class AutoSorter
         //TODO: pass all new data or send/get all data another way
         SendAllDataInstance.SendData(newPath, oldPath);
     }
-
-    
 
     public void Start()
     {

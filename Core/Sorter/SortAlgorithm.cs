@@ -65,16 +65,6 @@ public class OnRuleMadeEventArgs : EventArgs
 internal class SortAlgorithm
 {
     /// <summary>
-    /// Tests a potential rule to see if it is worth prompting the user.
-    /// </summary>
-    /// <returns>How many files fit the rule.</returns>
-    static int TestRule(Rule rule)
-    {
-        return 0;
-    }
-
-
-    /// <summary>
     /// Creates a potential rule based on the params given.
     /// </summary>
     /// <param name="allData">All the old files that represent what the user wants</param>
@@ -115,6 +105,10 @@ internal class SortAlgorithm
         return newRule;
     }
 
+    /// <summary>
+    /// Tests a potential parameter to see if it is worth prompting the user.
+    /// </summary>
+    /// <returns>How many files fit the parameter.</returns>
     static private int? CorralationStrength(
             string ParamaterTypeName,
             List<FileInfo> allData,

@@ -219,7 +219,10 @@ public class MoveCorrelator
         //TODO: Is a background extension:
         bool IsBackgroundExtension()
         {
-            string[] BackgroundExtensions = [".tmp", ".lock", ".exe", ".dll", ".baml", ".cs", ".cache", ".pbd", ".pdb"];
+            string[] BackgroundExtensions = [
+                ".tmp", ".lock", ".exe", ".dll", ".baml", 
+                ".cs", ".cache", ".pbd", ".pdb", ".sqlite-journal",
+            ];
             if (BackgroundExtensions.Any(
                 _BackgroundExtension =>
                 {

@@ -3,27 +3,69 @@
 using Core.FileSystem;
 using Helper.FileSystem;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace Core.Sorter
 {
     class RuleEditor
     {
+        readonly static string RuleDataPath = @"Core/Sorter/Rule.json";
+
         public static void AddRule(Rule rule)
         {
-
+            EditRule(rule, add: true, save: true);
         }
 
         public static void RemoveRule(Rule rule) 
         {
-            
+            EditRule(rule, remove: true, save: true);
+        }
+
+        public static List<Rule>? EditRule(
+            Rule? rule = null, 
+            bool remove = false, 
+            bool add = false, 
+            bool save = true)
+        {
+            Debug.Assert(!(add && remove));
+
+            if (rule == null)
+                return null;
+
+            List<Rule> data = GetRules();
+
+            if (data != null)
+            {
+                if(add)
+                    data.Add(rule);
+                if (data.Contains(rule) && remove)
+                    data.Remove(rule);
+                if(save)
+                    SaveRules(data);
+            }
+            return data;
         }
 
         public static List<Rule> GetRules()
         {
-            List<Rule> AllRules = new();
+            List<Rule>? oldData;
 
+            using (StreamReader r = new StreamReader(RuleDataPath))
+            {
+                string json = r.ReadToEnd();
+                oldData = JsonSerializer.Deserialize<List<Rule>>(json);
+            }
 
-            return new();
+            return oldData;
+        }
+
+        public static void SaveRules(List<Rule> newData)
+        {
+            using(StreamWriter r = new StreamWriter(RuleDataPath))
+            {
+                string json = JsonSerializer.Serialize(newData);
+                r.Write(json);
+            }
         }
     }
 
@@ -108,6 +150,7 @@ namespace Core.Sorter
             if(AllRules == null)
             ExecuteRuleOnFolder(rule, rule.StartPath);
             RuleEditor.AddRule(rule);
+            AllRules = RuleEditor.GetRules();
         }
     }
 }
