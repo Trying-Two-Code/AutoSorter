@@ -7,6 +7,8 @@ using System.Text;
 
 namespace Core;
 
+public delegate Task<bool> UITask(object sender, EventArgs args);
+
 public class CoreAlgorithm
 {
     // Core entry point.
@@ -16,11 +18,15 @@ public class CoreAlgorithm
 
     private readonly AutoSorter _autoSorter;
     private readonly SortAlgorithm _sortAlgorithm;
+    private readonly PromptUser _promptUser;
 
-    public CoreAlgorithm(String path, String sourceRoot)
+
+    public CoreAlgorithm(String path, String sourceRoot, UITask _uIEvent)
     {
         _autoSorter = new AutoSorter(path, sourceRoot);
         _sortAlgorithm = new SortAlgorithm();
+        _promptUser = new PromptUser(_uIEvent);
+
         _autoSorter.SendAllDataInstance.OnFileMoveEvent += _sortAlgorithm.OnDataGained;
     }
 

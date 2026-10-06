@@ -27,4 +27,10 @@
     <ProjectReference Include="..\Helpers\Helpers.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="PromptUser\PromptUser.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
+
 </Project>

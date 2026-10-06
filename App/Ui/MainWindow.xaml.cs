@@ -12,6 +12,8 @@ using System.Windows.Forms;
 using System.Windows.Media;
 using Microsoft.Win32;
 using IWshRuntimeLibrary;
+using System.Windows.Threading;
+using Core.Sorter;
 
 
 
@@ -27,8 +29,8 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        _app = new AppAPI(path, DownloadFolder());
-        
+        _app = new AppAPI(path, DownloadFolder(), OnUIEventRecieved);
+
         Loaded += new RoutedEventHandler(Window_Loaded);
 
         UserSettings.GetSettings();
@@ -42,7 +44,6 @@ public partial class MainWindow : Window
         ActivateOnStartup.RegisterApp();
         if(ActivateOnStartup.DetectClose())
             SendToTray();
-
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -186,5 +187,23 @@ public partial class MainWindow : Window
 
         Process.Start(showUsing, log);
         Process.Start(showUsing, userAction);
+    }
+
+    //public Dispatcher PromptUserDispatcher;
+
+    public Task<bool> PromptUser(string prompt)
+    {
+        Task<bool> promptUserTask = Task.Run(() =>
+        {
+            MessageBoxResult result = System.Windows.MessageBox.Show(prompt, "Make rule?", MessageBoxButton.YesNo, MessageBoxImage.Exclamation, MessageBoxResult.Yes);
+            return result == MessageBoxResult.Yes;
+        });
+
+        return promptUserTask;
+    }
+
+    public Task<bool> OnUIEventRecieved(object sender, EventArgs args)
+    {
+        return PromptUser("working");
     }
 }
