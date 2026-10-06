@@ -24,8 +24,8 @@ public class CoreAlgorithm
     public CoreAlgorithm(String path, String sourceRoot, UITask _uIEvent)
     {
         _autoSorter = new AutoSorter(path, sourceRoot);
-        _sortAlgorithm = new SortAlgorithm();
         _promptUser = new PromptUser(_uIEvent);
+        _sortAlgorithm = new SortAlgorithm(_promptUser);
 
         _autoSorter.SendAllDataInstance.OnFileMoveEvent += _sortAlgorithm.OnDataGained;
     }

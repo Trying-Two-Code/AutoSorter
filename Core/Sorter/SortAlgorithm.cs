@@ -54,6 +54,12 @@ public class Param(string FileProperty)
 
 internal class SortAlgorithm
 {
+    private PromptUser _myPromptUser { get; set; }
+    public SortAlgorithm(PromptUser _promptUser)
+    {
+        _myPromptUser = _promptUser;
+    }
+
     /// <summary>
     /// Creates a potential rule based on the params given.
     /// </summary>
@@ -188,8 +194,9 @@ internal class SortAlgorithm
 
         Rule? newRule = ManageRules(AllFileInfo, e.NewFile);
 
-        if(newRule != null)
-            RuleExecuter.OnRuleMade(newRule);
+        if (newRule != null)
+            if(_myPromptUser.Prompt())
+                RuleExecuter.OnRuleMade(newRule);
     }
 
     /// <UTILITY>
