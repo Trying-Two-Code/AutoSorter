@@ -70,6 +70,7 @@ internal class SortAlgorithm
     static Rule? GenerateRule(
         List<FileInfo> allData,
         FileInfo newData,
+        string oldPath,
         int requiredStrength = 0)
     {
         //There is no possibility for a rule that matches the strength required
@@ -77,6 +78,10 @@ internal class SortAlgorithm
             return null;
 
         Rule? newRule = new();
+
+        string? oldDirectoryName = Path.GetDirectoryName(oldPath);
+        newRule.StartPath = oldDirectoryName == null ? "null" : oldDirectoryName;
+        newRule.EndPath = newData?.DirectoryName == null ? "null" : newData.DirectoryName;
 
         foreach ((string name, Type type) in Param.AllParamaters)
         {
@@ -144,7 +149,7 @@ internal class SortAlgorithm
     /// given.
     /// </summary>
     /// <returns>The created list of Rules.</returns>
-    static List<Rule?> GenerateRules(List<FileInfo> allData, FileInfo newData)
+    static List<Rule?> GenerateRules(List<FileInfo> allData, FileInfo newData, string oldPath)
     {   
         const int RequiredStrength = 10;
         List<Rule>? newRules = new();
@@ -153,7 +158,8 @@ internal class SortAlgorithm
 
         Rule? newRule = GenerateRule(
             allData: allData, 
-            newData: newData, 
+            newData: newData,
+            oldPath: oldPath,
             requiredStrength: RequiredStrength);
 
         if(newRule != null)
@@ -168,13 +174,13 @@ internal class SortAlgorithm
     /// Generates a list of all possible Rules given the old data and new file data.
     /// </summary>
     /// <returns>The best possible Rule, only if it is worth prompting the user.</returns>
-    static Rule? ManageRules(List<FileInfo>? allData, FileInfo newData)
+    static Rule? ManageRules(List<FileInfo>? allData, FileInfo newData, string oldPath)
     {
         //sort old data for only those files that match the start folder and end destination paths
         List<FileInfo> FilteredFiles = FilterData.Filter(allData, newData);
 
         //generate a list of rules
-        List<Rule>? GeneratedRules = GenerateRules(FilteredFiles, newData);
+        List<Rule>? GeneratedRules = GenerateRules(FilteredFiles, newData, oldPath);
 
         //remove any rules if they already exist
         GeneratedRules = FilterData.DetectDuplicateRules(GeneratedRules);
@@ -192,7 +198,7 @@ internal class SortAlgorithm
         FileMoveData[] AllData = e.AllData;
         List<FileInfo> AllFileInfo = MultiConvertFileMoveData(AllData);
 
-        Rule? newRule = ManageRules(AllFileInfo, e.NewFile);
+        Rule? newRule = ManageRules(AllFileInfo, e.NewFile, e.OldPath);
 
         if (newRule != null)
             if(_myPromptUser.Prompt())

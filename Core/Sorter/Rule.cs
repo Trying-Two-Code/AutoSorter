@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Core.Sorter
@@ -21,6 +22,12 @@ namespace Core.Sorter
             {
                 return false;
             };
+
+            Debug.WriteLine("Rulepath: " + Path.Combine(EndPath, fileInfo.Name));
+            if (File.Exists(Path.Combine(EndPath, fileInfo.Name)))
+            {
+                return false;
+            }
 
             if (Paramaters.Any((parameter) =>
             {

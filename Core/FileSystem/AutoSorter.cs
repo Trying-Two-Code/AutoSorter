@@ -1,12 +1,9 @@
 using Core.Sorter;
 using Helper.DataGathering;
 using Helper.FileSystem;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using static Core.FileSystem.AutoSorter;
-using static Core.FileSystem.SendAllData;
+using System.Reflection;
 
 namespace Core.FileSystem;
 
@@ -20,6 +17,8 @@ public class AutoSorter
 
     private readonly MoveCorrelator _moveCorrelator;
 
+    private readonly RuleExecuter _ruleExecuter;
+
     public AutoSorter(
         string watchRoot,
         string sourceRoot)
@@ -30,6 +29,7 @@ public class AutoSorter
         _fileSystem = new FileSystemManager(watchRoot);
         _clipboardWatcher = new ClipboardWatcher();
         _moveCorrelator = new MoveCorrelator(sourceRoot);
+        _ruleExecuter = new RuleExecuter();
 
         SetCallbacks();
     }
@@ -103,7 +103,7 @@ public class AutoSorter
 
                 if (correlated != null)
                     OnFileMove(correlated.NewPath, correlated.OldPath);
-                    RuleExecuter.OnFileMove(correlated.NewPath);
+                    RuleExecuter.OnFileMove(correlated.NewPath, correlated.OldPath);
 
                     break;
             }
@@ -190,6 +190,7 @@ public class AutoSorter
 public class OnFileMoveEventArgs : EventArgs
 {
     public FileInfo? NewFile { get; set; }
+    public string OldPath { get; set; }
     public FileMoveData[]? AllData { get; set; }
 }
 
@@ -219,6 +220,7 @@ public class SendAllData()
             new OnFileMoveEventArgs
             {
                 NewFile = new FileInfo(newPath),
+                OldPath = oldPath,
                 AllData = AllData(newPath, oldPath)
             });
     }

@@ -9,27 +9,33 @@ namespace Core.Sorter
 {
     class RuleEditor
     {
+        public static object _lock = new();
         readonly static string RuleDataPath = @"Sorter/Rule.json";
+        public static PromptUser PromptUserInst;
 
         public static void AddRule(Rule rule)
         {
-            EditRule(rule, add: true, save: true);
+            EditRule(rule, add: true, save: true, promptUser: PromptUserInst);
         }
 
         public static void RemoveRule(Rule rule) 
         {
-            EditRule(rule, remove: true, save: true);
+            EditRule(rule, remove: true, save: true, promptUser: PromptUserInst);
         }
 
-        public static List<Rule>? EditRule(
+        public static async Task<List<Rule>?> EditRule(
             Rule? rule = null, 
             bool remove = false, 
             bool add = false, 
-            bool save = true)
+            bool save = true,
+            PromptUser? promptUser = null)
         {
             Debug.Assert(!(add && remove));
 
             if (rule == null)
+                return null;
+
+            if (promptUser != null && !PromptUserMethod(promptUser, null))
                 return null;
 
             List<Rule> data = GetRules();
@@ -46,24 +52,47 @@ namespace Core.Sorter
             return data;
         }
 
+        public static bool PromptUserMethod(PromptUser? _promptUserInst, EventArgs args)
+        {
+            try
+            {
+                //_promptUserInst = _promptUserInst ?? new PromptUser();
+
+                Task promptUserTask = _promptUserInst.UIEvent.Invoke(null, args);
+                promptUserTask.Wait();
+
+                if (promptUserTask.IsCompletedSuccessfully)
+                {
+                    return true;
+                }
+            } catch
+            {
+                Debug.WriteLine("Prompt User Failed.");
+            }
+            return false;
+        }
+
         public static List<Rule> GetRules()
         {
             List<Rule> data = new();
 
-            try
+            lock (_lock)
             {
-                using (StreamReader r = new StreamReader(RuleDataPath))
+                try
                 {
+                    using (StreamReader r = new StreamReader(RuleDataPath))
+                    {
 
-                    string json = r.ReadToEnd();
-                    List<Rule> jsonData = JsonSerializer.Deserialize<List<Rule>>(json);
-                    data = jsonData;
+                        string json = r.ReadToEnd();
+                        List<Rule> jsonData = JsonSerializer.Deserialize<List<Rule>>(json);
+                        data = jsonData;
+                    }
                 }
-            }
-            catch
-            {
-                //json is not valid, must be reset
-                SaveRules(data);
+                catch
+                {
+                    //json is not valid, must be reset
+                    SaveRules(data);
+                }
             }
 
             return data;
@@ -71,10 +100,13 @@ namespace Core.Sorter
 
         public static void SaveRules(List<Rule> newData)
         {
-            using(StreamWriter r = new StreamWriter(RuleDataPath))
+            lock (_lock)
             {
-                string json = JsonSerializer.Serialize(newData);
-                r.Write(json);
+                using (StreamWriter r = new StreamWriter(RuleDataPath))
+                {
+                    string json = JsonSerializer.Serialize(newData);
+                    r.Write(json);
+                }
             }
         }
     }
@@ -86,15 +118,15 @@ namespace Core.Sorter
             Debug.Assert(rule.ShouldMove(currentFileInfo));
 
             string fileName = currentFileInfo.Name;
-            string fullStartPath = rule.StartPath + fileName;
-            string fullEndPath = rule.EndPath + fileName;
+            string fullStartPath = Path.Combine(rule.StartPath, fileName);
+            string fullEndPath = Path.Combine(rule.EndPath, fileName);
 
             FileSystemManager.Move(fullStartPath, fullEndPath);
         }
 
         private static Rule? ShouldExecuteRule(
-            List<Rule> allRules, 
-            string currentPath, 
+            List<Rule> allRules,
+            string currentPath,
             FileInfo currentFileInfo)
         {
             for (int i = 0; i < allRules.Count; i++)
@@ -131,7 +163,7 @@ namespace Core.Sorter
             }
         }
 
-        public static void LoopThroughRules(List<Rule>? rules, FileInfo file)
+        public static void LoopThroughRules(List<Rule>? rules, FileInfo file, string oldPath)
         {
             if(rules == null) return;
 
@@ -143,22 +175,24 @@ namespace Core.Sorter
             }
         }
 
-        public static void OnFileMove(string NewFilePath)
+        public static void OnFileMove(string NewFilePath, string OldFilePath)
         {
-            LoopThroughRules(AllRules, new(NewFilePath));
+            LoopThroughRules(AllRules, new(NewFilePath), OldFilePath);
         }
 
         public static void OnFileCreated(string NewFilePath)
         {
-            LoopThroughRules(AllRules, new(NewFilePath));
+            LoopThroughRules(AllRules, new(NewFilePath), null);
         }
 
         static List<Rule>? AllRules {get; set;} = RuleEditor.GetRules();
 
+        public static PromptUser PromptUserInst;
+
         public static void OnRuleMade(Rule rule)
         {
-            if(AllRules == null)
             ExecuteRuleOnFolder(rule, rule.StartPath);
+            RuleEditor.PromptUserInst = PromptUserInst;
             RuleEditor.AddRule(rule);
             AllRules = RuleEditor.GetRules();
         }
