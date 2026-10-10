@@ -15,43 +15,6 @@ using static Core.FileSystem.AutoSorter;
 
 namespace Core.Sorter;
 
-/// <summary>
-/// Contains one paramater for a file, and what the parameter should or should not be.
-/// </summary>
-public class Param(string FileProperty)
-{
-    public static readonly Dictionary<string, Type> AllParamaters = 
-        new Dictionary<string, Type>()
-        {
-            { "CreationTime", typeof(DateTime) },
-            { "LastAccessTime", typeof(DateTime) },
-            { "Extension", typeof(string)},
-            { "Name" , typeof(string) },
-            { "IsReadOnly", typeof(bool) },
-            { "Length" , typeof(long) },
-        };
-
-    public string FileProperty { get; set; } = FileProperty;
-    public string? PropertyContains { get; set; }
-    public string? PropertyNotContains { get; set; }
-
-    /// <summary>
-    /// Detects if a file matches the paramater.
-    /// </summary>
-    /// <param name="fileInfo">The file detected.</param>
-    public bool? Matches(FileInfo fileInfo)
-    {
-        string? value = (string?)typeof(FileInfo)?.GetProperty(FileProperty)?.GetValue(fileInfo);
-
-        if(value == null) return null;
-         
-        bool HasProperContents =PropertyContains    == null ? true :  value.Contains(PropertyContains);
-        bool HasNoBadContents = PropertyNotContains == null ? true : !value.Contains(PropertyNotContains);
-
-        return HasProperContents && HasNoBadContents;
-    }
-}
-
 internal class SortAlgorithm
 {
     private PromptUser _myPromptUser { get; set; }
@@ -145,16 +108,99 @@ internal class SortAlgorithm
     }
 
     /// <summary>
+    /// returns the power set of all possible param combinations. 
+    /// </summary>
+    /// <param name="limit"></param>
+    /// <returns></returns>
+    static List<List<Param>> AllParams(int limit, FileInfo forFile)
+    {
+        List<List<Param>> AllParamList = new();
+
+        int possibleSubsetCount = (1 << Param.AllParamaters.Count);
+
+        for (int subsetI = 0; subsetI < Math.Min(possibleSubsetCount, limit); subsetI += 1)
+        {
+            List<Param> tempList = new();
+
+            for (int i = 0; i < Param.AllParamaters.Count; i += 1)
+            {
+                int mask = (1 << i);
+                bool subsetInMask = (subsetI & mask) != 0;
+
+                if (subsetInMask)
+                {
+                    KeyValuePair<string, Type> keyVal = Param.AllParamaters.ElementAt(i);
+
+                    Param newParameter = new(keyVal.Key)
+                    {
+                        FileProperty = keyVal.Key,
+                    };
+
+                    object? value = typeof(FileInfo)?.GetProperty(keyVal.Key)?.GetValue(forFile);
+                    if(value?.GetType() == keyVal.Value)
+                    {
+                        newParameter.PropertyContains = value.ToString();
+                    }
+
+                    tempList.Add(newParameter);
+                }
+            }
+
+            AllParamList.Add(tempList);
+        }
+
+        return AllParamList;
+    }
+
+    static List<Rule> convertParamsToRules(int strength, string startPath, string endPath, List<List<Param>> paramLists)
+    {
+        List<Rule> allRules = new();
+        foreach (List<Param> paramList in paramLists)
+        {
+            Rule newRule = new()
+            {
+                Paramaters = paramList,
+                StartPath = startPath,
+                EndPath = endPath,
+                Strength = strength
+            };
+
+            allRules.Add(newRule);
+        }
+        return allRules;
+    }
+
+    /// <summary>
+    /// Returns the power set of possible rule paramaters as rules.
+    /// </summary>
+    /// <param name="allData"></param>
+    /// <param name="newData"></param>
+    /// <param name="oldPath"></param>
+    /// <param name="limit"></param>
+    /// <returns>The list of rules that can be created for a given file</returns>
+    static List<Rule> AllRules(List<FileInfo> allData, FileInfo newData, string oldPath, int limit = 1000)
+    {
+        List<List<Param>> allParameters = AllParams(limit, newData);
+        List<Rule> allRules = convertParamsToRules(-1, oldPath, newData.DirectoryName, allParameters);
+
+        return allRules;
+    }
+
+    /// <summary>
     /// Creates a list of many possible Rules that could be made based on the paramaters
     /// given.
     /// </summary>
     /// <returns>The created list of Rules.</returns>
-    static List<Rule?> GenerateRules(List<FileInfo> allData, FileInfo newData, string oldPath)
+    static List<Rule?> GenerateRules(List<FileInfo> allData, FileInfo newData, string oldPath, int limit)
     {   
         const int RequiredStrength = 10;
+        const int MaximumRules = 1000;
+
         List<Rule>? newRules = new();
 
-        //TODO: generate more rules
+        List<Rule> allRules = AllRules(allData, newData, oldPath);
+        //for every type of paramater
+        List<Rule> allPositiveRules = FilterData.StrongRules(allRules, RequiredStrength, limit);
 
         Rule? newRule = GenerateRule(
             allData: allData, 
@@ -176,11 +222,13 @@ internal class SortAlgorithm
     /// <returns>The best possible Rule, only if it is worth prompting the user.</returns>
     static Rule? ManageRules(List<FileInfo>? allData, FileInfo newData, string oldPath)
     {
+        const int limit = 1000;
+
         //sort old data for only those files that match the start folder and end destination paths
         List<FileInfo> FilteredFiles = FilterData.Filter(allData, newData);
 
         //generate a list of rules
-        List<Rule>? GeneratedRules = GenerateRules(FilteredFiles, newData, oldPath);
+        List<Rule>? GeneratedRules = GenerateRules(FilteredFiles, newData, oldPath, limit);
 
         //remove any rules if they already exist
         GeneratedRules = FilterData.DetectDuplicateRules(GeneratedRules);

@@ -29,6 +29,12 @@ namespace Core.Sorter
                 return false;
             }
 
+            return MatchesParameters(fileInfo);
+        }
+
+        public bool MatchesParameters(FileInfo fileInfo)
+        {
+
             if (Paramaters.Any((parameter) =>
             {
                 return parameter.Matches(fileInfo) == false;
@@ -43,6 +49,7 @@ namespace Core.Sorter
             }
 
             return false;
+
         }
     }
 }

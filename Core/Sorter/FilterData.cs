@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace Core.Sorter
@@ -39,6 +40,7 @@ namespace Core.Sorter
             return Rules.Distinct()?.ToList();
         }
 
+        //NOTE: if tied for first, chooses the first strongest rule
         public static Rule? StrongestRule(List<Rule>? Rules)
         {
             if (Rules == null) return null;
@@ -62,6 +64,41 @@ namespace Core.Sorter
             }
 
             return null;
+        }
+
+        public static List<Rule> StrongRules(List<Rule> allRules, int requiredStrength, int limit)
+        {
+            List<Rule> strongRules = new();
+
+            foreach (Rule ParameterCombination in allRules)
+            {
+                int ruleStrength = GetNewRuleStrength(ParameterCombination, limit);
+                if(ruleStrength >= requiredStrength)
+                {
+                    strongRules.Add(ParameterCombination);
+                }
+            }
+
+            return strongRules;
+        }
+
+        public static int GetNewRuleStrength(Rule rule, int limit)
+        {
+            string endPath = rule.EndPath;
+            int strength = 0;
+
+            IEnumerable<string> files = Directory.EnumerateFiles(endPath).Take(limit);
+
+            foreach (string file in files)
+            {
+                FileInfo fileInfo = new FileInfo(file);
+                if (rule.MatchesParameters(fileInfo))
+                {
+                    strength += 1;
+                }
+            }
+
+            return strength;
         }
     }
 }
