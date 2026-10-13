@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Text;
 
 namespace Core.Sorter
@@ -32,6 +33,12 @@ namespace Core.Sorter
             return filtered;
         }
 
+        /// <summary>
+        /// Makes sure that the rules are distint and that none of them exist
+        /// in the rule file already.
+        /// </summary>
+        /// <param name="Rules"></param>
+        /// <returns></returns>
         public static List<Rule>? DetectDuplicateRules(List<Rule>? Rules)
         {
             if (Rules == null)
@@ -57,6 +64,7 @@ namespace Core.Sorter
             }
 
             int LargestStrength = GetLargestStrength(Rules);
+            Debug.WriteLine("Largest strength: " + LargestStrength);
             for (int i = 0; i < Rules.Count; i++)
             {
                 if (Rules[i].Strength == LargestStrength)
@@ -70,12 +78,12 @@ namespace Core.Sorter
         {
             List<Rule> strongRules = new();
 
-            foreach (Rule ParameterCombination in allRules)
+            foreach (Rule rule in allRules)
             {
-                int ruleStrength = GetNewRuleStrength(ParameterCombination, limit);
+                int ruleStrength = rule.Strength;
                 if(ruleStrength >= requiredStrength)
                 {
-                    strongRules.Add(ParameterCombination);
+                    strongRules.Add(rule);
                 }
             }
 
@@ -92,7 +100,7 @@ namespace Core.Sorter
             foreach (string file in files)
             {
                 FileInfo fileInfo = new FileInfo(file);
-                if (rule.MatchesParameters(fileInfo))
+                if (rule.IsMatch(fileInfo))
                 {
                     strength += 1;
                 }

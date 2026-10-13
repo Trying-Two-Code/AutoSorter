@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Core.Sorter
 {
-    public class Rule()
+    public class Rule() : IDetectMatches
     {
         public List<Param> Paramaters { get; set; } = [];
         public string StartPath { get; set; }
@@ -29,15 +29,16 @@ namespace Core.Sorter
                 return false;
             }
 
-            return MatchesParameters(fileInfo);
+            return IsMatch(fileInfo);
         }
 
-        public bool MatchesParameters(FileInfo fileInfo)
+        public List<FileInfo> MatchingFiles { get; set; } = new();
+        public bool IsMatch(FileInfo fileInfo)
         {
 
             if (Paramaters.Any((parameter) =>
             {
-                return parameter.Matches(fileInfo) == false;
+                return parameter.IsMatch(fileInfo) == false;
             }))
             {
                 //A parameter didn't match the fileInfo.

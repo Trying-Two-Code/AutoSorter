@@ -30,7 +30,7 @@ namespace Core.Sorter
             bool save = true,
             PromptUser? promptUser = null)
         {
-            Debug.Assert(!(add && remove));
+            Debug.Assert(add !&& remove);
 
             if (rule == null)
                 return null;
@@ -56,8 +56,6 @@ namespace Core.Sorter
         {
             try
             {
-                //_promptUserInst = _promptUserInst ?? new PromptUser();
-
                 Task promptUserTask = _promptUserInst.UIEvent.Invoke(null, args);
                 promptUserTask.Wait();
 
@@ -142,6 +140,30 @@ namespace Core.Sorter
             return null;
         }
 
+        public static List<FileInfo> GetFileInfoOfFolder(string folderName, int limit = 1000)
+        {
+            Debug.WriteLine(folderName);
+
+            IEnumerable<string> filesEnumerable = Directory.EnumerateFiles(folderName).Take(limit);
+            List<string> filesList = filesEnumerable.ToList();
+            List<FileInfo> result = new();
+
+            foreach (string file in filesList)
+            {
+                try
+                {
+                    FileInfo newFileInfo = new(file);
+                    result.Add(newFileInfo);
+                }
+                catch
+                {
+
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Checks a folders' contents for any file that complies with the rule.
         /// Executes on those files.
@@ -151,14 +173,13 @@ namespace Core.Sorter
         static void ExecuteRuleOnFolder(Rule rule, string folder)
         {
             const int fileLimit = 100;
-            IEnumerable<string> files = Directory.EnumerateFiles(folder).Take(fileLimit);
+            List<FileInfo> files = GetFileInfoOfFolder(folder, fileLimit);
 
-            foreach (string file in files)
+            foreach (FileInfo file in files)
             {
-                FileInfo fileInfo = new FileInfo(file);
-                if (rule.ShouldMove(fileInfo))
+                if (rule.ShouldMove(file))
                 {
-                    ExecuteRule(rule, fileInfo);
+                    ExecuteRule(rule, file);
                 }
             }
         }
@@ -191,7 +212,9 @@ namespace Core.Sorter
 
         public static void OnRuleMade(Rule rule)
         {
-            ExecuteRuleOnFolder(rule, rule.StartPath);
+            string startPath = rule.StartPath;
+            string startDirectory = Path.GetPathRoot(startPath);
+            ExecuteRuleOnFolder(rule, startDirectory);
             RuleEditor.PromptUserInst = PromptUserInst;
             RuleEditor.AddRule(rule);
             AllRules = RuleEditor.GetRules();
