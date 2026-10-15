@@ -2,11 +2,11 @@
 
 namespace Core.Sorter
 {
+    /// <summary>
+    /// Sends prompts to the user via a UITask.
+    /// </summary>
     public class PromptUser
     {
-        //Use with BeginInvoke(DispatcherPrioity, Delegate)
-        //Priority = DispatcherPrioirity.Normal, and Delagate = callback (new NextPrimeDelagate(CheckNextNumber));
-
         public UITask UIEvent;
 
         public PromptUser(UITask _uIEvent)
@@ -23,9 +23,25 @@ namespace Core.Sorter
             });
             bool result = uiResult.Result;
 
-            Debug.WriteLine("result is: " + result);
-
             return result;
+        }
+        public static bool PromptUserMethod(PromptUser? _promptUserInst, EventArgs args)
+        {
+            try
+            {
+                Task promptUserTask = _promptUserInst.UIEvent.Invoke(null, args);
+                promptUserTask.Wait();
+
+                if (promptUserTask.IsCompletedSuccessfully)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                Debug.WriteLine("Prompt User Failed.");
+            }
+            return false;
         }
     }
 }

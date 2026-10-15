@@ -9,22 +9,35 @@ namespace Core.Sorter
     /// </summary>
     public class Param(string FileProperty) : IDetectMatches
     {
-        public static readonly Dictionary<string, Type> AllParamaters =
-            new Dictionary<string, Type>()
+        public delegate bool ApproximateMatch();
+        public ApproximateMatch? MyApproximateMatch = null;
+        public class ParamOptions(string name, Type T)
+        {
+            public Type ValueType { get; set; } = T;
+            public string name { get; set; } = name;
+            public ApproximateMatch? ApproximateMatchMethod { get; set; }
+        };
+        public static readonly List<ParamOptions> AllParamaters = new()
+        {
+            new ParamOptions("CreationTime", typeof(DateTime)),
+            new ParamOptions("LastAccessTime", typeof(DateTime)),
+            new ParamOptions("Extension", typeof(string)),
+            new ParamOptions("Name", typeof(string)),
+            new ParamOptions("Name", typeof(string))
             {
-            { "CreationTime", typeof(DateTime) },
-            { "LastAccessTime", typeof(DateTime) },
-            { "Extension", typeof(string)},
-            { "Name" , typeof(string) },
-            { "IsReadOnly", typeof(bool) },
-            { "Length" , typeof(long) },
-            };
+                ApproximateMatchMethod = () =>
+                {
+                    return false;
+                }
+            },
+            new ParamOptions("IsReadOnly", typeof(bool)),
+            new ParamOptions("Length", typeof(long)),
+        };
 
         public string FileProperty { get; set; } = FileProperty;
         public string? PropertyContains { get; set; }
         public string? PropertyNotContains { get; set; }
-        public int? strength = null;
-        public List<FileInfo> MatchingFiles { get; set; } = new();
+        public List<string> MatchingFiles { get; set; } = new();
 
         /// <summary>
         /// Detects if a file matches the paramater.
@@ -32,14 +45,21 @@ namespace Core.Sorter
         /// <param name="fileInfo">The file detected.</param>
         public bool IsMatch(FileInfo fileInfo)
         {
-            string? value = (string?)(typeof(FileInfo)?.GetProperty(FileProperty)?.GetValue(fileInfo)?.ToString());
+            string? value = 
+                (string?)(typeof(FileInfo)
+                ?.GetProperty(FileProperty)
+                ?.GetValue(fileInfo)
+                ?.ToString());
 
-            if (value == null) return true;
+            if(value == null)
+                throw new ParamValueNullError();
 
             bool HasProperContents = PropertyContains == null ? true : value.Contains(PropertyContains);
             bool HasNoBadContents = PropertyNotContains == null ? true : !value.Contains(PropertyNotContains);
 
             return HasProperContents && HasNoBadContents;
         }
+
+        private class ParamValueNullError : Exception { }
     }
 }

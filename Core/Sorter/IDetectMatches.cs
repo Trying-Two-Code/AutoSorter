@@ -2,7 +2,7 @@
 {
     interface IDetectMatches
     {
-        public List<FileInfo> MatchingFiles { get; set; }
+        public List<string> MatchingFiles { get; set; }
         public bool IsMatch(FileInfo fileInfo);
     }
 }

@@ -92,7 +92,7 @@ public class AutoSorter
                 // still not produce any logging or extra work.
                 if (!_moveCorrelator.IsCandidateCreated(change.Path))
                 {
-                    RuleExecuter.OnFileCreated(change.Path);
+                    _ruleExecuter.OnFileCreated(change.Path);
                     break;
                 }
 
@@ -103,8 +103,7 @@ public class AutoSorter
 
                 if (correlated != null)
                     OnFileMove(correlated.NewPath, correlated.OldPath);
-                    RuleExecuter.OnFileMove(correlated.NewPath, correlated.OldPath);
-
+                    _ruleExecuter.OnFileMove(correlated.NewPath, correlated.OldPath);
                     break;
             }
 

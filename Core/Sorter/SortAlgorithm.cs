@@ -19,67 +19,79 @@ internal class SortAlgorithm
     private PromptUser _myPromptUser { get; set; }
     private StrengthDetector _myStrengthDetector { get; set; }
     private RuleGenerator _myRuleGeneretor { get; set; }
+    private RuleExecuter _myRuleExecuter { get; set; }
+
     public SortAlgorithm(PromptUser _promptUser)
     {
         _myPromptUser = _promptUser;
         _myStrengthDetector = new StrengthDetector();
         _myRuleGeneretor = new RuleGenerator(_myStrengthDetector);
+        _myRuleExecuter = new RuleExecuter();
     }
 
     /// <summary>
     /// Generates a list of all possible Rules given the old data and new file data.
     /// </summary>
     /// <returns>The best possible Rule, only if it is worth prompting the user.</returns>
-    public Rule? ManageRules(List<FileInfo>? allData, FileInfo newData, string oldPath)
+    public void ManageRules(List<FileInfo> allData, FileInfo newData, string oldPath)
     {
+        allData = allData.Distinct().ToList();
         const int limit = 1000;
 
         //sort old data for only those files that match the start folder and end destination paths
         List<FileInfo> FilteredFiles = FilterData.Filter(allData, newData);
 
         //generate a list of rules
-        List<Rule?>? GeneratedRules = _myRuleGeneretor.GenerateRules(FilteredFiles, newData, oldPath, limit);
-        if (GeneratedRules == null) return null;
+        List<Rule> GeneratedRules = _myRuleGeneretor.GenerateRules(FilteredFiles, newData, oldPath, limit);
 
         //remove any rules if they already exist
         GeneratedRules = FilterData.DetectDuplicateRules(GeneratedRules);
-        if (GeneratedRules == null) return null;
 
         GeneratedRules.Reverse();
 
         //find the strongest rule
-        Rule? StrongestRule = FilterData.StrongestRule(GeneratedRules);
+        List<Rule>? StrongestRules = _myStrengthDetector.StrongestRules(GeneratedRules);
 
-        Debug.WriteLine(StrongestRule?.Strength);
+        Rule? newRule = null;
 
-        //return strongest rule if applicable
-        return StrongestRule;
+        if (StrongestRules.Count == 1)
+        {
+            newRule = StrongestRules[0];
+        }
+        else if(StrongestRules.Count > 1)
+        {
+            //newRule = DecideOnRuleSomehow;
+        }
+
+        if (newRule != null)
+            if (_myPromptUser.Prompt())
+                _myRuleExecuter.OnRuleMade(newRule);
     }
 
     //Called when, for example, a data entry is added to userAction.json
     public void OnDataGained(object sender, OnFileMoveEventArgs e)
     {
         FileMoveData[] AllData = e.AllData;
-        List<FileInfo> AllFileInfo = MultiConvertFileMoveData(AllData);
+        List<FileInfo> AllFileInfo = FileUtility.MultiConvertFileMoveData(AllData);
 
         const int limit = 1000;
-        List<FileInfo> FileInfoOfFolder = RuleExecuter.GetFileInfoOfFolder(e.NewFile.DirectoryName, limit);
+        List<FileInfo> FileInfoOfFolder = FileUtility.GetFileInfoOfFolder(e.NewFile.DirectoryName, limit);
         AllFileInfo.AddRange(FileInfoOfFolder);
 
-        Rule? newRule = ManageRules(AllFileInfo, e.NewFile, e.OldPath);
-
-        if (newRule != null)
-            if(_myPromptUser.Prompt())
-                RuleExecuter.OnRuleMade(newRule);
+        ManageRules(AllFileInfo, e.NewFile, e.OldPath);
     }
 
+}
+
+static class FileUtility
+{
     /// <UTILITY>
-    public FileInfo ConvertFileMoveData(FileMoveData fileMoveData)
+    public static FileInfo ConvertFileMoveData(FileMoveData fileMoveData)
     {
         FileInfo fileInfo = new(fileMoveData.NewPath);
         return fileInfo;
     }
-    public List<FileInfo> MultiConvertFileMoveData(FileMoveData[] fileMoveDataPoints)
+    public static List<FileInfo> MultiConvertFileMoveData(FileMoveData[] fileMoveDataPoints)
     {
         List<FileInfo> allData = new();
         foreach (FileMoveData fileMoveData in fileMoveDataPoints)
@@ -88,5 +100,28 @@ internal class SortAlgorithm
         }
         return allData;
     }
+    public static List<FileInfo> GetFileInfoOfFolder(string folderName, int limit = 1000)
+    {
+        Debug.WriteLine(folderName);
+
+        List<string> filesList =
+            Directory.EnumerateFiles(folderName)
+            .Take(limit)
+            .ToList();
+
+        List<FileInfo> result = new();
+
+        foreach (string file in filesList)
+        {
+            FileInfo newFileInfo = new(file);
+            result.Add(newFileInfo);
+        }
+
+        Debug.Assert(result.Count == result.Distinct().Count());
+
+        return result;
+    }
     /// </UTILITY>
+
 }
+

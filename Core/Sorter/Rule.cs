@@ -1,20 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace Core.Sorter
 {
-    public class Rule() : IDetectMatches
+    public class Rule : IDetectMatches
     {
-        public List<Param> Paramaters { get; set; } = [];
+        private StrengthDetector _myStrengthDetector;
+
+        public Rule(List<FileInfo> allData)
+        {
+            _myStrengthDetector = new StrengthDetector();
+
+            List<FileInfo> matchingFileList = _myStrengthDetector.RuleMatches(this, allData);
+            StartEstimation = MatchingFiles.Count;
+
+            List<string> MatchingFilesStrings = matchingFileList.Select(file => file.FullName).ToList();
+            MatchingFiles = MatchingFilesStrings;
+        }
+
+        public List<Param> Paramaters { get; set; } = new();
         public string StartPath { get; set; }
         public string EndPath { get; set; }
+
         /// <summary>
         /// the amount of times the rule has been executed
         /// (includes Autosorter and human intervention)
         /// </summary>
-        public int Strength { get; set; } = 0;
+        public int ExecutionCount { get; set; } = 0;
+
+        /// <summary>
+        /// the amount of files that match the rules paramaters
+        /// in the folder at time of rule creation
+        /// </summary>
+        public int StartEstimation { get; set; } = 0;
 
         public bool ShouldMove(FileInfo fileInfo)
         {
@@ -32,7 +53,7 @@ namespace Core.Sorter
             return IsMatch(fileInfo);
         }
 
-        public List<FileInfo> MatchingFiles { get; set; } = new();
+        public List<string> MatchingFiles { get; set; } = new();
         public bool IsMatch(FileInfo fileInfo)
         {
 
@@ -42,6 +63,13 @@ namespace Core.Sorter
             }))
             {
                 //A parameter didn't match the fileInfo.
+                foreach (Param param in Paramaters)
+                {
+                    if(param.IsMatch(fileInfo)) { continue; }
+                    if(param?.MyApproximateMatch() == true) { continue; }
+                    return false;
+                }
+                return true;
             }
             else
             {
@@ -49,8 +77,11 @@ namespace Core.Sorter
                 return true;
             }
 
-            return false;
+        }
 
+        public int strength()
+        {
+            return StartEstimation * Paramaters.Count;
         }
     }
 }

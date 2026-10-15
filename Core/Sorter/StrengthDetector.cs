@@ -6,45 +6,8 @@ namespace Core.Sorter
 {
     internal class StrengthDetector
     {
-        /// <summary>
-        /// Tests a potential parameter to see if it is worth prompting the user.
-        /// </summary>
-        /// <returns>How many files fit the parameter.</returns>
-        public int? CorralationStrength(
-                string ParamaterTypeName,
-                List<FileInfo> allData,
-                FileInfo newData)
-        {
-            int CorralationStrength = 0;
-            object? newFileParamater = typeof(FileInfo)
-                                        ?.GetProperty(ParamaterTypeName)
-                                        ?.GetValue(newData);
-
-            if (newFileParamater == null) return null;
-
-            foreach (FileInfo paramater in allData)
-            {
-                object? secondaryParamater = typeof(Param)
-                                            ?.GetProperty(ParamaterTypeName)
-                                            ?.GetValue(paramater);
-
-                if (secondaryParamater == null) { continue; }
-
-                if (secondaryParamater == newFileParamater)
-                {
-                    CorralationStrength++;
-                }
-                else
-                {
-                    CorralationStrength -= 10;
-                }
-            }
-
-            return CorralationStrength;
-        }
-
-        public int? CorralationStrength(
-                IDetectMatches detector,
+        public int? ParamStrength(
+                Param detector,
                 List<FileInfo> allData
             )
         {
@@ -58,7 +21,7 @@ namespace Core.Sorter
                 if (detector.IsMatch(datapoint))
                 {
                     positiveCount++;
-                    detector.MatchingFiles.Add(datapoint);
+                    detector.MatchingFiles.Add(datapoint.FullName);
                 }
                 else
                 {
@@ -73,7 +36,13 @@ namespace Core.Sorter
             return result;
         }
 
-        public List<FileInfo> CorralationFiles(Rule rule, List<FileInfo> corralationFiles)
+        /// <summary>
+        /// Finds the file matches for a given rule for a list of files
+        /// </summary>
+        /// <param name="rule">the rule to find matches for</param>
+        /// <param name="corralationFiles">the list of files</param>
+        /// <returns>The list of files that match the rule</returns>
+        public List<FileInfo> RuleMatches(Rule rule, List<FileInfo> corralationFiles)
         {
             foreach (Param param in rule.Paramaters)
             {
@@ -89,32 +58,38 @@ namespace Core.Sorter
             return corralationFiles;
         }
 
-        public Dictionary<Param, int> CorralationStrengths(
-            List<Param> Params,
-            List<FileInfo> allData,
-            FileInfo forFile)
+        public List<FileInfo> RuleMatches(Rule rule, string folderPath)
         {
-            Dictionary<Param, int> allStrengths = new();
-
-            foreach (Param param in Params)
-            {
-                int? strength = CorralationStrength(param, allData);
-                int safeStrength = (strength == null) ? 0 : (int)strength;
-                allStrengths.Add(param, safeStrength);
-            }
-
-            return allStrengths;
+            List<FileInfo> FilesInFolder = FileUtility.GetFileInfoOfFolder(folderPath);
+            return RuleMatches(rule, FilesInFolder);
         }
-        public int MatchingStrength(Dictionary<Param, int> ParamToStrength, string paramName)
+
+        public List<Rule> StrongestRules(List<Rule> rules)
         {
-            foreach (KeyValuePair<Param, int> KV in ParamToStrength)
+            int LargestStrength = GetLargestStrength(rules);
+            List<Rule> StrongestRules = new();
+
+            foreach (Rule rule in rules)
             {
-                if (KV.Key.FileProperty == paramName)
+                if (rule.strength() == LargestStrength) 
                 {
-                    return KV.Value;
+                    StrongestRules.Add(rule);
                 }
             }
-            return 0;
+
+            return StrongestRules;
+        }
+
+        public static int GetLargestStrength(List<Rule> Rules)
+        {
+            int largestStrength = 0;
+            for (int i = 0; i < Rules.Count; i++)
+            {
+                int strength = Rules[i].strength();
+                if (strength > largestStrength)
+                    largestStrength = strength;
+            }
+            return largestStrength;
         }
     }
 }

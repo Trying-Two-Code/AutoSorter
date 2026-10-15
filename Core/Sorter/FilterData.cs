@@ -7,7 +7,7 @@ using System.Text;
 namespace Core.Sorter
 {
     /// <summary>
-    /// Class to get rid of useless data.
+    /// Class to get rid of useless rule and fileinfo data.
     /// </summary>
     class FilterData()
     {
@@ -39,12 +39,10 @@ namespace Core.Sorter
         /// </summary>
         /// <param name="Rules"></param>
         /// <returns></returns>
-        public static List<Rule>? DetectDuplicateRules(List<Rule>? Rules)
+        public static List<Rule> DetectDuplicateRules(List<Rule> Rules)
         {
-            if (Rules == null)
-                return null;
-
-            return Rules.Distinct()?.ToList();
+            //TODO: check that none of them exist in the rule file already
+            return Rules.Distinct().ToList();
         }
 
         //NOTE: if tied for first, chooses the first strongest rule
@@ -52,22 +50,11 @@ namespace Core.Sorter
         {
             if (Rules == null) return null;
 
-            int GetLargestStrength(List<Rule> Rules)
-            {
-                int largestStrength = 0;
-                for (int i = 0; i < Rules.Count; i++)
-                {
-                    if (Rules[i].Strength > largestStrength)
-                        largestStrength = Rules[i].Strength;
-                }
-                return largestStrength;
-            }
-
-            int LargestStrength = GetLargestStrength(Rules);
+            int LargestStrength = StrengthDetector.GetLargestStrength(Rules);
             Debug.WriteLine("Largest strength: " + LargestStrength);
             for (int i = 0; i < Rules.Count; i++)
             {
-                if (Rules[i].Strength == LargestStrength)
+                if (Rules[i].strength() == LargestStrength)
                     return Rules[i];
             }
 
@@ -80,7 +67,7 @@ namespace Core.Sorter
 
             foreach (Rule rule in allRules)
             {
-                int ruleStrength = rule.Strength;
+                int ruleStrength = rule.strength();
                 if(ruleStrength >= requiredStrength)
                 {
                     strongRules.Add(rule);
@@ -88,25 +75,6 @@ namespace Core.Sorter
             }
 
             return strongRules;
-        }
-
-        public static int GetNewRuleStrength(Rule rule, int limit)
-        {
-            string endPath = rule.EndPath;
-            int strength = 0;
-
-            IEnumerable<string> files = Directory.EnumerateFiles(endPath).Take(limit);
-
-            foreach (string file in files)
-            {
-                FileInfo fileInfo = new FileInfo(file);
-                if (rule.IsMatch(fileInfo))
-                {
-                    strength += 1;
-                }
-            }
-
-            return strength;
         }
     }
 }
