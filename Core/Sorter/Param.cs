@@ -83,35 +83,59 @@ namespace Core.Sorter
                 new ParamOptions("CreationTime", typeof(DateTime)),
                 new ParamOptions("LastAccessTime", typeof(DateTime)),
                 new ParamOptions("LastAccessTime", typeof(DateTime), "DateApproximate"),
+                new ParamOptions("LastAccessTime", typeof(DateTime), "WeekdayApproximate"),
                 new ParamOptions("Extension", typeof(string)),
                 new ParamOptions("Name", typeof(string)),
                 new ParamOptions("Name", typeof(string), "StringApproximate"),
+                new ParamOptions("Name", typeof(string), "StrongStringApproximate"),
                 new ParamOptions("Length", typeof(long)),
+                new ParamOptions("Length", typeof(long), "NumberApproximate"),
             };
     };
 
     static class ParamApproximates
     {
         //References:
-        static ApproximateMatch DateApproximate1 = (FileInfo forFile, Param self) =>
-        {
-            return ParamApproximates.DateApproximate(
-                date1: self.FileProperty,
-                date2Time: forFile.LastAccessTime,
-                SecondDifference: 500)
-            > .5f;
-        };
-        static ApproximateMatch StringApproximate1 = (FileInfo forFile, Param self) =>
-        {
-            return ParamApproximates.StringApproximate(
-                forFile.Name,
-                self?.PropertyContains)
-            > 0.5f;
-        };
         public static Dictionary<string, ApproximateMatch> defualtApproximateMatchMethods = new()
         {
-            { "DateApproximate", DateApproximate1 },
-            { "StringApproximate", StringApproximate1 },
+            { "DateApproximate", (FileInfo forFile, Param self) =>
+                {
+                    return ParamApproximates.DateApproximate(
+                        date1: self.FileProperty,
+                        date2Time: forFile.LastAccessTime,
+                        SecondDifference: 500)
+                    > 0.5f;
+                } },
+            { "WeekdayApproximate", (FileInfo forFile, Param self) =>
+                {
+                    return ParamApproximates.WeekdayApproximate(
+                        date1: self.FileProperty,
+                        date2Time: forFile.LastAccessTime)
+                    == 1f;
+                } },
+            { "StringApproximate", (FileInfo forFile, Param self) =>
+                {
+                    return ParamApproximates.StringApproximate(
+                        forFile.Name,
+                        self?.PropertyContains)
+                    > 0.5f;
+                } },
+            { "StrongStringApproximate", (FileInfo forFile, Param self) =>
+                {
+                    return ParamApproximates.StringApproximate(
+                        forFile.Name,
+                        self?.PropertyContains)
+                    > 0.9f;
+                } },
+            { "NumberApproximate", (FileInfo forFile, Param self) =>
+                {
+                    return ParamApproximates.NumberApproximate(
+                        num1Float: forFile.Length,
+                        num2: self?.PropertyContains,
+                        NumberDifference: 100f)
+                    > 0.8f;
+                }
+            }
         };
 
 
@@ -142,12 +166,11 @@ namespace Core.Sorter
             return (float)SameCount / (float)length;
         }
 
-        public static float DateApproximate(
-            string? date1 = null, string? date2 = null, 
-            DateTime? date1Time = null, DateTime? date2Time = null,
-            int SecondDifference = 100)
+        public static TimeSpan? DateDifference(
+            string? date1 = null, string? date2 = null,
+            DateTime? date1Time = null, DateTime? date2Time = null)
         {
-            if(date1Time == null)
+            if (date1Time == null)
             {
                 DateTime result1;
                 DateTime.TryParse(date1, out result1);
@@ -160,9 +183,49 @@ namespace Core.Sorter
                 date2Time = result2;
             }
 
-            int compare = Math.Abs((int)(date1Time - date2Time)?.Seconds);
-            float Aproximate = ((float)SecondDifference - (float)compare) / (float)SecondDifference;
+            TimeSpan? compare = date1Time - date2Time;
+            return compare;
+        }
+
+        public static float DateApproximate(
+            string? date1 = null, string? date2 = null, 
+            DateTime? date1Time = null, DateTime? date2Time = null,
+            int SecondDifference = 100)
+        {
+            int compare = Math.Abs((int)DateDifference(date1, date2, date1Time, date2Time)?.Seconds);
+            float Aproximate = Math.Max(0, (SecondDifference - compare) / SecondDifference);
             return Aproximate;
+        }
+
+        public static float WeekdayApproximate(
+            string? date1 = null, string? date2 = null,
+            DateTime? date1Time = null, DateTime? date2Time = null
+            )
+        {
+            TimeSpan difference = (TimeSpan)DateDifference(date1, date2, date1Time, date2Time);
+            if(difference.TotalDays % 7 == 0)
+            {
+                return 1f;
+            }
+            return 0f;
+        }
+
+        public static float NumberApproximate(
+            string? num1 = null, string? num2 = null,
+            float? num1Float = null, float? num2Float = null,
+            float NumberDifference = 100)
+        {
+            if (num1Float == null) 
+            {
+                num1Float = float.Parse(num1);
+            }
+            if (num2Float == null)
+            {
+                num2Float = float.Parse(num2);
+            }
+
+            float difference = Math.Abs((float)num1Float - (float)num2Float);
+            return Math.Max(0, (NumberDifference - difference) / NumberDifference);
         }
     }
 }
