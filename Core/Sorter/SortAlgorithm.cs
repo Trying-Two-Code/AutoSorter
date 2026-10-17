@@ -20,6 +20,7 @@ internal class SortAlgorithm
     private StrengthDetector _myStrengthDetector { get; set; }
     private RuleGenerator _myRuleGeneretor { get; set; }
     private RuleExecuter _myRuleExecuter { get; set; }
+    private FilterData _myFilterData { get; set; }
 
     //how many files should sort algorithm be looking through maximum?
     const int limit = 1000; 
@@ -30,6 +31,7 @@ internal class SortAlgorithm
         _myStrengthDetector = new StrengthDetector();
         _myRuleGeneretor = new RuleGenerator(_myStrengthDetector);
         _myRuleExecuter = new RuleExecuter();
+        _myFilterData = new FilterData();
     }
 
     /// <summary>
@@ -41,16 +43,17 @@ internal class SortAlgorithm
         const int RequiredStrength = 10;
 
         //sort old data for only those files that match the start folder and end destination paths
-        List <FileInfo> FilteredFiles = FilterData.Filter(allData, newData);
+        List <FileInfo> FilteredFiles = _myFilterData.Filter(allData, newData);
 
         //generate a list of rules
         List<Rule> GeneratedRules = _myRuleGeneretor.AllRules(FilteredFiles, newData, oldPath, limit);
 
         //remove any weak rules
-        GeneratedRules = FilterData.StrongRules(GeneratedRules, RequiredStrength, limit);
+        GeneratedRules = _myFilterData.StrongRules(GeneratedRules, RequiredStrength, limit);
 
         //remove any rules if they already exist
-        GeneratedRules = FilterData.DetectDuplicateRules(GeneratedRules);
+        List<Rule> OldRules = RuleEditor.GetRules();
+        GeneratedRules = _myFilterData.DetectDuplicateRules(GeneratedRules, OldRules);
 
         //find the strongest rule
         List<Rule>? StrongestRules = _myStrengthDetector.StrongestRules(GeneratedRules);
@@ -64,6 +67,7 @@ internal class SortAlgorithm
         else if(StrongestRules.Count > 1)
         {
             //newRule = DecideOnRuleSomehow;
+            throw new NotImplementedException();
         }
 
         if (newRule != null)

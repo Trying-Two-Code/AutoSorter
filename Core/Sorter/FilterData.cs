@@ -9,7 +9,7 @@ namespace Core.Sorter
     /// <summary>
     /// Class to get rid of useless rule and fileinfo data.
     /// </summary>
-    class FilterData()
+    public class FilterData
     {
         /// <summary>
         /// Filters for only files that moved to and from the same path
@@ -18,7 +18,7 @@ namespace Core.Sorter
         /// <param name="data">all old data</param>
         /// <param name="datapoint">just the newest datapoint</param>
         /// <returns>The dataset minus extra datapoints.</returns>
-        public static List<FileInfo> Filter(List<FileInfo> data, FileInfo datapoint)
+        public List<FileInfo> Filter(List<FileInfo> data, FileInfo datapoint)
         {
             List<FileInfo> filtered = new List<FileInfo>();
             foreach (FileInfo filedatapoint in data)
@@ -39,14 +39,22 @@ namespace Core.Sorter
         /// </summary>
         /// <param name="Rules"></param>
         /// <returns></returns>
-        public static List<Rule> DetectDuplicateRules(List<Rule> Rules)
+        public List<Rule> DetectDuplicateRules(List<Rule> NewRules, List<Rule> OldRules)
         {
-            //TODO: check that none of them exist in the rule file already
-            return Rules.Distinct().ToList();
+            List<Rule> result = new(0);
+            result = NewRules.Distinct().ToList();
+            foreach (Rule oldRule in OldRules)
+            {
+                if (result.Contains(oldRule))
+                {
+                    result.Remove(oldRule);
+                }
+            }
+            return result;
         }
 
         //NOTE: if tied for first, chooses the first strongest rule
-        public static Rule? StrongestRule(List<Rule>? Rules)
+        public Rule? StrongestRule(List<Rule>? Rules)
         {
             if (Rules == null) return null;
 
@@ -61,7 +69,7 @@ namespace Core.Sorter
             return null;
         }
 
-        public static List<Rule> StrongRules(List<Rule> allRules, int requiredStrength, int limit)
+        public List<Rule> StrongRules(List<Rule> allRules, int requiredStrength, int limit)
         {
             List<Rule> strongRules = new();
 
