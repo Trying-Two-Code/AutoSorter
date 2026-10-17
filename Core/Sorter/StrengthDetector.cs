@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Core.Sorter
 {
-    internal class StrengthDetector
+    public class StrengthDetector
     {
         public int? ParamStrength(
                 Param detector,
@@ -36,32 +36,10 @@ namespace Core.Sorter
             return result;
         }
 
-        /// <summary>
-        /// Finds the file matches for a given rule for a list of files
-        /// </summary>
-        /// <param name="rule">the rule to find matches for</param>
-        /// <param name="corralationFiles">the list of files</param>
-        /// <returns>The list of files that match the rule</returns>
-        public List<FileInfo> RuleMatches(Rule rule, List<FileInfo> corralationFiles)
-        {
-            foreach (Param param in rule.Paramaters)
-            {
-                for (int i = corralationFiles.Count - 1; i >= 0; i--)
-                {
-                    FileInfo fileInfo = corralationFiles[i];
-                    if (!param.IsMatch(fileInfo))
-                    {
-                        corralationFiles.Remove(fileInfo);
-                    }
-                }
-            }
-            return corralationFiles;
-        }
-
         public List<FileInfo> RuleMatches(Rule rule, string folderPath)
         {
             List<FileInfo> FilesInFolder = FileUtility.GetFileInfoOfFolder(folderPath);
-            return RuleMatches(rule, FilesInFolder);
+            return rule.Matches(FilesInFolder);
         }
 
         public List<Rule> StrongestRules(List<Rule> rules)

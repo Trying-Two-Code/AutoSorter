@@ -16,7 +16,7 @@ namespace Core.Sorter
         }
 
         /// <summary>
-        /// Returns the power set of all possible param combinations. Keep in mind
+        /// Returns the power set of all possible param combinations for a file. Keep in mind
         /// this method is a time sinker: O((2^AllParameters) * AllParameters)
         /// </summary>
         /// <param name="limit"></param>
@@ -25,28 +25,34 @@ namespace Core.Sorter
         {
             List<List<Param>> AllParamList = new();
 
-            int possibleSubsetCount = (2 ^ Param.AllParamaters.Count);
+            int possibleSubsetCount = (int)Math.Pow((double)2, (double)ParamOptions.AllParamaters.Count);
 
             for (int subsetI = 0; subsetI < Math.Min(possibleSubsetCount, limit); subsetI += 1)
             {
                 List<Param> tempList = new();
 
-                for (int i = 0; i < Param.AllParamaters.Count; i += 1)
+                for (int i = 0; i < ParamOptions.AllParamaters.Count; i += 1)
                 {
                     int mask = (1 << i);
                     bool subsetInMask = (subsetI & mask) != 0;
 
                     if (subsetInMask)
                     {
-                        Param.ParamOptions defaultParam = Param.AllParamaters[i];
+                        ParamOptions defaultParam = ParamOptions.AllParamaters[i];
                         string PropertyName = defaultParam.name;
 
                         Param newParameter = new(PropertyName)
                         {
-                            FileProperty = PropertyName
+                            FileProperty = PropertyName,
+                            MyApproximateMatchName = defaultParam.ApproximateMatchMethodName
                         };
 
-                        object? value = typeof(FileInfo)?.GetProperty(defaultParam.name)?.GetValue(forFile);
+                        object? value = 
+                            typeof(FileInfo)
+                            ?.GetProperty(defaultParam.name)
+                            ?.GetValue(forFile);
+
+                        //Important:
                         if (value?.GetType() == defaultParam.ValueType)
                         {
                             newParameter.PropertyContains = value.ToString();
@@ -77,57 +83,10 @@ namespace Core.Sorter
             int limit = 1000)
         {
             List<List<Param>> allParameters = AllParams(allData, newData, limit);
-            List<Rule> allRules = RuleParamConverter.ConvertParamsToRules(
-                MyStrengthDetector, allData, oldPath, newData.DirectoryName, allParameters);
+            List<Rule> allRules = Rule.ConvertParamsToRules(
+                allData, oldPath, newData.DirectoryName, allParameters);
 
             return allRules;
         }
-
-        /// <summary>
-        /// Creates a list of many possible Rules that could be made based on the paramaters
-        /// given.
-        /// </summary>
-        /// <returns>The created list of Rules.</returns>
-        public List<Rule> GenerateRules(List<FileInfo> allData, FileInfo newData, string oldPath, int limit)
-        {
-            const int RequiredStrength = 10;
-            const int MaximumRules = 1000;
-
-            List<Rule>? newRules = new();
-
-            List<Rule> allRules = AllRules(allData, newData, oldPath);
-            //for every type of paramater
-            List<Rule> allPositiveRules = FilterData.StrongRules(allRules, RequiredStrength, limit);
-            newRules.AddRange(allPositiveRules);
-
-            Debug.WriteLine("Generated Rules Finished. Count is: " + newRules.Count);
-            return newRules;
-        }
-    }
-}
-
-static class RuleParamConverter
-{
-
-    public static List<Rule> ConvertParamsToRules(
-        StrengthDetector strengthDetector, 
-        List<FileInfo> allData,
-        string startPath,
-        string endPath, 
-        List<List<Param>> paramLists)
-    {
-        List<Rule> allRules = new();
-        foreach (List<Param> paramList in paramLists)
-        {
-            Rule newRule = new(allData)
-            {
-                Paramaters = paramList,
-                StartPath = startPath,
-                EndPath = endPath,
-            };
-
-            allRules.Add(newRule);
-        }
-        return allRules;
     }
 }

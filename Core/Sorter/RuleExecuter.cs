@@ -26,6 +26,8 @@ namespace Core.Sorter
             string fullEndPath = Path.Combine(rule.EndPath, fileName);
 
             FileSystemManager.Move(fullStartPath, fullEndPath);
+
+            rule.ExecutionCount++;
         }
 
         private static List<Rule> ShouldExecuteRules(

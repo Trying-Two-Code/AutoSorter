@@ -21,6 +21,9 @@ internal class SortAlgorithm
     private RuleGenerator _myRuleGeneretor { get; set; }
     private RuleExecuter _myRuleExecuter { get; set; }
 
+    //how many files should sort algorithm be looking through maximum?
+    const int limit = 1000; 
+
     public SortAlgorithm(PromptUser _promptUser)
     {
         _myPromptUser = _promptUser;
@@ -32,22 +35,22 @@ internal class SortAlgorithm
     /// <summary>
     /// Generates a list of all possible Rules given the old data and new file data.
     /// </summary>
-    /// <returns>The best possible Rule, only if it is worth prompting the user.</returns>
     public void ManageRules(List<FileInfo> allData, FileInfo newData, string oldPath)
     {
         allData = allData.Distinct().ToList();
-        const int limit = 1000;
+        const int RequiredStrength = 10;
 
         //sort old data for only those files that match the start folder and end destination paths
-        List<FileInfo> FilteredFiles = FilterData.Filter(allData, newData);
+        List <FileInfo> FilteredFiles = FilterData.Filter(allData, newData);
 
         //generate a list of rules
-        List<Rule> GeneratedRules = _myRuleGeneretor.GenerateRules(FilteredFiles, newData, oldPath, limit);
+        List<Rule> GeneratedRules = _myRuleGeneretor.AllRules(FilteredFiles, newData, oldPath, limit);
+
+        //remove any weak rules
+        GeneratedRules = FilterData.StrongRules(GeneratedRules, RequiredStrength, limit);
 
         //remove any rules if they already exist
         GeneratedRules = FilterData.DetectDuplicateRules(GeneratedRules);
-
-        GeneratedRules.Reverse();
 
         //find the strongest rule
         List<Rule>? StrongestRules = _myStrengthDetector.StrongestRules(GeneratedRules);
@@ -74,7 +77,6 @@ internal class SortAlgorithm
         FileMoveData[] AllData = e.AllData;
         List<FileInfo> AllFileInfo = FileUtility.MultiConvertFileMoveData(AllData);
 
-        const int limit = 1000;
         List<FileInfo> FileInfoOfFolder = FileUtility.GetFileInfoOfFolder(e.NewFile.DirectoryName, limit);
         AllFileInfo.AddRange(FileInfoOfFolder);
 
@@ -83,6 +85,7 @@ internal class SortAlgorithm
 
 }
 
+//Todo: make this less hacky
 static class FileUtility
 {
     /// <UTILITY>
@@ -102,8 +105,6 @@ static class FileUtility
     }
     public static List<FileInfo> GetFileInfoOfFolder(string folderName, int limit = 1000)
     {
-        Debug.WriteLine(folderName);
-
         List<string> filesList =
             Directory.EnumerateFiles(folderName)
             .Take(limit)
@@ -116,8 +117,6 @@ static class FileUtility
             FileInfo newFileInfo = new(file);
             result.Add(newFileInfo);
         }
-
-        Debug.Assert(result.Count == result.Distinct().Count());
 
         return result;
     }
