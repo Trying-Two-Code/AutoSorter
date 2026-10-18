@@ -52,19 +52,12 @@ namespace Core.Sorter
 
             lock (_lock)
             {
-                try
+                using (StreamReader r = new StreamReader(RuleDataPath))
                 {
-                    using (StreamReader r = new StreamReader(RuleDataPath))
-                    {
-                        string json = r.ReadToEnd();
-                        List<Rule> jsonData = JsonSerializer.Deserialize<List<Rule>>(json);
+                    string json = r.ReadToEnd();
+                    List<Rule>? jsonData = JsonSerializer.Deserialize<List<Rule>>(json);
+                    if(jsonData != null)
                         data = jsonData;
-                    }
-                }
-                catch
-                {
-                    //json is not valid, must be reset
-                    SaveRules(data);
                 }
             }
 
@@ -73,15 +66,12 @@ namespace Core.Sorter
 
         public static void SaveRules(List<Rule> newData)
         {
-            foreach (Rule rule in newData)
+            lock (_lock)
             {
-                lock (_lock)
+                using (StreamWriter r = new StreamWriter(RuleDataPath))
                 {
-                    using (StreamWriter r = new StreamWriter(RuleDataPath))
-                    {
-                        string json = JsonSerializer.Serialize(rule);
-                        r.Write(json);
-                    }
+                    string json = JsonSerializer.Serialize(newData);
+                    r.Write(json);
                 }
             }
         }

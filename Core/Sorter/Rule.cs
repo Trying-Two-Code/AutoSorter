@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Core.Sorter
 {
     public class Rule : IDetectMatches
     {
+        [JsonConstructor]
+        public Rule() { }
+
         public Rule(
             List<FileInfo> allData, 
             List<Param> parameters, 
