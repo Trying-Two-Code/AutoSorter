@@ -1,7 +1,8 @@
-﻿using System.Diagnostics;
+﻿using App.Ui.UiScripts;
+using Microsoft.VisualBasic.ApplicationServices;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using App.Ui.UiScripts;
 
 namespace App.Ui.UiComponents
 {
@@ -12,8 +13,8 @@ namespace App.Ui.UiComponents
     {
         public IntensitySlider()
         {
-            InitializeComponent();
             UserSettings.GetSettings();
+            InitializeComponent();
             int oldValue = UserSettings.promptUserAmm;
             if(oldValue != null)
             {
@@ -23,6 +24,7 @@ namespace App.Ui.UiComponents
             {
                 IntensitySliderInst.Value = 50;
             }
+
         }
 
         static int oldSliderValue = 0;
@@ -31,10 +33,12 @@ namespace App.Ui.UiComponents
             Slider _sender = (Slider)sender;
             int _newValue = (int)Convert.ToInt32(e.NewValue);
 
-            if (oldSliderValue != _newValue)  
+            if (oldSliderValue != _newValue)
+            {
                 oldSliderValue = _newValue;
                 IntensityLabel.Content = _newValue;
-                UserSettings.JsonFileWriter.Write<int>("promptUserAmm", _newValue);
+                UserSettings.Set<int>("promptUserAmm", _newValue);
+            }
         }
     }
 }
