@@ -16,6 +16,7 @@ namespace Core.Sorter;
 
 internal class SortAlgorithm
 {
+    public GetSettingsTask _myGetSettingsTask { get; set; }
     private PromptUser _myPromptUser { get; set; }
     private StrengthDetector _myStrengthDetector { get; set; }
     private RuleGenerator _myRuleGeneretor { get; set; }
@@ -25,13 +26,32 @@ internal class SortAlgorithm
     //how many files should sort algorithm be looking through maximum?
     const int limit = 1000; 
 
-    public SortAlgorithm(PromptUser _promptUser)
+    public SortAlgorithm(PromptUser _promptUser, GetSettingsTask myGetSettingsTask)
     {
         _myPromptUser = _promptUser;
+        _myGetSettingsTask = myGetSettingsTask;
         _myStrengthDetector = new StrengthDetector();
         _myRuleGeneretor = new RuleGenerator(_myStrengthDetector);
         _myRuleExecuter = new RuleExecuter();
         _myFilterData = new FilterData();
+
+        SetRequiredStrength();
+    }
+
+    public int RequiredStrength = 10;
+
+    public void SetRequiredStrength()
+    {
+        object? data = _myGetSettingsTask?.Invoke(this, null);
+
+        if (data != null)
+        {
+            int? dataStrength = data.GetType()?.GetProperty("promptUserAmm")?.GetValue(data) as int?;
+            if(dataStrength != null)
+            {
+                RequiredStrength = (int)dataStrength;
+            }
+        }
     }
 
     /// <summary>
@@ -40,7 +60,6 @@ internal class SortAlgorithm
     public void ManageRules(List<FileInfo> allData, FileInfo newData, string oldPath)
     {
         allData = allData.Distinct().ToList();
-        const int RequiredStrength = 10;
 
         //sort old data for only those files that match the start folder and end destination paths
         List <FileInfo> FilteredFiles = _myFilterData.Filter(allData, newData);
@@ -84,6 +103,8 @@ internal class SortAlgorithm
     //Called when, for example, a data entry is added to userAction.json
     public void OnDataGained(object sender, OnFileMoveEventArgs e)
     {
+        SetRequiredStrength();
+
         FileMoveData[] AllData = e.AllData;
         List<FileInfo> AllFileInfo = FileUtility.MultiConvertFileMoveData(AllData);
 

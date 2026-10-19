@@ -13,14 +13,10 @@ using Path = System.IO.Path;
 
 namespace App.Ui.UiScripts;
 
-class UserSettings
+static class UserSettings
 {
     public static readonly string UserFileDataPath = 
         Path.Combine(AppContext.BaseDirectory, @"Ui\UserSettings\userSettings.json");
-
-    public UserSettings()
-    {
-    }
 
     public static object _lock = new();
     public static bool running = false;
@@ -33,9 +29,9 @@ class UserSettings
             running = JsonFileReader.Read<bool>("running");
             promptUserAmm = JsonFileReader.Read<int>("promptUserAmm");
             muted = JsonFileReader.Read<bool>("muted");
+            Debug.WriteLine($"got user settings: {promptUserAmm}");
         }
     }
-
 
     public static T Set<T>(string key, T value)
     {
@@ -154,4 +150,11 @@ class UserSettings
                 );
         }
     }
+}
+
+public class settings()
+{
+    public bool running { get; set; } = true;
+    public int promptUserAmm { get; set; } = 50;
+    public bool muted { get; set; } = false;
 }

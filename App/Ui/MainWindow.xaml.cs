@@ -14,6 +14,7 @@ using Microsoft.Win32;
 using IWshRuntimeLibrary;
 using System.Windows.Threading;
 using Core.Sorter;
+using Core;
 
 
 
@@ -29,7 +30,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        _app = new AppAPI(path, DownloadFolder(), OnUIEventRecieved);
+        _app = new AppAPI(path, DownloadFolder(), OnUIEventRecieved, OnGetSettingsRecieved);
 
         Loaded += new RoutedEventHandler(Window_Loaded);
 
@@ -39,7 +40,6 @@ public partial class MainWindow : Window
             _app.Start();
             MainStartStopButton.ToggleRunning();
         }
-        System.Diagnostics.Debug.WriteLine(UserSettings.running);
 
         ActivateOnStartup.RegisterApp();
         if(ActivateOnStartup.DetectClose())
@@ -205,5 +205,24 @@ public partial class MainWindow : Window
     public Task<bool> OnUIEventRecieved(object sender, EventArgs args)
     {
         return PromptUser("working");
+    }
+
+    public settings GetSettings()
+    {
+        UserSettings.GetSettings();
+
+        settings _settings = new()
+        {
+            running = UserSettings.running,
+            promptUserAmm = UserSettings.promptUserAmm,
+            muted = UserSettings.muted
+        };
+
+        return _settings;
+    }
+
+    public object OnGetSettingsRecieved(object sender, EventArgs args)
+    {
+        return GetSettings();
     }
 }
