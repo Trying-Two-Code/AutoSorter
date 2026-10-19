@@ -41,8 +41,11 @@ namespace Core.Sorter
         /// <returns></returns>
         public List<Rule> DetectDuplicateRules(List<Rule> NewRules, List<Rule> OldRules)
         {
-            List<Rule> result = new(0);
+            Debug.WriteLine(NewRules.Count);
+            Debug.WriteLine(OldRules.Count);
+            List<Rule> result = new();
             result = NewRules.Distinct().ToList();
+            Debug.WriteLine(result.Count);
             foreach (Rule oldRule in OldRules)
             {
                 if (result.Contains(oldRule))
@@ -50,8 +53,23 @@ namespace Core.Sorter
                     result.Remove(oldRule);
                 }
             }
+
+            Debug.WriteLine(result.Count);
+            foreach (Rule oldRule in OldRules)
+            {
+                for (int i = result.Count - 1; i >= 0; i--)
+                {
+                    Rule newRule = result[i];
+                    if (newRule.CheapRuleEqualityCheck(oldRule))
+                    {
+                        result.Remove(newRule);
+                    }
+                }
+            }
             return result;
         }
+
+
 
         //NOTE: if tied for first, chooses the first strongest rule
         public Rule? StrongestRule(List<Rule>? Rules)
@@ -69,17 +87,33 @@ namespace Core.Sorter
             return null;
         }
 
-        public List<Rule> StrongRules(List<Rule> allRules, int requiredStrength, int limit)
+        public List<Rule> StrongRules(
+            List<Rule> allRules, 
+            int requiredStrength = 10, 
+            int requiredParams = 2,
+            int requiredMatches = 10, 
+            int limit = 1000)
         {
             List<Rule> strongRules = new();
 
             foreach (Rule rule in allRules)
             {
                 int ruleStrength = rule.strength();
-                if(ruleStrength >= requiredStrength)
+
+                if(ruleStrength < requiredStrength)
                 {
-                    strongRules.Add(rule);
+                    continue;
                 }
+                if(rule.Paramaters.Count < requiredParams)
+                {
+                    continue;
+                }
+                if (rule.StartEstimation < requiredMatches)
+                {
+                    continue;
+                }
+
+                strongRules.Add(rule);
             }
 
             return strongRules;

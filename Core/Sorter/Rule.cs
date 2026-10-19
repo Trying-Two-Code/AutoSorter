@@ -134,5 +134,62 @@ namespace Core.Sorter
             }
             return corralationFiles;
         }
+
+
+        public bool CheapRuleEqualityCheck(Rule OtherRule)
+        {
+            if (ParamListCorralation(OtherRule.Paramaters) > 0.9f)
+            {
+                return true;
+            }
+
+            if (StringListCorralation(MatchingFiles, OtherRule.MatchingFiles) > 0.9f)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public float ParamListCorralation(List<Param> OtherParamList)
+        {
+            List<Param> longList = Paramaters.Count > OtherParamList.Count ? Paramaters : OtherParamList;
+            List<Param> shortList = Paramaters.Count > OtherParamList.Count ? OtherParamList : Paramaters;
+
+            float corralationAmmount = 0;
+
+            for (int i = 0; i < shortList.Count; i++)
+            {
+                Param longParam = longList[i];
+                Param shortParam = shortList[i];
+
+                if (longParam.CheapEqual(shortParam))
+                {
+                    corralationAmmount++;
+                }
+            }
+
+            return Math.Max(0, corralationAmmount / shortList.Count);
+        }
+
+        public float StringListCorralation(List<string> list1, List<string> list2)
+        {
+            List<string> longList = list1.Count > list2.Count ? list1 : list2;
+            List<string> shortList = list1.Count > list2.Count ? list2 : list1;
+
+            float corralationAmmount = 0;
+
+            for (int i = 0; i < shortList.Count; i++)
+            {
+                string longString = longList[i];
+
+                if (shortList.Contains(longString))
+                {
+                    corralationAmmount++;
+                }
+            }
+
+            return Math.Max(0, corralationAmmount / shortList.Count);
+        }
     }
 }

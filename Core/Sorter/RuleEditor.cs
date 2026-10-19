@@ -52,12 +52,20 @@ namespace Core.Sorter
 
             lock (_lock)
             {
-                using (StreamReader r = new StreamReader(RuleDataPath))
+                try
                 {
-                    string json = r.ReadToEnd();
-                    List<Rule>? jsonData = JsonSerializer.Deserialize<List<Rule>>(json);
-                    if(jsonData != null)
-                        data = jsonData;
+                    using (StreamReader r = new StreamReader(RuleDataPath))
+                    {
+                        string json = r.ReadToEnd();
+                        List<Rule>? jsonData = JsonSerializer.Deserialize<List<Rule>>(json);
+                        if (jsonData != null)
+                            data = jsonData;
+                    }
+                }
+                catch
+                {
+                    //Json isn't made yet or smth:
+                    SaveRules(new());
                 }
             }
 

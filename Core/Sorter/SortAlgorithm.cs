@@ -49,7 +49,12 @@ internal class SortAlgorithm
         List<Rule> GeneratedRules = _myRuleGeneretor.AllRules(FilteredFiles, newData, oldPath, limit);
 
         //remove any weak rules
-        GeneratedRules = _myFilterData.StrongRules(GeneratedRules, RequiredStrength, limit);
+        GeneratedRules = _myFilterData.StrongRules(
+            allRules: GeneratedRules, 
+            requiredStrength: RequiredStrength,
+            requiredParams: 2,
+            requiredMatches: 10,
+            limit: limit);
 
         //remove any rules if they already exist
         List<Rule> OldRules = RuleEditor.GetRules();
@@ -67,7 +72,8 @@ internal class SortAlgorithm
         else if(StrongestRules.Count > 1)
         {
             //newRule = DecideOnRuleSomehow;
-            throw new NotImplementedException();
+            newRule = StrongestRules[0];
+            //throw new NotImplementedException();
         }
 
         if (newRule != null)

@@ -68,6 +68,12 @@ namespace Core.Sorter
             return PerfectMatch;
         }
 
+        public bool CheapEqual(Param otherParam)
+        {
+            return (FileProperty == otherParam.FileProperty) && 
+                (PropertyContains == otherParam.PropertyContains);
+        }
+
         private class ParamValueNullError : Exception { }
     }
 
