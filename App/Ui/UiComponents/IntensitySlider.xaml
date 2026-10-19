@@ -299,7 +299,7 @@
                 Width="406" Height="43"
                 SmallChange="5" LargeChange="10"
                 Value="25"
-                Minimum="0" Maximum="50"
+                Minimum="2" Maximum="150"
                 BorderBrush="White"
                 BorderThickness="5"
                 Foreground="White"

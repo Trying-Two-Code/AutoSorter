@@ -51,6 +51,7 @@
                 <RowDefinition Height="113*"></RowDefinition>
                 <RowDefinition Height="14*"></RowDefinition>
             </Grid.RowDefinitions>
+            <Separator VerticalAlignment="Bottom"/>
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="195*"/>
@@ -70,9 +71,10 @@
                     Name="ShowUserdata" 
                     Click="ShowUserdata_Click" 
                     BorderThickness="0"
-                    Height="170"
-                    Width="170"
+                    Height="70"
+                    Width="70"
                     Margin="-20"
+                    VerticalAlignment="Bottom"
                     ToolTip="see all data"
                     Background="Transparent">
 
@@ -85,7 +87,7 @@
             x:Name="CloseButton"
             Grid.Row="0"
             Click="CloseButton_Click"
-            Source="\Ui\Assets\Visual\x2-64.png"
+            Source="\Ui\Assets\Visual\x-3.png"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"/>
 
