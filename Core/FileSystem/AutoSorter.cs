@@ -207,8 +207,13 @@ public struct FileMoveData()
 /// A class that allows the autosorter to pass along relavent data
 /// whenever user data is received.
 /// </summary>
-public class SendAllData()
+public class SendAllData
 {
+    private UserActionGather _myUserActionGather;
+    public SendAllData()
+    {
+        _myUserActionGather = new();
+    }
 
 
     public event EventHandler<OnFileMoveEventArgs>? OnFileMoveEvent;
@@ -224,7 +229,7 @@ public class SendAllData()
             });
     }
 
-    public static FileMoveData[] AllData(string newPath, string oldPath)
+    public FileMoveData[] AllData(string newPath, string oldPath)
     {
         List<FileMoveData> allData = [];
 
@@ -235,18 +240,18 @@ public class SendAllData()
         return allData.ToArray();
     }
 
-    static List<JSONDataStructure>? JsonData { get; set; }
-    public static List<FileMoveData>? OldData(string? dataPath = null)
+    static List<UserActionGatherLine>? JsonData { get; set; }
+    public List<FileMoveData>? OldData(string? dataPath = null)
     {
         if (JsonData == null)
         {
-            RootJSONStructure? rootData = FetchJsonData(dataPath);
+            UserActionGatherFile? rootData = FetchJsonData(dataPath);
             JsonData = rootData?.Lines;
         }
 
         List <FileMoveData> oldData = new List<FileMoveData>();
 
-        foreach (JSONDataStructure data in JsonData)
+        foreach (UserActionGatherLine data in JsonData)
         {
             FileMoveData fileMoveData = new()
             {
@@ -260,46 +265,10 @@ public class SendAllData()
     }
 
     static readonly string DefaultUserActionPath = Path.Combine(AppContext.BaseDirectory, "data/UserAction.json");
-    public static RootJSONStructure? FetchJsonData(string? dataPath)
+    public UserActionGatherFile? FetchJsonData(string? dataPath)
     {
-        dataPath = (dataPath == null) ? DefaultUserActionPath : dataPath;
-
-        if (!File.Exists(dataPath)) return null;
-
-        RootJSONStructure? data;
-
-        using (StreamReader r = new StreamReader(dataPath))
-        {
-            string json = r.ReadToEnd();
-            data = JsonSerializer.Deserialize<RootJSONStructure>(json);
-        }
+        UserActionGatherFile data = _myUserActionGather.getFileDataFromJSON();
 
         return data;
     }
-
-    //<THIS MUST MATCH JSON>
-    public class RootJSONStructure()
-    {
-        [JsonPropertyName("Lines")]
-        public List<JSONDataStructure> Lines { get; set; } = new();
-    }
-
-    public class JSONDataStructure()
-    {
-        [JsonPropertyName("Action")]
-        public int Action {  get; set; }
-
-        [JsonPropertyName("Content")]
-        public string Content { get; set; } = "";
-
-        [JsonPropertyName("From")]
-        public string From { get; set; } = "";
-
-        [JsonPropertyName("To")]
-        public string To { get; set; } = "";
-
-        [JsonPropertyName("Timestamp")]
-        public string Timestamp { get; set; } = "";
-    }
-    //</THIS MUST MATCH JSON>
 }
