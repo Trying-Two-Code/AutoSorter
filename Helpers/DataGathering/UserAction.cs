@@ -2,6 +2,7 @@ namespace Helper.DataGathering;
 
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows;
 
 
@@ -15,20 +16,32 @@ public enum Action
 
 public class UserActionGatherLine
 {
+    [JsonPropertyName("Action")]
     public Action Action { get; set; }
+
+    [JsonPropertyName("Content")]
     public string Content { get; set; } = "";
+
+    [JsonPropertyName("From")]
     public string? From { get; set; } = null;
+
+    [JsonPropertyName("To")]
     public string? To   { get; set; } = null;
+
+    [JsonPropertyName("Timestamp")]
     public DateTime Timestamp { get; set; }
 }
 
 public class UserActionGatherFile
 {
+    [JsonPropertyName("Lines")]
     public List<UserActionGatherLine> Lines { get; set; } = new();
 }
 
 public class UserActionGather
 {
+    public static Lock _lock = new();
+    private static Mutex mut = new Mutex(false, "Global\\UserActionMutex");
     private const string _path = @"./data/userAction.json";
 
     public void appendMove(string from, string to)
@@ -102,26 +115,50 @@ public class UserActionGather
         if (!File.Exists(_path))
             return new UserActionGatherFile();
 
-        string json = File.ReadAllText(_path);
+        UserActionGatherFile? fileData = null;
+        try
+        {
+            mut.WaitOne();
 
-        if (string.IsNullOrWhiteSpace(json))
-            return new UserActionGatherFile();
+            string json = File.ReadAllText(_path);
 
-        return JsonSerializer.Deserialize<UserActionGatherFile>(json)
-               ?? new UserActionGatherFile();
+
+            if (string.IsNullOrWhiteSpace(json))
+                return new UserActionGatherFile();
+
+            fileData = JsonSerializer.Deserialize<UserActionGatherFile>(json);
+        }
+        finally
+        {
+            mut.ReleaseMutex();
+        }
+
+        return fileData ?? new UserActionGatherFile();
     }
 
     private void writeFileDataToJSON(UserActionGatherFile data)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-
-        string json = JsonSerializer.Serialize(
-            data,
-            new JsonSerializerOptions
+        lock (_lock)
+        {
+            try
             {
-                WriteIndented = true
-            });
+                mut.WaitOne();
 
-        File.WriteAllText(_path, json);
+                Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+
+                string json = JsonSerializer.Serialize(
+                    data,
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    });
+
+                File.WriteAllText(_path, json);
+            }
+            finally
+            {
+                mut.ReleaseMutex();
+            }
+        }
     }
 }

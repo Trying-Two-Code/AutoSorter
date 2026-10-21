@@ -6,9 +6,9 @@ public class AppAPI
 {
     private readonly CoreAlgorithm _core;
 
-    public AppAPI(string path, string sourceRoot, UITask _uIEvent, GetSettingsTask userSettings)
+    public AppAPI(string path, string sourceRoot, UITask _uIEvent, GetSettingsTask _userSettings)
     {
-        _core = new CoreAlgorithm(path, sourceRoot, _uIEvent, userSettings);
+        _core = new CoreAlgorithm(path, sourceRoot, _uIEvent, _userSettings);
     }
 
     public void Start()
