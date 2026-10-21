@@ -22,7 +22,9 @@ namespace AutoSorter;
 
 public partial class MainWindow : Window
 {
-    private readonly AppAPI _app;
+    private readonly AppAPI _app_Download;
+    private readonly AppAPI _app_Desktop;
+    private readonly AppAPI _app_Documents;
     public MainWindow()
     {
         Directory.SetCurrentDirectory(AppContext.BaseDirectory);
@@ -30,20 +32,34 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        _app = new AppAPI(path, DownloadFolder(), OnUIEventRecieved, OnGetSettingsRecieved);
+        _app_Download = new AppAPI(path,  KnownFolders.Downloads.Path, OnUIEventRecieved, OnGetSettingsRecieved);
+        _app_Desktop = new AppAPI(path,   KnownFolders.Desktop.Path,   OnUIEventRecieved, OnGetSettingsRecieved);
+        _app_Documents = new AppAPI(path, KnownFolders.Documents.Path, OnUIEventRecieved, OnGetSettingsRecieved);
 
         Loaded += new RoutedEventHandler(Window_Loaded);
 
         UserSettings.GetSettings();
         if (UserSettings.running)
         {
-            _app.Start();
             MainStartStopButton.ToggleRunning();
         }
 
         ActivateOnStartup.RegisterApp();
         if(ActivateOnStartup.DetectClose())
             SendToTray();
+    }
+
+    private void StartApps()
+    {
+        _app_Download.Start();
+        _app_Desktop.Start();
+        _app_Documents.Start();
+    }
+    private void StopApps()
+    {
+        _app_Download.Stop();
+        _app_Desktop.Stop();
+        _app_Documents.Stop();
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -78,12 +94,12 @@ public partial class MainWindow : Window
         if (button.IsRunning)
         {
             UserSettings.Set<bool>("running", true);
-            _app.Start();
+            StartApps();
         }
         else
         {
             UserSettings.Set<bool>("running", false);
-            _app.Stop();
+            StopApps();
         }
     }
 
@@ -119,7 +135,7 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
-        _app.Stop();
+        StopApps();
 
         base.OnClosed(e);
     }
@@ -195,7 +211,7 @@ public partial class MainWindow : Window
     {
         Task<bool> promptUserTask = Task.Run(() =>
         {
-            MessageBoxResult result = System.Windows.MessageBox.Show(prompt, "Make rule?", MessageBoxButton.YesNo, MessageBoxImage.Exclamation, MessageBoxResult.Yes);
+            MessageBoxResult result = System.Windows.MessageBox.Show(prompt, "should AutoSorter make a rule?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
             return result == MessageBoxResult.Yes;
         });
 
@@ -204,7 +220,13 @@ public partial class MainWindow : Window
 
     public Task<bool> OnUIEventRecieved(object sender, EventArgs args)
     {
-        return PromptUser("working");
+        string? promptString    = (string?)args?.GetType()?.GetProperty("PromptString")?.GetValue(args);
+        string? promptExtra     = (string?)args?.GetType()?.GetProperty("ExtraInfo")?.GetValue(args);
+
+        if (promptString != null)
+            return PromptUser(promptString);
+        else
+            return PromptUser("Create a rule? No info provided.");
     }
 
     public settings GetSettings()

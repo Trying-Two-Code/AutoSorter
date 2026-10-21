@@ -96,7 +96,7 @@ internal class SortAlgorithm
         }
 
         if (newRule != null)
-            if (_myPromptUser.Prompt())
+            if (_myPromptUser.Prompt(newRule))
                 _myRuleExecuter.OnRuleMade(newRule);
     }
 
@@ -111,7 +111,9 @@ internal class SortAlgorithm
         List<FileInfo> FileInfoOfFolder = FileUtility.GetFileInfoOfFolder(e.NewFile.DirectoryName, limit);
         AllFileInfo.AddRange(FileInfoOfFolder);
 
-        ManageRules(AllFileInfo, e.NewFile, e.OldPath);
+        string oldPath = Path.GetDirectoryName(e.OldPath);
+
+        ManageRules(AllFileInfo, e.NewFile, oldPath);
     }
 
 }
