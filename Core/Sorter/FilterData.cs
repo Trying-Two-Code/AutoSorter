@@ -41,11 +41,8 @@ namespace Core.Sorter
         /// <returns></returns>
         public List<Rule> DetectDuplicateRules(List<Rule> NewRules, List<Rule> OldRules)
         {
-            Debug.WriteLine(NewRules.Count);
-            Debug.WriteLine(OldRules.Count);
             List<Rule> result = new();
             result = NewRules.Distinct().ToList();
-            Debug.WriteLine(result.Count);
             foreach (Rule oldRule in OldRules)
             {
                 if (result.Contains(oldRule))
@@ -54,7 +51,6 @@ namespace Core.Sorter
                 }
             }
 
-            Debug.WriteLine(result.Count);
             foreach (Rule oldRule in OldRules)
             {
                 for (int i = result.Count - 1; i >= 0; i--)
@@ -77,7 +73,6 @@ namespace Core.Sorter
             if (Rules == null) return null;
 
             int LargestStrength = StrengthDetector.GetLargestStrength(Rules);
-            Debug.WriteLine("Largest strength: " + LargestStrength);
             for (int i = 0; i < Rules.Count; i++)
             {
                 if (Rules[i].strength() == LargestStrength)

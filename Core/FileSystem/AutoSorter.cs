@@ -215,7 +215,6 @@ public class SendAllData
         _myUserActionGather = new();
     }
 
-
     public event EventHandler<OnFileMoveEventArgs>? OnFileMoveEvent;
 
     public void SendData(string newPath, string oldPath)

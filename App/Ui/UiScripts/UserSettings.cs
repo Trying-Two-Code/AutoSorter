@@ -29,7 +29,6 @@ static class UserSettings
             running = JsonFileReader.Read<bool>("running");
             promptUserAmm = JsonFileReader.Read<int>("promptUserAmm");
             muted = JsonFileReader.Read<bool>("muted");
-            Debug.WriteLine($"got user settings: {promptUserAmm}");
         }
     }
 
@@ -64,8 +63,6 @@ static class UserSettings
         {
             lock (_lock)
             {
-                Debug.WriteLine(File.Exists(UserFileDataPath));
-                Debug.WriteLine(UserFileDataPath);
                 if (File.Exists(UserFileDataPath))
                 {
                     string json = File.ReadAllText(UserFileDataPath);
@@ -85,7 +82,6 @@ static class UserSettings
         public static string? FilePath { get; set; } = UserFileDataPath;
         public static T Write<T>(string key, T value)
         {
-            Debug.WriteLine(UserFileDataPath);
             lock (_lock)
             {
                 if (!MakeSafeToWrite(FilePath)) { return default; }
