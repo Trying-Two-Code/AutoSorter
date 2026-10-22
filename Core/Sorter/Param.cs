@@ -45,6 +45,9 @@ namespace Core.Sorter
         /// <param name="fileInfo">The file detected.</param>
         public bool IsMatch(FileInfo fileInfo)
         {
+            if (!File.Exists(fileInfo.FullName))
+                return false;
+
             string? value = 
                 (string?)(typeof(FileInfo)
                 ?.GetProperty(FileProperty)

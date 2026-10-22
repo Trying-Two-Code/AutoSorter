@@ -16,22 +16,30 @@ namespace Core.Sorter;
 
 internal class SortAlgorithm
 {
+    private string _myFolder { get; set;  }
+    private GetUserActionTask _myGetUserActionTask {  get; set; }
     public GetSettingsTask _myGetSettingsTask { get; set; }
     private PromptUser _myPromptUser { get; set; }
     private StrengthDetector _myStrengthDetector { get; set; }
-    private RuleGenerator _myRuleGeneretor { get; set; }
+    private RuleGenerator _myRuleGenerator { get; set; }
     private RuleExecuter _myRuleExecuter { get; set; }
     private FilterData _myFilterData { get; set; }
 
     //how many files should sort algorithm be looking through maximum?
     const int limit = 1000; 
 
-    public SortAlgorithm(PromptUser _promptUser, GetSettingsTask myGetSettingsTask)
+    public SortAlgorithm(
+        string myfolder,
+        PromptUser _promptUser, 
+        GetSettingsTask myGetSettingsTask, 
+        GetUserActionTask myGetUserActionTask)
     {
+        _myFolder = myfolder;
         _myPromptUser = _promptUser;
         _myGetSettingsTask = myGetSettingsTask;
+        _myGetUserActionTask = myGetUserActionTask;
         _myStrengthDetector = new StrengthDetector();
-        _myRuleGeneretor = new RuleGenerator(_myStrengthDetector);
+        _myRuleGenerator = new RuleGenerator(_myStrengthDetector);
         _myRuleExecuter = new RuleExecuter();
         _myFilterData = new FilterData();
 
@@ -42,7 +50,7 @@ internal class SortAlgorithm
 
     public void SetRequiredStrength()
     {
-        object? data = _myGetSettingsTask?.Invoke(this, null);
+        object? data = _myGetSettingsTask?.Invoke(this, new());
 
         if (data != null)
         {
@@ -64,15 +72,15 @@ internal class SortAlgorithm
         //sort old data for only those files that match the start folder and end destination paths
         List <FileInfo> FilteredFiles = _myFilterData.Filter(allData, newData);
 
+        List<FileMoveInfo> userActions = GetUserActions();
         //generate a list of rules
-        List<Rule> GeneratedRules = _myRuleGeneretor.AllRules(FilteredFiles, newData, oldPath, limit);
-
+        List<Rule> GeneratedRules = _myRuleGenerator.AllRules(FilteredFiles, userActions, newData, oldPath, limit);
         //remove any weak rules
         GeneratedRules = _myFilterData.StrongRules(
             allRules: GeneratedRules, 
             requiredStrength: RequiredStrength,
             requiredParams: 2,
-            requiredMatches: 10,
+            requiredMatches: 2,
             limit: limit);
 
         //remove any rules if they already exist
@@ -95,27 +103,76 @@ internal class SortAlgorithm
             //throw new NotImplementedException();
         }
 
+        Debug.WriteLine($"made rules, only |{newRule}| got through.");
+
         if (newRule != null)
+        {
             if (_myPromptUser.Prompt(newRule))
+            {
                 _myRuleExecuter.OnRuleMade(newRule);
+            }
+            previusDatapoints.Add(newData);
+        }
+    }
+
+    public List<FileMoveInfo> GetUserActions()
+    {
+        List<object> userActions = _myGetUserActionTask(this, new());
+        List<FileMoveInfo> userActionResult = new();
+
+        foreach (object action in userActions)
+        {
+            string? oldFileLocation = (string?)action?.GetType()?.GetProperty("From")?.GetValue(action);
+            string? newFileLocation = (string?)action?.GetType()?.GetProperty("To")?.GetValue(action);
+
+            oldFileLocation ??= "";
+            newFileLocation ??= "";
+
+            FileMoveInfo newInfo = new()
+            {
+                OldFileLocation = oldFileLocation,
+                CurrentFile = newFileLocation
+            };
+            userActionResult.Add(newInfo);
+        }
+
+        return userActionResult;
+    }
+
+    private List<FileInfo> previusDatapoints { get; set; } = new();
+    private bool RedundantData(FileInfo newDatapoint)
+    {
+        //TODO: make it send data to json file to allow persistancy
+        //TODO?: move to FilterData
+        if (previusDatapoints.Contains(newDatapoint))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     //Called when, for example, a data entry is added to userAction.json
     public void OnDataGained(object sender, OnFileMoveEventArgs e)
     {
-        SetRequiredStrength();
+        bool isInCorrectFolder = e.NewFile.DirectoryName.Contains(_myFolder);
+        bool isNotRedundantData = !RedundantData(e.NewFile);
 
-        FileMoveData[] AllData = e.AllData;
-        List<FileInfo> AllFileInfo = FileUtility.MultiConvertFileMoveData(AllData);
+        if (isInCorrectFolder && isNotRedundantData)
+        {
+            SetRequiredStrength();
 
-        List<FileInfo> FileInfoOfFolder = FileUtility.GetFileInfoOfFolder(e.NewFile.DirectoryName, limit);
-        AllFileInfo.AddRange(FileInfoOfFolder);
+            FileMoveData[] AllData = e.AllData;
+            List<FileInfo> AllFileInfo = FileUtility.MultiConvertFileMoveData(AllData);
 
-        string oldPath = Path.GetDirectoryName(e.OldPath);
+            List<FileInfo> FileInfoOfFolder = FileUtility.GetFileInfoOfFolder(e.NewFile.DirectoryName, limit);
+            AllFileInfo.AddRange(FileInfoOfFolder);
 
-        ManageRules(AllFileInfo, e.NewFile, oldPath);
+            string oldPath = Path.GetDirectoryName(e.OldPath);
+
+            ManageRules(AllFileInfo, e.NewFile, oldPath);
+        }
     }
-
 }
 
 //Todo: make this less hacky

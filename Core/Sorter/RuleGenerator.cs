@@ -21,7 +21,10 @@ namespace Core.Sorter
         /// </summary>
         /// <param name="limit"></param>
         /// <returns></returns>
-        public List<List<Param>> AllParams(List<FileInfo> allData, FileInfo forFile, int limit)
+        public List<List<Param>> AllParams(
+            List<FileInfo> allData,
+            FileInfo forFile, 
+            int limit)
         {
             List<List<Param>> AllParamList = new();
 
@@ -77,14 +80,15 @@ namespace Core.Sorter
         /// <param name="limit"></param>
         /// <returns>The list of rules that can be created for a given file</returns>
         public List<Rule> AllRules(
-            List<FileInfo> allData, 
-            FileInfo newData, 
+            List<FileInfo> allData,
+            List<FileMoveInfo> userActions, 
+            FileInfo newData,
             string oldPath, 
             int limit = 1000)
         {
             List<List<Param>> allParameters = AllParams(allData, newData, limit);
             List<Rule> allRules = Rule.ConvertParamsToRules(
-                allData, oldPath, newData.DirectoryName, allParameters);
+                allData, userActions, oldPath, newData.DirectoryName, allParameters);
 
             return allRules;
         }

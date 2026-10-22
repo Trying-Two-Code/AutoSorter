@@ -76,6 +76,7 @@ namespace Core.Sorter
 
             List<Rule> ExecuteRules = ShouldExecuteRules(rules, file.FullName, file);
 
+            //issue, what if ExecuteRules.Count > 1
             foreach(Rule rule in ExecuteRules)
             {
                 ExecuteRule(rule, file);

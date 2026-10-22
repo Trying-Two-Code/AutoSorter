@@ -86,7 +86,7 @@ namespace Core.Sorter
             List<Rule> allRules, 
             int requiredStrength = 10, 
             int requiredParams = 2,
-            int requiredMatches = 10, 
+            int requiredMatches = 2,
             int limit = 1000)
         {
             List<Rule> strongRules = new();
@@ -103,7 +103,7 @@ namespace Core.Sorter
                 {
                     continue;
                 }
-                if (rule.StartEstimation < requiredMatches)
+                if (rule.StartCertain < requiredMatches)
                 {
                     continue;
                 }

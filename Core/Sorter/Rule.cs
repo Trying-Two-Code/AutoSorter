@@ -13,14 +13,26 @@ namespace Core.Sorter
         public Rule() { }
 
         public Rule(
-            List<FileInfo> allData, 
-            List<Param> parameters, 
+            List<FileInfo> allData,
+            List<FileMoveInfo> userActions,
+            List<Param> parameters,
             string startPath, 
             string endPath)
         {
             Paramaters = parameters;
             StartPath = startPath;
             EndPath = endPath;
+
+            List<FileInfo> userActionList = userActions
+                .Where(file => 
+                    (Path.GetDirectoryName(file.OldFileLocation) == StartPath) &&
+                    (Path.GetDirectoryName(file.CurrentFile) == EndPath))
+                .Select(file =>
+                    { return new FileInfo(file.CurrentFile); })
+                .ToList();
+
+            List<FileInfo> matchingUserActionList = Matches(userActionList);
+            StartCertain = matchingUserActionList.Count;
 
             List<FileInfo> matchingFileList = Matches(allData);
             StartEstimation = matchingFileList.Count;
@@ -40,10 +52,17 @@ namespace Core.Sorter
         public int ExecutionCount { get; set; } = 0;
 
         /// <summary>
-        /// the amount of files that match the rules paramaters
+        /// the amount of files that match the rules parameters
         /// in the folder at time of rule creation
         /// </summary>
         public int StartEstimation { get; set; } = 0;
+
+        /// <summary>
+        /// the amount of files that are known to have moved
+        /// from the start location to the end that match
+        /// all parameters
+        /// </summary>
+        public int StartCertain { get; set; } = 0;
 
         public bool ShouldMove(FileInfo fileInfo)
         {
@@ -63,7 +82,7 @@ namespace Core.Sorter
         public List<string> MatchingFiles { get; set; } = new();
         public bool IsMatch(FileInfo fileInfo)
         {
-
+            if (fileInfo.DirectoryName != EndPath) { return false; }
             if (Paramaters.Any((parameter) =>
             {
                 return parameter.IsMatch(fileInfo) == false;
@@ -88,11 +107,13 @@ namespace Core.Sorter
 
         public int strength()
         {
+            //Debug.WriteLine(StartEstimation * Paramaters.Count);
             return StartEstimation * Paramaters.Count;
         }
 
         public static List<Rule> ConvertParamsToRules(
             List<FileInfo> allData,
+            List<FileMoveInfo> userActions,
             string startPath,
             string endPath,
             List<List<Param>> paramLists)
@@ -102,6 +123,7 @@ namespace Core.Sorter
             {
                 Rule newRule = new(
                     allData: allData, 
+                    userActions: userActions,
                     parameters: paramList,
                     startPath: startPath,
                     endPath: endPath

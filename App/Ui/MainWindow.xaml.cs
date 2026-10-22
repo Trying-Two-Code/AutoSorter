@@ -1,7 +1,6 @@
 ﻿using App.Ui.UiComponents;
 using App.Ui.UiScripts;
 using BCore;
-using Helper.DataGathering;
 using Syroot.Windows.IO;
 using System;
 using System.Diagnostics;
@@ -32,6 +31,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
         _app_Download = new AppAPI(path,  KnownFolders.Downloads.Path, OnUIEventRecieved, OnGetSettingsRecieved);
         _app_Desktop = new AppAPI(path,   KnownFolders.Desktop.Path,   OnUIEventRecieved, OnGetSettingsRecieved);
         _app_Documents = new AppAPI(path, KnownFolders.Documents.Path, OnUIEventRecieved, OnGetSettingsRecieved);
@@ -207,8 +207,13 @@ public partial class MainWindow : Window
 
     //public Dispatcher PromptUserDispatcher;
 
+    private readonly TimeSpan promptAmmount = new TimeSpan(0, 0, 10);
+    private DateTime lastPromptTime = DateTime.MinValue;
+
     public Task<bool> PromptUser(string prompt)
     {
+        lastPromptTime = DateTime.Now;
+
         Task<bool> promptUserTask = Task.Run(() =>
         {
             MessageBoxResult result = System.Windows.MessageBox.Show(prompt, "should AutoSorter make a rule?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
@@ -218,8 +223,28 @@ public partial class MainWindow : Window
         return promptUserTask;
     }
 
+    public Task<bool> FalseResult()
+    {
+        Task<bool> falsey = Task.Run(() =>
+        {
+            return false;
+        });
+        return falsey;
+    }
+
     public Task<bool> OnUIEventRecieved(object sender, EventArgs args)
     {
+        Debug.WriteLine("Recieved UI event...");
+        Debug.WriteLine(lastPromptTime - DateTime.Now);
+        //if last prompt time was 10 mins ago, and I can prompt every minute, it should be false
+        //the duration between last prompt time and now is less than prompt ammount, it hasn't been long enough
+        //lastprompt time = 0:10 now = 0:30 promptAmmount = 0:10; then 0:30 - 0:10 > 0:10
+        //lastprompt time = 0:20 now = 0:25 promptAmmount = 0:10; then 0:25 - 0:20 < 0:10
+        if(DateTime.Now - lastPromptTime < promptAmmount)
+        {
+            return FalseResult();
+        }
+
         string? promptString    = (string?)args?.GetType()?.GetProperty("PromptString")?.GetValue(args);
         string? promptExtra     = (string?)args?.GetType()?.GetProperty("ExtraInfo")?.GetValue(args);
 

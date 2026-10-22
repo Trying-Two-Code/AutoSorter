@@ -108,8 +108,6 @@ public class UserActionGather
         writeFileDataToJSON(data);
     }
 
-
-
     public UserActionGatherFile getFileDataFromJSON()
     {
         if (!File.Exists(_path))
@@ -138,27 +136,24 @@ public class UserActionGather
 
     private void writeFileDataToJSON(UserActionGatherFile data)
     {
-        lock (_lock)
+        try
         {
-            try
-            {
-                mut.WaitOne();
+            mut.WaitOne();
 
-                Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
 
-                string json = JsonSerializer.Serialize(
-                    data,
-                    new JsonSerializerOptions
-                    {
-                        WriteIndented = true
-                    });
+            string json = JsonSerializer.Serialize(
+                data,
+                new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
 
-                File.WriteAllText(_path, json);
-            }
-            finally
-            {
-                mut.ReleaseMutex();
-            }
+            File.WriteAllText(_path, json);
+        }
+        finally
+        {
+            mut.ReleaseMutex();
         }
     }
 }

@@ -4,11 +4,14 @@ using Helper.FileSystem;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace Core.FileSystem;
 
 public class AutoSorter
 {
+    public SendAllData SendAllDataInstance;
+
     private readonly FileSystemManager _fileSystem;
 
     private readonly ClipboardWatcher _clipboardWatcher;
@@ -32,6 +35,8 @@ public class AutoSorter
         _ruleExecuter = new RuleExecuter();
 
         SetCallbacks();
+
+        SendAllDataInstance = new(_userActionGather);
     }
 
     private void SetCallbacks()
@@ -183,7 +188,6 @@ public class AutoSorter
         Log.AppendLog("AutoSorter stopped.");
     }
 
-    public SendAllData SendAllDataInstance = new();
 }
 
 public class OnFileMoveEventArgs : EventArgs
@@ -210,9 +214,22 @@ public struct FileMoveData()
 public class SendAllData
 {
     private UserActionGather _myUserActionGather;
-    public SendAllData()
+    public SendAllData(UserActionGather myUserActionGather)
     {
-        _myUserActionGather = new();
+        _myUserActionGather = myUserActionGather;
+    }
+
+    public List<object> GetUserActions(object sender, EventArgs args)
+    {
+        UserActionGatherFile file = _myUserActionGather.getFileDataFromJSON();
+        List<UserActionGatherLine> lines = file.Lines;
+        List<object> lineObjects = new(); 
+        foreach(UserActionGatherLine line in lines)
+        {
+            lineObjects.Add(line);
+        }
+
+        return lineObjects;
     }
 
     public event EventHandler<OnFileMoveEventArgs>? OnFileMoveEvent;
@@ -263,7 +280,6 @@ public class SendAllData
         return oldData;
     }
 
-    static readonly string DefaultUserActionPath = Path.Combine(AppContext.BaseDirectory, "data/UserAction.json");
     public UserActionGatherFile? FetchJsonData(string? dataPath)
     {
         UserActionGatherFile data = _myUserActionGather.getFileDataFromJSON();
