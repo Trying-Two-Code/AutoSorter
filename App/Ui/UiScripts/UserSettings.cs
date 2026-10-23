@@ -153,4 +153,18 @@ public class settings()
     public bool running { get; set; } = true;
     public int promptUserAmm { get; set; } = 50;
     public bool muted { get; set; } = false;
+
+    public static settings Get()
+    {
+        UserSettings.GetSettings();
+
+        settings _settings = new()
+        {
+            running = UserSettings.running,
+            promptUserAmm = UserSettings.promptUserAmm,
+            muted = UserSettings.muted
+        };
+
+        return _settings;
+    }
 }

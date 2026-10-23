@@ -2,20 +2,11 @@
 using App.Ui.UiScripts;
 using BCore;
 using Syroot.Windows.IO;
-using System;
 using System.Diagnostics;
 using System.IO;
-using System.Timers;
+using System.Runtime;
 using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Media;
-using Microsoft.Win32;
-using IWshRuntimeLibrary;
-using System.Windows.Threading;
-using Core.Sorter;
-using Core;
-
-
 
 namespace AutoSorter;
 
@@ -24,6 +15,12 @@ public partial class MainWindow : Window
     private readonly AppAPI _app_Download;
     private readonly AppAPI _app_Desktop;
     private readonly AppAPI _app_Documents;
+
+    private readonly HandleWindow _handleWindow;
+    private readonly UserPrompter _userPrompter;
+
+    private settings _settings;
+
     public MainWindow()
     {
         Directory.SetCurrentDirectory(AppContext.BaseDirectory);
@@ -31,15 +28,14 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-        _app_Download = new AppAPI(path,  KnownFolders.Downloads.Path, OnUIEventRecieved, OnGetSettingsRecieved);
-        _app_Desktop = new AppAPI(path,   KnownFolders.Desktop.Path,   OnUIEventRecieved, OnGetSettingsRecieved);
+        _app_Download = new AppAPI( path, KnownFolders.Downloads.Path, OnUIEventRecieved, OnGetSettingsRecieved);
+        _app_Desktop = new AppAPI(  path, KnownFolders.Desktop.Path,   OnUIEventRecieved, OnGetSettingsRecieved);
         _app_Documents = new AppAPI(path, KnownFolders.Documents.Path, OnUIEventRecieved, OnGetSettingsRecieved);
 
         Loaded += new RoutedEventHandler(Window_Loaded);
 
-        UserSettings.GetSettings();
-        if (UserSettings.running)
+        _settings = settings.Get();
+        if (_settings.running)
         {
             MainStartStopButton.ToggleRunning();
         }
@@ -47,6 +43,9 @@ public partial class MainWindow : Window
         ActivateOnStartup.RegisterApp();
         if(ActivateOnStartup.DetectClose())
             SendToTray();
+
+        _handleWindow = new();
+        _userPrompter = new();
     }
 
     private void StartApps()
@@ -75,12 +74,6 @@ public partial class MainWindow : Window
         Top = desktopWorkingArea.Bottom - Height;
     }
 
-    private static string DownloadFolder()
-    {
-        string downloadsPath = KnownFolders.Downloads.Path;
-        return downloadsPath;
-    }
-
     private void StartStopButton_Click(
         object sender,
         RoutedEventArgs e)
@@ -88,15 +81,20 @@ public partial class MainWindow : Window
         if (sender is not StartStopButton button)
             return;
 
-        CreateSound(
+        StartStop(button.IsRunning);
+    }
+
+    private void StartStop(bool start)
+    {
+        MakeSound sound = new MakeSound(
             @"Ui\Assets\Audio\SFX-Click2.mp3");
 
-        if (button.IsRunning)
+        if (start)
         {
             UserSettings.Set<bool>("running", true);
             StartApps();
         }
-        else
+        else if(!start)
         {
             UserSettings.Set<bool>("running", false);
             StopApps();
@@ -121,18 +119,6 @@ public partial class MainWindow : Window
         TrayHandler.ShowTrayIcon(true);
     }
 
-    private void CreateSound(string soundFilePath)
-    {
-        var player = new MediaPlayer();
-
-        player.Open(
-            new Uri(
-                soundFilePath,
-                UriKind.RelativeOrAbsolute));
-
-        player.Play();
-    }
-
     protected override void OnClosed(EventArgs e)
     {
         StopApps();
@@ -142,71 +128,32 @@ public partial class MainWindow : Window
 
     private void Window_Deactivated(object sender, EventArgs e)
     {
-        BringBackWindow(sender, e, true);
+        _handleWindow.BringBackWindow(sender, e, true);
     }
 
     private void Window_Activated(object sender, EventArgs e)
     {
-        BringBackWindow(sender, e, false);
+        _handleWindow.BringBackWindow(sender, e, false);
     }
-
-    private void BringBackWindow(object sender, EventArgs e, bool translucent = false)
-    {
-        var window = (Window)sender;
-        window.Topmost = true;
-
-        dealWithWindowOpacity(window, translucent);
-    }
-
-    CancellationTokenSource cts;
-
-    private void dealWithWindowOpacity(Window window, bool translucent)
-    {
-        const float highestOpacity = 1f;
-        if (translucent)
-        {
-            cts = new CancellationTokenSource();
-            Fadeout(window, cts.Token);
-        }
-        else if (window.Opacity <= highestOpacity)
-        {
-            if(cts != null)
-                cts.Cancel();
-            window.Opacity = highestOpacity;
-        }
-        else
-        {
-            return;
-        }
-    }
-
-    async private void Fadeout(Window window, CancellationToken fadeCancel)
-    {
-        while(window.Opacity > 0f)
-        {
-            if (fadeCancel.IsCancellationRequested)
-            {
-                return;
-            }
-            window.Opacity -= .01f;
-            await Task.Delay(500);
-        }
-
-        return;
-    }
-
+    
     private void ShowUserdata_Click(object sender, RoutedEventArgs e)
     {
-        string log = Path.Combine(AppContext.BaseDirectory, "data/log.txt");
-        string userAction = Path.Combine(AppContext.BaseDirectory, "data/userAction.json");
-        string showUsing = "notepad.exe";
-
-        Process.Start(showUsing, log);
-        Process.Start(showUsing, userAction);
+        UserData.Show();
     }
 
-    //public Dispatcher PromptUserDispatcher;
+    public Task<bool> OnUIEventRecieved(object sender, EventArgs args)
+    {
+        return _userPrompter.HandleRequest(sender, args);
+    }
 
+    public object OnGetSettingsRecieved(object sender, EventArgs args)
+    {
+        return settings.Get();
+    }
+}
+
+class UserPrompter
+{
     private readonly TimeSpan promptAmmount = new TimeSpan(0, 0, 10);
     private DateTime lastPromptTime = DateTime.MinValue;
 
@@ -232,7 +179,7 @@ public partial class MainWindow : Window
         return falsey;
     }
 
-    public Task<bool> OnUIEventRecieved(object sender, EventArgs args)
+    public Task<bool> HandleRequest(object sender, EventArgs args)
     {
         Debug.WriteLine("Recieved UI event...");
         Debug.WriteLine(lastPromptTime - DateTime.Now);
@@ -240,36 +187,94 @@ public partial class MainWindow : Window
         //the duration between last prompt time and now is less than prompt ammount, it hasn't been long enough
         //lastprompt time = 0:10 now = 0:30 promptAmmount = 0:10; then 0:30 - 0:10 > 0:10
         //lastprompt time = 0:20 now = 0:25 promptAmmount = 0:10; then 0:25 - 0:20 < 0:10
-        if(DateTime.Now - lastPromptTime < promptAmmount)
+        if (DateTime.Now - lastPromptTime < promptAmmount)
         {
             return FalseResult();
         }
 
-        string? promptString    = (string?)args?.GetType()?.GetProperty("PromptString")?.GetValue(args);
-        string? promptExtra     = (string?)args?.GetType()?.GetProperty("ExtraInfo")?.GetValue(args);
+        string? promptString = (string?)args?.GetType()?.GetProperty("PromptString")?.GetValue(args);
+        string? promptExtra = (string?)args?.GetType()?.GetProperty("ExtraInfo")?.GetValue(args);
 
         if (promptString != null)
             return PromptUser(promptString);
         else
             return PromptUser("Create a rule? No info provided.");
     }
+}
 
-    public settings GetSettings()
+class HandleWindow
+{
+    public void BringBackWindow(object sender, EventArgs e, bool translucent = false)
     {
-        UserSettings.GetSettings();
+        var window = (Window)sender;
+        window.Topmost = true;
 
-        settings _settings = new()
-        {
-            running = UserSettings.running,
-            promptUserAmm = UserSettings.promptUserAmm,
-            muted = UserSettings.muted
-        };
-
-        return _settings;
+        DealWithWindowOpacity(window, translucent);
     }
 
-    public object OnGetSettingsRecieved(object sender, EventArgs args)
+    CancellationTokenSource? cts;
+
+    private void DealWithWindowOpacity(Window window, bool translucent)
     {
-        return GetSettings();
+        const float highestOpacity = 1f;
+        if (translucent)
+        {
+            cts = new CancellationTokenSource();
+            Fadeout(window, cts.Token);
+        }
+        else if (window.Opacity <= highestOpacity)
+        {
+            if (cts != null)
+                cts.Cancel();
+            window.Opacity = highestOpacity;
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    async private void Fadeout(Window window, CancellationToken fadeCancel)
+    {
+        while (window.Opacity > 0f)
+        {
+            if (fadeCancel.IsCancellationRequested)
+            {
+                return;
+            }
+            window.Opacity -= .01f;
+            await Task.Delay(500);
+        }
+
+        return;
+    }
+
+}
+
+static class UserData 
+{ 
+    public static void Show()
+    {
+        string log = Path.Combine(AppContext.BaseDirectory, "data/log.txt");
+        string userAction = Path.Combine(AppContext.BaseDirectory, "data/userAction.json");
+        string showUsing = "notepad.exe";
+
+        Process.Start(showUsing, log);
+        Process.Start(showUsing, userAction);
+    }
+}
+
+class MakeSound 
+{
+    public MakeSound(string soundFilePath)
+    {
+        MediaPlayer player = new MediaPlayer();
+
+        player.Open(
+            new Uri(
+                soundFilePath,
+                UriKind.RelativeOrAbsolute));
+
+        player.Play();
     }
 }
