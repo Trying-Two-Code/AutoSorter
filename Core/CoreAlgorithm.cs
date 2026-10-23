@@ -19,18 +19,16 @@ public class CoreAlgorithm
 
     private readonly AutoSorter _autoSorter;
     private readonly SortAlgorithm _sortAlgorithm;
-    private readonly PromptUser _promptUser;
-    private readonly GetSettingsTask _myGetSettings;
 
     public CoreAlgorithm(String path, String sourceRoot, UITask _uIEvent, GetSettingsTask _getSettings)
     {
         _autoSorter = new AutoSorter(path, sourceRoot);
-        _promptUser = new PromptUser(_uIEvent);
+        PromptUser _promptUser = new PromptUser(_uIEvent);
 
         GetUserActionTask _getUserAction = _autoSorter.SendAllDataInstance.GetUserActions;
 
         _sortAlgorithm = new SortAlgorithm(sourceRoot, _promptUser, _getSettings, _getUserAction);
-        _myGetSettings = _getSettings;
+        GetSettingsTask _myGetSettings = _getSettings;
 
         _autoSorter.SendAllDataInstance.OnFileMoveEvent += _sortAlgorithm.OnDataGained;
     }
@@ -38,10 +36,12 @@ public class CoreAlgorithm
     public void Start()
     {
         _autoSorter.Start();
+        _sortAlgorithm.Start();
     }
 
     public void Stop()
     {
         _autoSorter.Stop();
+        _sortAlgorithm.Stop();
     }
 }

@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Formats.Tar;
+using System.Numerics;
 using System.Text;
 
 namespace Core.Sorter
@@ -24,7 +26,8 @@ namespace Core.Sorter
         public List<List<Param>> AllParams(
             List<FileInfo> allData,
             FileInfo forFile, 
-            int limit)
+            int limit,
+            int minParams)
         {
             List<List<Param>> AllParamList = new();
 
@@ -32,43 +35,76 @@ namespace Core.Sorter
 
             for (int subsetI = 0; subsetI < Math.Min(possibleSubsetCount, limit); subsetI += 1)
             {
-                List<Param> tempList = new();
-
-                for (int i = 0; i < ParamOptions.AllParamaters.Count; i += 1)
+                int Count = GetSubsetCount(subsetI);
+                if(Count >= minParams)
                 {
-                    int mask = (1 << i);
-                    bool subsetInMask = (subsetI & mask) != 0;
-
-                    if (subsetInMask)
-                    {
-                        ParamOptions defaultParam = ParamOptions.AllParamaters[i];
-                        string PropertyName = defaultParam.name;
-
-                        Param newParameter = new(PropertyName)
-                        {
-                            FileProperty = PropertyName,
-                            MyApproximateMatchName = defaultParam.ApproximateMatchMethodName
-                        };
-
-                        object? value = 
-                            typeof(FileInfo)
-                            ?.GetProperty(defaultParam.name)
-                            ?.GetValue(forFile);
-
-                        //Important:
-                        if (value?.GetType() == defaultParam.ValueType)
-                        {
-                            newParameter.PropertyContains = value.ToString();
-                        }
-
-                        tempList.Add(newParameter);
-                    }
+                    List<Param> paramList = CreateParamList(subsetI, forFile);
+                    Debug.Assert(paramList.Count == Count);
+                    AllParamList.Add(paramList);
                 }
-
-                AllParamList.Add(tempList);
             }
 
             return AllParamList;
+        }
+
+        /// <summary>
+        /// returns the amount of params that a subsetI would generate
+        /// </summary>
+        public int GetSubsetCount(
+            int subsetI)
+        {
+            int count = int.PopCount(subsetI);
+            return count;
+        }
+
+        public List<Param> CreateParamList(
+            int subsetI,
+            FileInfo forFile
+            )
+        {
+            List<Param> tempList = new();
+
+            for (int i = 0; i < ParamOptions.AllParamaters.Count; i += 1)
+            {
+                int mask = (1 << i);
+                bool subsetInMask = (subsetI & mask) != 0;
+
+                if (subsetInMask)
+                {
+                    ParamOptions defaultParam = ParamOptions.AllParamaters[i];
+                    string PropertyName = defaultParam.name;
+
+                    Param newParameter = new(PropertyName)
+                    {
+                        FileProperty = PropertyName,
+                        MyApproximateMatchName = defaultParam.ApproximateMatchMethodName
+                    };
+
+                    object? value;
+
+                    try
+                    {
+                        value =
+                            typeof(FileInfo)
+                            ?.GetProperty(defaultParam.name)
+                            ?.GetValue(forFile);
+                    }
+                    catch
+                    {
+                        value = null;
+                    }
+
+                    //Important:
+                    if (value?.GetType() == defaultParam.ValueType)
+                    {
+                        newParameter.PropertyContains = value.ToString();
+                    }
+
+                    tempList.Add(newParameter);
+                }
+            }
+
+            return tempList;
         }
 
         /// <summary>
@@ -84,9 +120,9 @@ namespace Core.Sorter
             List<FileMoveInfo> userActions, 
             FileInfo newData,
             string oldPath, 
-            int limit = 1000)
+            int limit)
         {
-            List<List<Param>> allParameters = AllParams(allData, newData, limit);
+            List<List<Param>> allParameters = AllParams(allData, newData, limit, 2);
             List<Rule> allRules = Rule.ConvertParamsToRules(
                 allData, userActions, oldPath, newData.DirectoryName, allParameters);
 

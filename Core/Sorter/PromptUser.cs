@@ -33,24 +33,6 @@ namespace Core.Sorter
 
             return result;
         }
-        public static bool PromptUserMethod(PromptUser? _promptUserInst, EventArgs args)
-        {
-            try
-            {
-                Task promptUserTask = _promptUserInst.UIEvent.Invoke(null, args);
-                promptUserTask.Wait();
-
-                if (promptUserTask.IsCompletedSuccessfully)
-                {
-                    return true;
-                }
-            }
-            catch
-            {
-                Debug.WriteLine("Prompt User Failed.");
-            }
-            return false;
-        }
 
         public PromptData GeneratePromptData(Rule rule)
         {

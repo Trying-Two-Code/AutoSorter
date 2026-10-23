@@ -25,8 +25,9 @@ internal class SortAlgorithm
     private RuleExecuter _myRuleExecuter { get; set; }
     private FilterData _myFilterData { get; set; }
 
-    //how many files should sort algorithm be looking through maximum?
-    const int limit = 1000; 
+    private const int RuleLimit = 10000;
+    private int MinimumParams = 2;
+    private int MinimumFileMatches = 2;
 
     public SortAlgorithm(
         string myfolder,
@@ -46,6 +47,18 @@ internal class SortAlgorithm
         SetRequiredStrength();
     }
 
+    public bool IsEnabled { get; set; } = false;
+
+    public void Start()
+    {
+        IsEnabled = true;
+    }
+
+    public void Stop()
+    {
+        IsEnabled = false;
+    }
+
     public int RequiredStrength = 10;
 
     public void SetRequiredStrength()
@@ -62,26 +75,21 @@ internal class SortAlgorithm
         }
     }
 
-    /// <summary>
-    /// Generates a list of all possible Rules given the old data and new file data.
-    /// </summary>
-    public void ManageRules(List<FileInfo> allData, FileInfo newData, string oldPath)
+    public Rule? GenerateStrongRule(List<FileInfo> allData, List<FileMoveInfo> userActions, FileInfo newData, string oldPath)
     {
-        allData = allData.Distinct().ToList();
-
-        //sort old data for only those files that match the start folder and end destination paths
-        List <FileInfo> FilteredFiles = _myFilterData.Filter(allData, newData);
-
-        List<FileMoveInfo> userActions = GetUserActions();
         //generate a list of rules
-        List<Rule> GeneratedRules = _myRuleGenerator.AllRules(FilteredFiles, userActions, newData, oldPath, limit);
+        List<Rule> GeneratedRules = _myRuleGenerator.AllRules(
+            allData, userActions,
+            newData, oldPath,
+            RuleLimit);
+
         //remove any weak rules
         GeneratedRules = _myFilterData.StrongRules(
-            allRules: GeneratedRules, 
+            allRules: GeneratedRules,
             requiredStrength: RequiredStrength,
-            requiredParams: 2,
-            requiredMatches: 2,
-            limit: limit);
+            requiredParams: MinimumParams,
+            requiredMatches: MinimumFileMatches,
+            limit: RuleLimit);
 
         //remove any rules if they already exist
         List<Rule> OldRules = RuleEditor.GetRules();
@@ -96,14 +104,29 @@ internal class SortAlgorithm
         {
             newRule = StrongestRules[0];
         }
-        else if(StrongestRules.Count > 1)
+        else if (StrongestRules.Count > 1)
         {
             //newRule = DecideOnRuleSomehow;
             newRule = StrongestRules[0];
             //throw new NotImplementedException();
         }
 
-        Debug.WriteLine($"made rules, only |{newRule}| got through.");
+        return newRule;
+    }
+
+    /// <summary>
+    /// Generates a list of all possible Rules given the old data and new file data.
+    /// </summary>
+    public void ManageRules(List<FileInfo> allData, FileInfo newData, string oldPath)
+    {
+        allData = allData.Distinct().ToList();
+
+        //sort old data for only those files that match the start folder and end destination paths
+        List <FileInfo> FilteredFiles = _myFilterData.Filter(allData, newData);
+
+        List<FileMoveInfo> userActions = GetUserActions();
+
+        Rule? newRule = GenerateStrongRule(FilteredFiles, userActions, newData, oldPath);
 
         if (newRule != null)
         {
@@ -111,7 +134,7 @@ internal class SortAlgorithm
             {
                 _myRuleExecuter.OnRuleMade(newRule);
             }
-            previusDatapoints.Add(newData);
+            _myFilterData.AddOldData(newData);
         }
     }
 
@@ -139,33 +162,27 @@ internal class SortAlgorithm
         return userActionResult;
     }
 
-    private List<FileInfo> previusDatapoints { get; set; } = new();
-    private bool RedundantData(FileInfo newDatapoint)
-    {
-        //TODO: make it send data to json file to allow persistancy
-        //TODO?: move to FilterData
-        if (previusDatapoints.Contains(newDatapoint))
-        {
-            return true;
-        }
-
-        return false;
-    }
 
     //Called when, for example, a data entry is added to userAction.json
     public void OnDataGained(object sender, OnFileMoveEventArgs e)
     {
+        if(IsEnabled)
+            HandleData(sender, e);
+    }
+
+    private void HandleData(object sender, OnFileMoveEventArgs e)
+    {
         bool isInCorrectFolder = e.NewFile.DirectoryName.Contains(_myFolder);
-        bool isNotRedundantData = !RedundantData(e.NewFile);
+        bool isNotRedundantData = !_myFilterData.RedundantData(e.NewFile);
 
         if (isInCorrectFolder && isNotRedundantData)
         {
             SetRequiredStrength();
 
             FileMoveData[] AllData = e.AllData;
-            List<FileInfo> AllFileInfo = FileUtility.MultiConvertFileMoveData(AllData);
+            List<FileInfo> AllFileInfo = FileUtility.ConvertFileMoveData(AllData);
 
-            List<FileInfo> FileInfoOfFolder = FileUtility.GetFileInfoOfFolder(e.NewFile.DirectoryName, limit);
+            List<FileInfo> FileInfoOfFolder = FileUtility.GetFileInfoOfFolder(e.NewFile.DirectoryName, RuleLimit);
             AllFileInfo.AddRange(FileInfoOfFolder);
 
             string oldPath = Path.GetDirectoryName(e.OldPath);
@@ -179,17 +196,13 @@ internal class SortAlgorithm
 static class FileUtility
 {
     /// <UTILITY>
-    public static FileInfo ConvertFileMoveData(FileMoveData fileMoveData)
-    {
-        FileInfo fileInfo = new(fileMoveData.NewPath);
-        return fileInfo;
-    }
-    public static List<FileInfo> MultiConvertFileMoveData(FileMoveData[] fileMoveDataPoints)
+    public static List<FileInfo> ConvertFileMoveData(FileMoveData[] fileMoveDataPoints)
     {
         List<FileInfo> allData = new();
         foreach (FileMoveData fileMoveData in fileMoveDataPoints)
         {
-            allData.Add(ConvertFileMoveData(fileMoveData));
+            FileInfo fileInfo = new(fileMoveData.NewPath);
+            allData.Add(fileInfo);
         }
         return allData;
     }

@@ -105,10 +105,9 @@ namespace Core.Sorter
 
         }
 
-        public int strength()
+        public int Strength
         {
-            //Debug.WriteLine(StartEstimation * Paramaters.Count);
-            return StartEstimation * Paramaters.Count;
+            get => StartEstimation * Paramaters.Count;
         }
 
         public static List<Rule> ConvertParamsToRules(

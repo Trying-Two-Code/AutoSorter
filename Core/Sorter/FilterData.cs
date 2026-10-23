@@ -75,7 +75,7 @@ namespace Core.Sorter
             int LargestStrength = StrengthDetector.GetLargestStrength(Rules);
             for (int i = 0; i < Rules.Count; i++)
             {
-                if (Rules[i].strength() == LargestStrength)
+                if (Rules[i].Strength == LargestStrength)
                     return Rules[i];
             }
 
@@ -93,7 +93,7 @@ namespace Core.Sorter
 
             foreach (Rule rule in allRules)
             {
-                int ruleStrength = rule.strength();
+                int ruleStrength = rule.Strength;
 
                 if(ruleStrength < requiredStrength)
                 {
@@ -112,6 +112,24 @@ namespace Core.Sorter
             }
 
             return strongRules;
+        }
+
+
+        private List<FileInfo> previusDatapoints { get; set; } = new();
+        public bool RedundantData(FileInfo newDatapoint)
+        {
+            //TODO: make it send data to json file to allow persistancy
+            if (previusDatapoints.Contains(newDatapoint))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public void AddOldData(FileInfo newDatapoint)
+        {
+            previusDatapoints.Add(newDatapoint);
         }
     }
 }
