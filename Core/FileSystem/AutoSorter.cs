@@ -1,10 +1,10 @@
-using Core.Sorter;
 using Helper.DataGathering;
 using Helper.FileSystem;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Reflection;
 using System.Diagnostics;
+using Core.Sorter.Executor;
 
 namespace Core.FileSystem;
 
@@ -20,7 +20,7 @@ public class AutoSorter
 
     private readonly MoveCorrelator _moveCorrelator;
 
-    private readonly RuleExecuter _ruleExecuter;
+    public readonly RuleExecuter _ruleExecuter;
 
     public AutoSorter(
         string watchRoot,
@@ -107,10 +107,12 @@ public class AutoSorter
                         TryGetSize(change.Path));
 
                 if (correlated != null)
+                {
                     OnFileMove(correlated.NewPath, correlated.OldPath);
                     _ruleExecuter.OnFileMove(correlated.NewPath, correlated.OldPath);
-                    break;
-            }
+                }
+                break;
+                }
 
             case FileChangeType.Renamed:
             {
@@ -193,7 +195,7 @@ public class AutoSorter
 public class OnFileMoveEventArgs : EventArgs
 {
     public FileInfo? NewFile { get; set; }
-    public string OldPath { get; set; }
+    public string? OldPath { get; set; }
     public FileMoveData[]? AllData { get; set; }
 }
 
@@ -267,14 +269,21 @@ public class SendAllData
 
         List <FileMoveData> oldData = new List<FileMoveData>();
 
-        foreach (UserActionGatherLine data in JsonData)
+        if(JsonData != null)
         {
-            FileMoveData fileMoveData = new()
+            foreach (UserActionGatherLine data in JsonData)
             {
-                NewPath = data.To,
-                OldPath = data.From
-            };
-            oldData.Add(fileMoveData);
+                if (data.To == null || data.From == null)
+                    continue;
+
+                FileMoveData fileMoveData = new()
+                {
+                    NewPath = data.To,
+                    OldPath = data.From
+                };
+
+                oldData.Add(fileMoveData);
+            }
         }
 
         return oldData;

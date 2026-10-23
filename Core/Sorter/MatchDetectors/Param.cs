@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace Core.Sorter
+namespace Core.Sorter.MatchDetectors
 {
     public delegate bool ApproximateMatch(FileInfo forFile, Param self);
 

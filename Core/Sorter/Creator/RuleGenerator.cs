@@ -1,4 +1,4 @@
-﻿using Core.Sorter;
+﻿using Core.Sorter.MatchDetectors;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,7 +6,7 @@ using System.Formats.Tar;
 using System.Numerics;
 using System.Text;
 
-namespace Core.Sorter
+namespace Core.Sorter.Creator
 {
     internal class RuleGenerator
     {

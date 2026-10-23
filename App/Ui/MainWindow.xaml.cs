@@ -19,7 +19,7 @@ public partial class MainWindow : Window
     private readonly HandleWindow _handleWindow;
     private readonly UserPrompter _userPrompter;
 
-    private settings _settings;
+    private Settings _settings;
 
     public MainWindow()
     {
@@ -34,7 +34,7 @@ public partial class MainWindow : Window
 
         Loaded += new RoutedEventHandler(Window_Loaded);
 
-        _settings = settings.Get();
+        _settings = Settings.Get();
         if (_settings.running)
         {
             MainStartStopButton.ToggleRunning();
@@ -54,6 +54,7 @@ public partial class MainWindow : Window
         _app_Desktop.Start();
         _app_Documents.Start();
     }
+
     private void StopApps()
     {
         _app_Download.Stop();
@@ -68,7 +69,6 @@ public partial class MainWindow : Window
 
     private void Setup_Window_Position()
     {
-
         var desktopWorkingArea = SystemParameters.WorkArea;
         Left = desktopWorkingArea.Right - Width;
         Top = desktopWorkingArea.Bottom - Height;
@@ -148,7 +148,7 @@ public partial class MainWindow : Window
 
     public object OnGetSettingsRecieved(object sender, EventArgs args)
     {
-        return settings.Get();
+        return Settings.Get();
     }
 }
 

@@ -1,4 +1,4 @@
-﻿namespace Core.Sorter
+﻿namespace Core.Sorter.MatchDetectors
 {
     interface IDetectMatches
     {

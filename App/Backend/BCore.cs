@@ -1,6 +1,6 @@
-namespace BCore;
-
 using Core;
+
+namespace BCore;
 
 public class AppAPI
 {

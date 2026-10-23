@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Core.Sorter.MatchDetectors;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Text;
 
-namespace Core.Sorter
+namespace Core.Sorter.Creator
 {
     /// <summary>
     /// Class to get rid of useless rule and fileinfo data.
@@ -39,11 +40,13 @@ namespace Core.Sorter
         /// </summary>
         /// <param name="Rules"></param>
         /// <returns></returns>
-        public List<Rule> DetectDuplicateRules(List<Rule> NewRules, List<Rule> OldRules)
+        public List<MatchDetectors.Rule> DetectDuplicateRules(
+            List<MatchDetectors.Rule> NewRules, 
+            List<MatchDetectors.Rule> OldRules)
         {
-            List<Rule> result = new();
+            List<MatchDetectors.Rule> result = new();
             result = NewRules.Distinct().ToList();
-            foreach (Rule oldRule in OldRules)
+            foreach (MatchDetectors.Rule oldRule in OldRules)
             {
                 if (result.Contains(oldRule))
                 {
@@ -51,11 +54,11 @@ namespace Core.Sorter
                 }
             }
 
-            foreach (Rule oldRule in OldRules)
+            foreach (MatchDetectors.Rule oldRule in OldRules)
             {
                 for (int i = result.Count - 1; i >= 0; i--)
                 {
-                    Rule newRule = result[i];
+                    MatchDetectors.Rule newRule = result[i];
                     if (newRule.CheapRuleEqualityCheck(oldRule))
                     {
                         result.Remove(newRule);
@@ -68,7 +71,7 @@ namespace Core.Sorter
 
 
         //NOTE: if tied for first, chooses the first strongest rule
-        public Rule? StrongestRule(List<Rule>? Rules)
+        public MatchDetectors.Rule? StrongestRule(List<MatchDetectors.Rule>? Rules)
         {
             if (Rules == null) return null;
 
@@ -82,16 +85,16 @@ namespace Core.Sorter
             return null;
         }
 
-        public List<Rule> StrongRules(
-            List<Rule> allRules, 
+        public List<MatchDetectors.Rule> StrongRules(
+            List<MatchDetectors.Rule> allRules, 
             int requiredStrength = 10, 
             int requiredParams = 2,
             int requiredMatches = 2,
             int limit = 1000)
         {
-            List<Rule> strongRules = new();
+            List<MatchDetectors.Rule> strongRules = new();
 
-            foreach (Rule rule in allRules)
+            foreach (MatchDetectors.Rule rule in allRules)
             {
                 int ruleStrength = rule.Strength;
 

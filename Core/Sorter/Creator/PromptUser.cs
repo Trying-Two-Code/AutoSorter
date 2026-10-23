@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+﻿using Core.Sorter.MatchDetectors;
+using System.Diagnostics;
 
-namespace Core.Sorter
+namespace Core.Sorter.Creator
 {
     /// <summary>
     /// Sends prompts to the user via a UITask.

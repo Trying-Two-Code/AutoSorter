@@ -1,5 +1,5 @@
 ﻿using Core.FileSystem;
-using Core.Sorter;
+using Core.Sorter.Creator;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -27,7 +27,7 @@ public class CoreAlgorithm
 
         GetUserActionTask _getUserAction = _autoSorter.SendAllDataInstance.GetUserActions;
 
-        _sortAlgorithm = new SortAlgorithm(sourceRoot, _promptUser, _getSettings, _getUserAction);
+        _sortAlgorithm = new SortAlgorithm(sourceRoot, _promptUser, _getSettings, _getUserAction, _autoSorter._ruleExecuter);
         GetSettingsTask _myGetSettings = _getSettings;
 
         _autoSorter.SendAllDataInstance.OnFileMoveEvent += _sortAlgorithm.OnDataGained;

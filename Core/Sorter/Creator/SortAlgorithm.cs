@@ -9,10 +9,12 @@
 // - StartPath == C://Downloads/A && EndPath == C://Downloads/B
 //is returned
 using Core.FileSystem;
+using Core.Sorter.Executor;
+using Core.Sorter.MatchDetectors;
 using System.Data;
 using System.Diagnostics;
 
-namespace Core.Sorter;
+namespace Core.Sorter.Creator;
 
 internal class SortAlgorithm
 {
@@ -33,7 +35,8 @@ internal class SortAlgorithm
         string myfolder,
         PromptUser _promptUser, 
         GetSettingsTask myGetSettingsTask, 
-        GetUserActionTask myGetUserActionTask)
+        GetUserActionTask myGetUserActionTask,
+        RuleExecuter myRuleExecutor)
     {
         _myFolder = myfolder;
         _myPromptUser = _promptUser;
@@ -41,7 +44,7 @@ internal class SortAlgorithm
         _myGetUserActionTask = myGetUserActionTask;
         _myStrengthDetector = new StrengthDetector();
         _myRuleGenerator = new RuleGenerator(_myStrengthDetector);
-        _myRuleExecuter = new RuleExecuter();
+        _myRuleExecuter = myRuleExecutor;
         _myFilterData = new FilterData();
 
         SetRequiredStrength();
@@ -75,10 +78,10 @@ internal class SortAlgorithm
         }
     }
 
-    public Rule? GenerateStrongRule(List<FileInfo> allData, List<FileMoveInfo> userActions, FileInfo newData, string oldPath)
+    public MatchDetectors.Rule? GenerateStrongRule(List<FileInfo> allData, List<FileMoveInfo> userActions, FileInfo newData, string oldPath)
     {
         //generate a list of rules
-        List<Rule> GeneratedRules = _myRuleGenerator.AllRules(
+        List<MatchDetectors.Rule> GeneratedRules = _myRuleGenerator.AllRules(
             allData, userActions,
             newData, oldPath,
             RuleLimit);
@@ -92,13 +95,13 @@ internal class SortAlgorithm
             limit: RuleLimit);
 
         //remove any rules if they already exist
-        List<Rule> OldRules = RuleEditor.GetRules();
+        List<MatchDetectors.Rule> OldRules = RuleEditor.GetRules();
         GeneratedRules = _myFilterData.DetectDuplicateRules(GeneratedRules, OldRules);
 
         //find the strongest rule
-        List<Rule>? StrongestRules = _myStrengthDetector.StrongestRules(GeneratedRules);
+        List<MatchDetectors.Rule>? StrongestRules = _myStrengthDetector.StrongestRules(GeneratedRules);
 
-        Rule? newRule = null;
+        MatchDetectors.Rule? newRule = null;
 
         if (StrongestRules.Count == 1)
         {
@@ -115,7 +118,7 @@ internal class SortAlgorithm
     }
 
     /// <summary>
-    /// Generates a list of all possible Rules given the old data and new file data.
+    /// Generates an appropriate rule and saves said rule.
     /// </summary>
     public void ManageRules(List<FileInfo> allData, FileInfo newData, string oldPath)
     {
@@ -126,7 +129,7 @@ internal class SortAlgorithm
 
         List<FileMoveInfo> userActions = GetUserActions();
 
-        Rule? newRule = GenerateStrongRule(FilteredFiles, userActions, newData, oldPath);
+        MatchDetectors.Rule? newRule = GenerateStrongRule(FilteredFiles, userActions, newData, oldPath);
 
         if (newRule != null)
         {
@@ -164,14 +167,19 @@ internal class SortAlgorithm
 
 
     //Called when, for example, a data entry is added to userAction.json
-    public void OnDataGained(object sender, OnFileMoveEventArgs e)
+    public void OnDataGained(object? sender, OnFileMoveEventArgs? e)
     {
         if(IsEnabled)
             HandleData(sender, e);
     }
 
-    private void HandleData(object sender, OnFileMoveEventArgs e)
+    private void HandleData(object? sender, OnFileMoveEventArgs? e)
     {
+        if(sender == null || e == null || e.NewFile == null || e.NewFile.DirectoryName == null)
+        {
+            return;
+        }
+
         bool isInCorrectFolder = e.NewFile.DirectoryName.Contains(_myFolder);
         bool isNotRedundantData = !_myFilterData.RedundantData(e.NewFile);
 
@@ -179,15 +187,19 @@ internal class SortAlgorithm
         {
             SetRequiredStrength();
 
-            FileMoveData[] AllData = e.AllData;
-            List<FileInfo> AllFileInfo = FileUtility.ConvertFileMoveData(AllData);
+            FileMoveData[]? AllData = e.AllData;
+            if(AllData != null)
+            {
+                List<FileInfo> AllFileInfo = FileUtility.ConvertFileMoveData(AllData);
 
-            List<FileInfo> FileInfoOfFolder = FileUtility.GetFileInfoOfFolder(e.NewFile.DirectoryName, RuleLimit);
-            AllFileInfo.AddRange(FileInfoOfFolder);
+                List<FileInfo> FileInfoOfFolder = FileUtility.GetFileInfoOfFolder(e.NewFile.DirectoryName, RuleLimit);
+                AllFileInfo.AddRange(FileInfoOfFolder);
 
-            string oldPath = Path.GetDirectoryName(e.OldPath);
+                string? oldPath = Path.GetDirectoryName(e.OldPath);
 
-            ManageRules(AllFileInfo, e.NewFile, oldPath);
+                if(oldPath != null)
+                    ManageRules(AllFileInfo, e.NewFile, oldPath);
+            }
         }
     }
 }

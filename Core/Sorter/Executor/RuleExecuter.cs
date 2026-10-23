@@ -1,14 +1,16 @@
 ﻿//Overview: Executes on all the rules made by SortAlgorithm
 
 using Core.FileSystem;
+using Core.Sorter.Creator;
+using Core.Sorter.MatchDetectors;
 using Helper.FileSystem;
 using System.Data;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace Core.Sorter
+namespace Core.Sorter.Executor
 {
-    internal class RuleExecuter
+    public class RuleExecuter
     {
         private RuleEditor myRuleEditor; 
         public RuleExecuter()
@@ -17,7 +19,7 @@ namespace Core.Sorter
             AllRules = RuleEditor.GetRules();
         }
 
-        public void ExecuteRule(Rule rule, FileInfo currentFileInfo)
+        public void ExecuteRule(MatchDetectors.Rule rule, FileInfo currentFileInfo)
         {
             Debug.Assert(rule.ShouldMove(currentFileInfo));
 
@@ -30,15 +32,15 @@ namespace Core.Sorter
             rule.ExecutionCount++;
         }
 
-        private static List<Rule> ShouldExecuteRules(
-            List<Rule> allRules,
+        private static List<MatchDetectors.Rule> ShouldExecuteRules(
+            List<MatchDetectors.Rule> allRules,
             string currentPath,
             FileInfo currentFileInfo)
         {
-            List<Rule> ShouldExecute = new();
+            List<MatchDetectors.Rule> ShouldExecute = new();
             for (int i = 0; i < allRules.Count; i++)
             {
-                Rule rule = allRules[i];
+                MatchDetectors.Rule rule = allRules[i];
                 if(rule.StartPath != currentPath) { continue; }
 
                 if(rule.ShouldMove(currentFileInfo))
@@ -56,7 +58,7 @@ namespace Core.Sorter
         /// </summary>
         /// <param name="rule">the rule to check</param>
         /// <param name="folder">the path of the folder to check</param>
-        void ExecuteRuleOnFolder(Rule rule, string folder)
+        void ExecuteRuleOnFolder(MatchDetectors.Rule rule, string folder)
         {
             const int fileLimit = 100;
             List<FileInfo> files = FileUtility.GetFileInfoOfFolder(folder, fileLimit);
@@ -70,14 +72,14 @@ namespace Core.Sorter
             }
         }
 
-        public void LoopThroughRules(List<Rule>? rules, FileInfo file, string oldPath)
+        public void LoopThroughRules(List<MatchDetectors.Rule>? rules, FileInfo file, string? oldPath)
         {
             if(rules == null) return;
 
-            List<Rule> ExecuteRules = ShouldExecuteRules(rules, file.FullName, file);
+            List<MatchDetectors.Rule> ExecuteRules = ShouldExecuteRules(rules, file.FullName, file);
 
             //issue, what if ExecuteRules.Count > 1
-            foreach(Rule rule in ExecuteRules)
+            foreach(MatchDetectors.Rule rule in ExecuteRules)
             {
                 ExecuteRule(rule, file);
             }
@@ -93,17 +95,18 @@ namespace Core.Sorter
             LoopThroughRules(AllRules, new(NewFilePath), null);
         }
 
-        static List<Rule>? AllRules {get; set;}
+        static List<MatchDetectors.Rule>? AllRules {get; set;}
 
-        public static PromptUser PromptUserInst;
-
-        public void OnRuleMade(Rule rule)
+        public void OnRuleMade(MatchDetectors.Rule rule)
         {
             AllRules = RuleEditor.GetRules();
 
             string startPath = rule.StartPath;
-            string startDirectory = Path.GetPathRoot(startPath);
-            ExecuteRuleOnFolder(rule, startDirectory);
+            string? startDirectory = Path.GetPathRoot(startPath);
+            if (startDirectory != null) {
+                ExecuteRuleOnFolder(rule, startDirectory);
+            }
+
             myRuleEditor.AddRule(rule);
         }
     }

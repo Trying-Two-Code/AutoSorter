@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Core.Sorter.Creator;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Core.Sorter
+namespace Core.Sorter.MatchDetectors
 {
     public class Rule : IDetectMatches
     {
@@ -92,7 +93,7 @@ namespace Core.Sorter
                 foreach (Param param in Paramaters)
                 {
                     if(param.IsMatch(fileInfo)) { continue; }
-                    if(param?.MyApproximateMatch(fileInfo, param) == true) { continue; }
+                    if(param?.MyApproximateMatch!(fileInfo, param) == true) { continue; }
                     return false;
                 }
                 return true;

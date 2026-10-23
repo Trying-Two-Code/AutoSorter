@@ -32,7 +32,6 @@ internal class TrayIconHandler
     void OnClose(object sender, CancelEventArgs args)
     {
         m_notifyIcon.Dispose();
-        m_notifyIcon = null;
     }
 
     private WindowState m_storedWindowState = WindowState.Normal;
@@ -50,7 +49,7 @@ internal class TrayIconHandler
             m_storedWindowState = window.WindowState;
     }
 
-    void m_notifyIcon_Click(object sender, EventArgs e)
+    private void m_notifyIcon_Click(object? sender, EventArgs? e)
     {
         Window window = System.Windows.Application.Current.MainWindow;
 

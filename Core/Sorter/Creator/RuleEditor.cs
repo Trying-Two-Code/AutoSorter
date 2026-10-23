@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Core.Sorter.MatchDetectors;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
-namespace Core.Sorter
+namespace Core.Sorter.Creator
 {
     class RuleEditor
     {

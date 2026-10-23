@@ -32,7 +32,7 @@ static class UserSettings
         }
     }
 
-    public static T Set<T>(string key, T value)
+    public static T? Set<T>(string key, T value)
     {
         lock (_lock)
         {
@@ -43,69 +43,45 @@ static class UserSettings
 
     public static class JsonFileReader
     {
-        public static T Read<T>(string filePath, string key)
+        public static T? Read<T>(string filePath, string key)
         {
             lock (_lock)
             {
                 if (File.Exists(filePath))
                 {
                     string json = File.ReadAllText(filePath);
-                    dynamic jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-                    return (T)jsonObj[key];
-                }
-                else
-                {
-                    return default;
+                    dynamic? jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+                    if (jsonObj != null)
+                        return (T?)jsonObj[key];
                 }
             }
+            return default;
         }
-        public static T Read<T>(string key)
+
+        public static T? Read<T>(string key)
         {
-            lock (_lock)
-            {
-                if (File.Exists(UserFileDataPath))
-                {
-                    string json = File.ReadAllText(UserFileDataPath);
-                    dynamic jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-                    return (T)jsonObj[key];
-                }
-                else
-                {
-                    return default;
-                }
-            }
+            return Read<T>(UserFileDataPath, key);
         }
     }
 
     public static class JsonFileWriter
     {
         public static string? FilePath { get; set; } = UserFileDataPath;
-        public static T Write<T>(string key, T value)
+        public static T? Write<T>(string key, T value)
         {
-            lock (_lock)
-            {
-                if (!MakeSafeToWrite(FilePath)) { return default; }
-
-                string json = File.ReadAllText(FilePath);
-                if (json == null) return default;
-
-                dynamic jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-                if (jsonObj == null) return default;
-
-                jsonObj[key] = value;
-                string output = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Newtonsoft.Json.Formatting.Indented);
-                File.WriteAllText(FilePath, output);
-                return value;
-            }
+            if(FilePath != null)
+                if(!MakeSafeToWrite(FilePath))
+                    return Write<T>(FilePath, key, value);
+            return default;
         }
 
-        public static T Write<T>(string path, string key, T value)
+        public static T? Write<T>(string path, string key, T value)
         {
             lock (_lock)
             {
                 if(!MakeSafeToWrite(path)) { return default; }
 
-                dynamic jsonObj;
+                dynamic? jsonObj;
                 string json = File.ReadAllText(path);
 
                 if (string.IsNullOrEmpty(json))
@@ -117,7 +93,8 @@ static class UserSettings
                     jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
                 }
 
-                jsonObj[key] = value;
+                if(jsonObj != null)
+                    jsonObj[key] = value;
 
                 string output = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Newtonsoft.Json.Formatting.Indented);
                 File.WriteAllText(path, output);
@@ -136,7 +113,10 @@ static class UserSettings
 
         private static void CreateDefaultFile(string path)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            string? pathDirectory = Path.GetDirectoryName(path);
+            if(pathDirectory == null) return;
+
+            Directory.CreateDirectory(pathDirectory);
             File.WriteAllText(path, 
                 "{" +
                     "\r\n  \"running\": true," +
@@ -148,17 +128,17 @@ static class UserSettings
     }
 }
 
-public class settings()
+public class Settings()
 {
     public bool running { get; set; } = true;
     public int promptUserAmm { get; set; } = 50;
     public bool muted { get; set; } = false;
 
-    public static settings Get()
+    public static Settings Get()
     {
         UserSettings.GetSettings();
 
-        settings _settings = new()
+        Settings _settings = new()
         {
             running = UserSettings.running,
             promptUserAmm = UserSettings.promptUserAmm,
