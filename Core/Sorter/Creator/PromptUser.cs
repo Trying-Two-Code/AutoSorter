@@ -23,6 +23,8 @@ namespace Core.Sorter.Creator
 
         public bool Prompt(Rule rule)
         {
+            if (Mute) return false;
+
             PromptData data = GeneratePromptData(rule);
 
             Task<bool> uiTask = UIEvent(this, data);
@@ -58,5 +60,7 @@ namespace Core.Sorter.Creator
 
             return newData;
         }
+
+        public bool Mute { get; set; }
     }
 }
