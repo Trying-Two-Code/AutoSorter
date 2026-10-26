@@ -183,12 +183,6 @@ class UserPrompter
 
     public Task<bool> HandleRequest(object sender, EventArgs args)
     {
-        Debug.WriteLine("Recieved UI event...");
-        Debug.WriteLine(lastPromptTime - DateTime.Now);
-        //if last prompt time was 10 mins ago, and I can prompt every minute, it should be false
-        //the duration between last prompt time and now is less than prompt ammount, it hasn't been long enough
-        //lastprompt time = 0:10 now = 0:30 promptAmmount = 0:10; then 0:30 - 0:10 > 0:10
-        //lastprompt time = 0:20 now = 0:25 promptAmmount = 0:10; then 0:25 - 0:20 < 0:10
         if (DateTime.Now - lastPromptTime < promptAmmount)
         {
             return FalseResult();

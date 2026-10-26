@@ -38,9 +38,7 @@ static class UserSettings
         Settings settings = GetSettings();
         typeof(Settings)?.GetProperty(key)?.SetValue(settings, value);
         JSONMinipulator.Data = settings;
-        Debug.WriteLine($"Set {key} : {value}");
-        Debug.Write($"Settings is now : {GetSettings(key)}");
-        //Debug.Assert(value == GetSettings(key));
+        Debug.Assert(value == GetSettings(key));
     }
 
 }
