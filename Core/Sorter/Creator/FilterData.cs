@@ -17,9 +17,8 @@ namespace Core.Sorter.Creator
         private JSONDataMinipulator<FilePromptDatapoint> _DatapointFile;
         public FilterData()
         {
-            string DatapointFilePath = Path.Combine(AppContext.BaseDirectory, $"PreviousDatapoints.json");
             //_DatapointFile = new DatapointFile(DatapointFilePath, null);
-            _DatapointFile = new JSONDataMinipulator<FilePromptDatapoint>(DatapointFilePath, "DatapointFileMutex");
+            _DatapointFile = new JSONDataMinipulator<FilePromptDatapoint>("PreviousDatapoints.json", "DatapointFileMutex");
             PreviousDatapoints = _DatapointFile.Get();
         }
 

@@ -43,9 +43,12 @@ namespace Core.Sorter.MatchDetectors
                 }).Distinct().ToList();
 
             List<string> matchingFileList = Matches(allDataList);
-            StartEstimation = matchingFileList.Count;
 
-            MatchingFiles = matchingFileList;
+            List<string> MinimumMatchingFileList = matchingFileList.Intersect(matchingUserActionList).ToList();
+
+            MatchingFiles = MinimumMatchingFileList;
+
+            StartEstimation = MinimumMatchingFileList.Count;
         }
 
         public List<Param> Paramaters { get; set; }
@@ -85,11 +88,6 @@ namespace Core.Sorter.MatchDetectors
         public bool IsMatch(FileInfo fileInfo)
         {
             if (fileInfo.DirectoryName != StartPath) { return false; }
-
-            if (ContainsDuplicateParam)
-            {
-                Debug.WriteLine("I have duplicate paramaters");
-            }
 
             if (Paramaters.Any((parameter) =>
             {

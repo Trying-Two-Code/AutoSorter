@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
@@ -8,13 +9,13 @@ namespace Core.Sorter
     public class JSONDataMinipulator<ClassType>
     {
         private static Mutex Mut;
-        public string Path { get; set; }
+        public string MyPath { get; set; }
         public bool Active { get; set; }
         public List<ClassType> Data;
 
         public JSONDataMinipulator(string _path, string _MutexIdentity, List<ClassType>? _Data = null)
         {
-            Path = _path;
+            MyPath = Path.Combine(AppContext.BaseDirectory, _path);
             Active = true;
 
             Mut = new(false, $"Global\\{_MutexIdentity}");
@@ -27,11 +28,13 @@ namespace Core.Sorter
 
         private void EnsureFileExists()
         {
-            if (!File.Exists(Path))
+            bool ExistsAndPopulated = File.Exists(MyPath) && new FileInfo(MyPath).Length != 0;
+
+            if (!ExistsAndPopulated)
             {
                 if (Mut.WaitOne(10000))
                 {
-                    using (FileStream fs = File.Create(Path))
+                    using (FileStream fs = File.Create(MyPath))
                     {
                         string d = JsonSerializer.Serialize(new List<ClassType>());
                         byte[] info = new UTF8Encoding(true).GetBytes(d);
@@ -48,7 +51,7 @@ namespace Core.Sorter
 
             if (Mut.WaitOne(1000))
             {
-                using (StreamReader r = new StreamReader(Path))
+                using (StreamReader r = new StreamReader(MyPath))
                 {
                     string d = r.ReadToEnd();
                     data = JsonSerializer.Deserialize<List<T>>(d);
@@ -69,7 +72,7 @@ namespace Core.Sorter
         {
             if (Mut.WaitOne(1000))
             {
-                using (StreamWriter r = new StreamWriter(Path))
+                using (StreamWriter r = new StreamWriter(MyPath))
                 {
                     string json = JsonSerializer.Serialize(data);
                     r.Write(json);

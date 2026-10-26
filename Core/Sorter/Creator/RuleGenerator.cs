@@ -82,12 +82,12 @@ namespace Core.Sorter.Creator
 
                     object? value = null;
 
-                    if (File.Exists(forFile.FullName))
+                    if (forFile.Exists)
                     {
                         value =
                             typeof(FileInfo)
                             ?.GetProperty(defaultParam.name)
-                            ?.GetValue(forFile);
+                            ?.GetValue(forFile)!;
                     }
 
                     //Important:
@@ -134,6 +134,7 @@ namespace Core.Sorter.Creator
             List<List<Param>> paramLists)
         {
             List<Rule> allRules = new();
+
             foreach (List<Param> paramList in paramLists)
             {
                 Rule newRule = new(
@@ -144,7 +145,14 @@ namespace Core.Sorter.Creator
                     endPath: endPath
                     );
 
-                allRules.Add(newRule);
+                if (newRule.ContainsDuplicateParam)
+                {
+                    Debug.WriteLine("newRule contains duplicate parameters, not added.");
+                }
+                else
+                {
+                    allRules.Add(newRule);
+                }
             }
             return allRules;
         }
