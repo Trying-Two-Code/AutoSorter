@@ -9,8 +9,8 @@ namespace Core.Sorter.Creator
 {
     class RuleEditor
     {
-        public static object _lock = new();
         readonly static string RuleDataPath = @"Sorter/Rule.json";
+        readonly static JSONDataMinipulator<Rule> JSONMinipulator = new(RuleDataPath, "RuleEditor");
 
         public void AddRule(Rule rule)
         {
@@ -49,40 +49,12 @@ namespace Core.Sorter.Creator
 
         public static List<Rule> GetRules()
         {
-            List<Rule> data = new();
-
-            lock (_lock)
-            {
-                try
-                {
-                    using (StreamReader r = new StreamReader(RuleDataPath))
-                    {
-                        string json = r.ReadToEnd();
-                        List<Rule>? jsonData = JsonSerializer.Deserialize<List<Rule>>(json);
-                        if (jsonData != null)
-                            data = jsonData;
-                    }
-                }
-                catch
-                {
-                    //Json isn't made yet or smth:
-                    SaveRules(new());
-                }
-            }
-
-            return data;
+            return JSONMinipulator.Get();
         }
 
         public static void SaveRules(List<Rule> newData)
         {
-            lock (_lock)
-            {
-                using (StreamWriter r = new StreamWriter(RuleDataPath))
-                {
-                    string json = JsonSerializer.Serialize(newData);
-                    r.Write(json);
-                }
-            }
+            JSONMinipulator.Set(newData);
         }
     }
 }

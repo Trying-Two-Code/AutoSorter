@@ -14,11 +14,12 @@ namespace Core.Sorter.Creator
     /// </summary>
     public class FilterData
     {
-        private DatapointFile _DatapointFile;
+        private JSONDataMinipulator<FilePromptDatapoint> _DatapointFile;
         public FilterData()
         {
             string DatapointFilePath = Path.Combine(AppContext.BaseDirectory, $"PreviousDatapoints.json");
-            _DatapointFile = new DatapointFile(DatapointFilePath, null);
+            //_DatapointFile = new DatapointFile(DatapointFilePath, null);
+            _DatapointFile = new JSONDataMinipulator<FilePromptDatapoint>(DatapointFilePath, "DatapointFileMutex");
             PreviousDatapoints = _DatapointFile.Get();
         }
 
@@ -181,86 +182,6 @@ namespace Core.Sorter.Creator
             FilePromptDatapoint NewData = new FilePromptDatapoint(newDatapoint, prompted);
             PreviousDatapoints.Add(NewData);
             _DatapointFile.Set(NewData);
-        }
-    }
-
-    class DatapointFile
-    {
-        private static Mutex mut = new(false, "Global\\DatapointFileMutex");
-
-        private string _path { get; set; }
-        private List<FilePromptDatapoint> _data { get; set; }
-
-        public DatapointFile(string path, List<FilePromptDatapoint>? data)
-        {
-            _path = path;
-            EnsureFileExists();
-            data ??= Get();
-            _data = data;
-        }
-
-        private void EnsureFileExists()
-        {
-            if (!File.Exists(_path))
-            {
-                if (mut.WaitOne(10000))
-                {
-                    using (FileStream fs = File.Create(_path))
-                    {
-                        string d = JsonSerializer.Serialize(new List<object>());
-                        byte[] info = new UTF8Encoding(true).GetBytes(d);
-                        fs.Write(info, 0, info.Length);
-                    }
-                }
-                mut.ReleaseMutex();
-            }
-        }
-
-        public List<T> Get<T>()
-        {
-            List<T>? data = new();
-
-            if (mut.WaitOne(1000))
-            {
-                using (StreamReader r = new StreamReader(_path))
-                {
-                    string d = r.ReadToEnd();
-                    data = JsonSerializer.Deserialize<List<T>>(d);
-                }
-            }
-
-            mut.ReleaseMutex();
-
-            return data;
-        }
-
-        public List<FilePromptDatapoint> Get()
-        {
-            return Get<FilePromptDatapoint>();
-        }
-
-        public void Set<T>(List<T> data)
-        {
-            if (mut.WaitOne(1000))
-            {
-                using (StreamWriter r = new StreamWriter(_path))
-                {
-                    string json = JsonSerializer.Serialize(data);
-                    r.Write(json);
-                }
-            }
-            mut.ReleaseMutex();
-        }
-
-        public void Set(List<FilePromptDatapoint> data)
-        {
-            Set<FilePromptDatapoint>(data);
-        }
-
-        public void Set(FilePromptDatapoint datapoint)
-        {
-            _data.Add(datapoint);
-            Set(_data);
         }
     }
 }
