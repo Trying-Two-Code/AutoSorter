@@ -28,7 +28,7 @@ internal class SortAlgorithm
     private FilterData _myFilterData { get; set; }
 
     private const int RuleLimit = 10000;
-    private int MinimumParams = 2;
+    private int MinimumParams = 3;
     private int MinimumFileMatches = 2;
 
     public SortAlgorithm(
@@ -84,7 +84,8 @@ internal class SortAlgorithm
         List<MatchDetectors.Rule> GeneratedRules = _myRuleGenerator.AllRules(
             allData, userActions,
             newData, oldPath,
-            RuleLimit);
+            RuleLimit,
+            MinimumParams);
 
         //remove any weak rules
         GeneratedRules = _myFilterData.StrongRules(
@@ -103,16 +104,10 @@ internal class SortAlgorithm
 
         MatchDetectors.Rule? newRule = null;
 
-        if (StrongestRules.Count == 1)
-        {
+        //arbitrary, since all the strongest rules are equal in their effectiveness
+        //TODO: make rules slightly stronger depending on if param has an approximate
+        if(StrongestRules.Count > 0)
             newRule = StrongestRules[0];
-        }
-        else if (StrongestRules.Count > 1)
-        {
-            //newRule = DecideOnRuleSomehow;
-            newRule = StrongestRules[0];
-            //throw new NotImplementedException();
-        }
 
         return newRule;
     }
@@ -137,7 +132,6 @@ internal class SortAlgorithm
             {
                 _myRuleExecuter.OnRuleMade(newRule);
             }
-            _myFilterData.AddOldData(newData);
         }
     }
 
@@ -177,13 +171,16 @@ internal class SortAlgorithm
     {
         if(sender == null || e == null || e.NewFile == null || e.NewFile.DirectoryName == null)
         {
+            Debug.WriteLine("smth is null bro");
             return;
         }
 
         bool isInCorrectFolder = e.NewFile.DirectoryName.Contains(_myFolder);
-        bool isNotRedundantData = !_myFilterData.RedundantData(e.NewFile);
+        bool isRedundantData = _myFilterData.RedundantData(e.NewFile);
 
-        if (isInCorrectFolder && isNotRedundantData)
+        Debug.WriteLine($"isCorrectFolder:{isInCorrectFolder}|| isRedundant:{isRedundantData}||");
+
+        if (isInCorrectFolder && !isRedundantData)
         {
             SetRequiredStrength();
 
@@ -197,9 +194,14 @@ internal class SortAlgorithm
 
                 string? oldPath = Path.GetDirectoryName(e.OldPath);
 
-                if(oldPath != null)
+                _myFilterData.AddOldData(e.NewFile.FullName, true);
+
+                if (oldPath != null)
                     ManageRules(AllFileInfo, e.NewFile, oldPath);
             }
+        } else if (isRedundantData)
+        {
+            _myFilterData.AddOldData(e.NewFile.FullName, false);
         }
     }
 }

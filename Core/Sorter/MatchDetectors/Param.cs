@@ -12,6 +12,8 @@ namespace Core.Sorter.MatchDetectors
     /// </summary>
     public class Param : IDetectMatches
     {
+        //idea todo?: if a param doesn't match, then a property that returns how
+        //important that param is, and if a file may pass a rule without matching the param
 
         public Param(string fileProperty, string myApproximateMatchName = "")
         {

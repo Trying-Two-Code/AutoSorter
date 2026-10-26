@@ -24,22 +24,28 @@ namespace Core.Sorter.MatchDetectors
             StartPath = startPath;
             EndPath = endPath;
 
-            List<FileInfo> userActionList = userActions
+            List<string> userActionList = userActions
                 .Where(file => 
                     (Path.GetDirectoryName(file.OldFileLocation) == StartPath) &&
                     (Path.GetDirectoryName(file.CurrentFile) == EndPath))
                 .Select(file =>
-                    { return new FileInfo(file.CurrentFile); })
+                    { return file.CurrentFile; })
+                .Distinct()
                 .ToList();
 
-            List<FileInfo> matchingUserActionList = Matches(userActionList);
+            List<string> matchingUserActionList = Matches(userActionList);
             StartCertain = matchingUserActionList.Count;
 
-            List<FileInfo> matchingFileList = Matches(allData);
+            List<string> allDataList = allData
+                .Select(data =>
+                {
+                    return data.FullName;
+                }).Distinct().ToList();
+
+            List<string> matchingFileList = Matches(allDataList);
             StartEstimation = matchingFileList.Count;
 
-            List<string> MatchingFilesStrings = matchingFileList.Select(file => file.FullName).ToList();
-            MatchingFiles = MatchingFilesStrings;
+            MatchingFiles = matchingFileList;
         }
 
         public List<Param> Paramaters { get; set; }
@@ -67,11 +73,6 @@ namespace Core.Sorter.MatchDetectors
 
         public bool ShouldMove(FileInfo fileInfo)
         {
-            if (fileInfo.DirectoryName != StartPath)
-            {
-                return false;
-            };
-
             if (File.Exists(Path.Combine(EndPath, fileInfo.Name)))
             {
                 return false;
@@ -83,24 +84,36 @@ namespace Core.Sorter.MatchDetectors
         public List<string> MatchingFiles { get; set; } = new();
         public bool IsMatch(FileInfo fileInfo)
         {
-            if (fileInfo.DirectoryName != EndPath) { return false; }
+            if (fileInfo.DirectoryName != StartPath) { return false; }
+
+            if (ContainsDuplicateParam)
+            {
+                Debug.WriteLine("I have duplicate paramaters");
+            }
+
             if (Paramaters.Any((parameter) =>
             {
                 return parameter.IsMatch(fileInfo) == false;
             }))
             {
                 //A parameter didn't match the fileInfo.
+                //Check if it approximatly matches the fileInfo.
                 foreach (Param param in Paramaters)
                 {
-                    if(param.IsMatch(fileInfo)) { continue; }
-                    if(param?.MyApproximateMatch!(fileInfo, param) == true) { continue; }
+                    if (param.IsMatch(fileInfo)) { continue; }
+
+                    bool? isApproximateMatch = null;
+
+                    if (param?.MyApproximateMatch != null)
+                        isApproximateMatch = param?.MyApproximateMatch(fileInfo, param);
+                    if (isApproximateMatch == true) { continue; }
+
                     return false;
                 }
                 return true;
             }
             else
             {
-                //All parameters matched.
                 return true;
             }
 
@@ -111,27 +124,19 @@ namespace Core.Sorter.MatchDetectors
             get => StartEstimation * Paramaters.Count;
         }
 
-        public static List<Rule> ConvertParamsToRules(
-            List<FileInfo> allData,
-            List<FileMoveInfo> userActions,
-            string startPath,
-            string endPath,
-            List<List<Param>> paramLists)
+        /// <summary>
+        /// Detects if two parameters are checking the same 
+        /// file property.
+        /// </summary>
+        public bool ContainsDuplicateParam
         {
-            List<Rule> allRules = new();
-            foreach (List<Param> paramList in paramLists)
+            get
             {
-                Rule newRule = new(
-                    allData: allData, 
-                    userActions: userActions,
-                    parameters: paramList,
-                    startPath: startPath,
-                    endPath: endPath
-                    );
-
-                allRules.Add(newRule);
+                List<string> properties = Paramaters.Select(param => { return param.FileProperty; }).ToList();
+                int notCertainUnique = properties.Count;
+                properties.Distinct();
+                return properties.Count == notCertainUnique;
             }
-            return allRules;
         }
 
         /// <summary>
@@ -140,23 +145,32 @@ namespace Core.Sorter.MatchDetectors
         /// <param name="rule">the rule to find matches for</param>
         /// <param name="corralationFiles">the list of files</param>
         /// <returns>The list of files that match the rule</returns>
-        public List<FileInfo> Matches(List<FileInfo> corralationFiles)
+        public List<string> Matches(List<string> corralationFiles)
         {
-            corralationFiles = corralationFiles.Distinct().ToList();
+            List<string> UniqueCorralationFiles = new List<string>();
+            for (int i = corralationFiles.Count; i < 0; i--)
+            {
+                string cFile = corralationFiles[i];
+                if (UniqueCorralationFiles.Contains(cFile)) { }
+                else
+                {
+                    UniqueCorralationFiles.Add(cFile);
+                }
+            }
             foreach (Param param in Paramaters)
             {
-                for (int i = corralationFiles.Count - 1; i >= 0; i--)
+                for (int i = UniqueCorralationFiles.Count - 1; i >= 0; i--)
                 {
-                    FileInfo fileInfo = corralationFiles[i];
+                    string filePath = UniqueCorralationFiles[i];
+                    FileInfo fileInfo = new(filePath);
                     if (!param.IsMatch(fileInfo))
                     {
-                        corralationFiles.Remove(fileInfo);
+                        UniqueCorralationFiles.Remove(filePath);
                     }
                 }
             }
             return corralationFiles;
         }
-
 
         public bool CheapRuleEqualityCheck(Rule OtherRule)
         {

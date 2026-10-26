@@ -13,6 +13,7 @@ namespace Core.Sorter.Executor
     public class RuleExecuter
     {
         private RuleEditor myRuleEditor; 
+
         public RuleExecuter()
         {
             myRuleEditor = new RuleEditor();
@@ -41,7 +42,6 @@ namespace Core.Sorter.Executor
             for (int i = 0; i < allRules.Count; i++)
             {
                 MatchDetectors.Rule rule = allRules[i];
-                if(rule.StartPath != currentPath) { continue; }
 
                 if(rule.ShouldMove(currentFileInfo))
                 {
@@ -81,6 +81,7 @@ namespace Core.Sorter.Executor
             //issue, what if ExecuteRules.Count > 1
             foreach(MatchDetectors.Rule rule in ExecuteRules)
             {
+                Debug.WriteLine("WORKING!");
                 ExecuteRule(rule, file);
             }
         }

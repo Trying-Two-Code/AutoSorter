@@ -120,12 +120,36 @@ namespace Core.Sorter.Creator
             List<FileMoveInfo> userActions, 
             FileInfo newData,
             string oldPath, 
-            int limit)
+            int limit,
+            int minParams)
         {
-            List<List<Param>> allParameters = AllParams(allData, newData, limit, 2);
-            List<Rule> allRules = Rule.ConvertParamsToRules(
+            List<List<Param>> allParameters = AllParams(allData, newData, limit, minParams);
+            List<Rule> allRules = ConvertParamsToRules(
                 allData, userActions, oldPath, newData.DirectoryName, allParameters);
 
+            return allRules;
+        }
+
+        public static List<Rule> ConvertParamsToRules(
+            List<FileInfo> allData,
+            List<FileMoveInfo> userActions,
+            string startPath,
+            string endPath,
+            List<List<Param>> paramLists)
+        {
+            List<Rule> allRules = new();
+            foreach (List<Param> paramList in paramLists)
+            {
+                Rule newRule = new(
+                    allData: allData,
+                    userActions: userActions,
+                    parameters: paramList,
+                    startPath: startPath,
+                    endPath: endPath
+                    );
+
+                allRules.Add(newRule);
+            }
             return allRules;
         }
     }

@@ -46,6 +46,8 @@ public partial class MainWindow : Window
 
         _handleWindow = new();
         _userPrompter = new();
+
+        StartApps();
     }
 
     private void StartApps()

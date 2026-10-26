@@ -111,6 +111,7 @@ public class AutoSorter
                     OnFileMove(correlated.NewPath, correlated.OldPath);
                     _ruleExecuter.OnFileMove(correlated.NewPath, correlated.OldPath);
                 }
+
                 break;
                 }
 

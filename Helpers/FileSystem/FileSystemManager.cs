@@ -90,7 +90,6 @@ public class FileSystemManager
 
     public void OnError(object _, ErrorEventArgs e)
     {
-        //Console.WriteLine(e.GetException()); stdout
         Log.AppendLog(e.GetException().ToString());
     }
 }

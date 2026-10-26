@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
+using static Core.Sorter.Creator.FilterData;
 
 namespace Core.Sorter.Creator
 {
@@ -12,6 +14,14 @@ namespace Core.Sorter.Creator
     /// </summary>
     public class FilterData
     {
+        private DatapointFile _DatapointFile;
+        public FilterData()
+        {
+            string DatapointFilePath = Path.Combine(AppContext.BaseDirectory, $"PreviousDatapoints.json");
+            _DatapointFile = new DatapointFile(DatapointFilePath, null);
+            PreviousDatapoints = _DatapointFile.Get();
+        }
+
         /// <summary>
         /// Filters for only files that moved to and from the same path
         /// as datapoint.
@@ -117,12 +127,21 @@ namespace Core.Sorter.Creator
             return strongRules;
         }
 
-
-        private List<FileInfo> previusDatapoints { get; set; } = new();
+        /// <summary>
+        /// How long to wait before prompting the user about a folder after they said no.
+        /// </summary>
+        private int promptAmmount = 10;
+        private List<FilePromptDatapoint> PreviousDatapoints { get; set; }
         public bool RedundantData(FileInfo newDatapoint)
         {
-            //TODO: make it send data to json file to allow persistancy
-            if (previusDatapoints.Contains(newDatapoint))
+            List<string> PreviousPrompts = FilePromptDatapoint.GetPromptedFiles(PreviousDatapoints);
+
+            List<FilePromptDatapoint> Matches = PreviousDatapoints.FindAll(match =>
+            {
+                return match.File == newDatapoint.DirectoryName;
+            });
+
+            if((Matches.Count - PreviousPrompts.Count) > promptAmmount)
             {
                 return true;
             }
@@ -130,9 +149,118 @@ namespace Core.Sorter.Creator
             return false;
         }
 
-        public void AddOldData(FileInfo newDatapoint)
+        public class FilePromptDatapoint
         {
-            previusDatapoints.Add(newDatapoint);
+            public FilePromptDatapoint(string file, bool wasPrompted)
+            {
+                File = file;
+                WasPrompted = wasPrompted;
+            }
+
+            public string File { get; set; }
+            public bool WasPrompted { get; set; }
+
+            public static List<string> GetPromptedFiles(List<FilePromptDatapoint> FromFilePrompts)
+            {
+                return FromFilePrompts.Where(filePrompt =>
+                {
+                    if (filePrompt.WasPrompted)
+                    {
+                        return true;
+                    }
+                    return false;
+                }).Select(filePrompt =>
+                {
+                    return filePrompt.File;
+                }).ToList();
+            }
+        }
+
+        public void AddOldData(string newDatapoint, bool prompted)
+        {
+            FilePromptDatapoint NewData = new FilePromptDatapoint(newDatapoint, prompted);
+            PreviousDatapoints.Add(NewData);
+            _DatapointFile.Set(NewData);
+        }
+    }
+
+    class DatapointFile
+    {
+        private static Mutex mut = new(false, "Global\\DatapointFileMutex");
+
+        private string _path { get; set; }
+        private List<FilePromptDatapoint> _data { get; set; }
+
+        public DatapointFile(string path, List<FilePromptDatapoint>? data)
+        {
+            _path = path;
+            EnsureFileExists();
+            data ??= Get();
+            _data = data;
+        }
+
+        private void EnsureFileExists()
+        {
+            if (!File.Exists(_path))
+            {
+                if (mut.WaitOne(10000))
+                {
+                    using (FileStream fs = File.Create(_path))
+                    {
+                        string d = JsonSerializer.Serialize(new List<object>());
+                        byte[] info = new UTF8Encoding(true).GetBytes(d);
+                        fs.Write(info, 0, info.Length);
+                    }
+                }
+                mut.ReleaseMutex();
+            }
+        }
+
+        public List<T> Get<T>()
+        {
+            List<T>? data = new();
+
+            if (mut.WaitOne(1000))
+            {
+                using (StreamReader r = new StreamReader(_path))
+                {
+                    string d = r.ReadToEnd();
+                    data = JsonSerializer.Deserialize<List<T>>(d);
+                }
+            }
+
+            mut.ReleaseMutex();
+
+            return data;
+        }
+
+        public List<FilePromptDatapoint> Get()
+        {
+            return Get<FilePromptDatapoint>();
+        }
+
+        public void Set<T>(List<T> data)
+        {
+            if (mut.WaitOne(1000))
+            {
+                using (StreamWriter r = new StreamWriter(_path))
+                {
+                    string json = JsonSerializer.Serialize(data);
+                    r.Write(json);
+                }
+            }
+            mut.ReleaseMutex();
+        }
+
+        public void Set(List<FilePromptDatapoint> data)
+        {
+            Set<FilePromptDatapoint>(data);
+        }
+
+        public void Set(FilePromptDatapoint datapoint)
+        {
+            _data.Add(datapoint);
+            Set(_data);
         }
     }
 }
