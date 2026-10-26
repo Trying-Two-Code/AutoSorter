@@ -24,16 +24,16 @@ namespace Core.Sorter.MatchDetectors
             StartPath = startPath;
             EndPath = endPath;
 
-            List<string> userActionList = userActions
+            List<string> MatchingUserActions = userActions
                 .Where(file => 
-                    (Path.GetDirectoryName(file.OldFileLocation) == StartPath) &&
-                    (Path.GetDirectoryName(file.CurrentFile) == EndPath))
+                    (Path.GetDirectoryName(file.OldPath) == StartPath) &&
+                    (Path.GetDirectoryName(file.NewPath) == EndPath))
                 .Select(file =>
-                    { return file.CurrentFile; })
+                    { return file.NewPath; })
                 .Distinct()
                 .ToList();
 
-            List<string> matchingUserActionList = Matches(userActionList);
+            List<string> matchingUserActionList = Matches(MatchingUserActions);
             StartCertain = matchingUserActionList.Count;
 
             List<string> allDataList = allData

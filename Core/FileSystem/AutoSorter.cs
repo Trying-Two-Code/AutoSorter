@@ -1,10 +1,7 @@
 using Helper.DataGathering;
 using Helper.FileSystem;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Reflection;
-using System.Diagnostics;
 using Core.Sorter.Executor;
+using Core.Sorter.Creator;
 
 namespace Core.FileSystem;
 
@@ -185,18 +182,9 @@ public class OnFileMoveEventArgs : EventArgs
 {
     public FileInfo? NewFile { get; set; }
     public string? OldPath { get; set; }
-    public FileMoveData[]? AllData { get; set; }
+    public FileMoveInfo[]? AllData { get; set; }
 }
 
-/// <summary>
-/// A struct that is made to easily and without much data hold
-/// important data pertaining to file movements. 
-/// </summary>
-public struct FileMoveData()
-{
-    public string OldPath { get; set; } = "";
-    public string NewPath { get; set; } = "";
-}
 
 /// <summary>
 /// A class that allows the autosorter to pass along relavent data
@@ -236,11 +224,11 @@ public class SendAllData
             });
     }
 
-    public FileMoveData[] AllData(string newPath, string oldPath)
+    public FileMoveInfo[] AllData(string newPath, string oldPath)
     {
-        List<FileMoveData> allData = [];
+        List<FileMoveInfo> allData = [];
 
-        List<FileMoveData>? oldData = OldData();
+        List<FileMoveInfo>? oldData = OldData();
         if(oldData != null)
             allData.AddRange(oldData);
 
@@ -248,7 +236,7 @@ public class SendAllData
     }
 
     static List<UserActionGatherLine>? JsonData { get; set; }
-    public List<FileMoveData>? OldData(string? dataPath = null)
+    public List<FileMoveInfo>? OldData(string? dataPath = null)
     {
         if (JsonData == null)
         {
@@ -256,7 +244,7 @@ public class SendAllData
             JsonData = rootData?.Lines;
         }
 
-        List <FileMoveData> oldData = new List<FileMoveData>();
+        List <FileMoveInfo> oldData = new List<FileMoveInfo>();
 
         if(JsonData != null)
         {
@@ -265,7 +253,7 @@ public class SendAllData
                 if (data.To == null || data.From == null)
                     continue;
 
-                FileMoveData fileMoveData = new()
+                FileMoveInfo fileMoveData = new()
                 {
                     NewPath = data.To,
                     OldPath = data.From

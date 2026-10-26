@@ -13,12 +13,12 @@ namespace Core.Sorter.Executor
     public class RuleExecuter
     {
         private RuleEditor myRuleEditor;
-        private JSONDataMinipulator<FileMoveData> MoveHistoryJSON;
+        private JSONDataMinipulator<FileMoveInfo> MoveHistoryJSON;
 
         public RuleExecuter()
         {
 
-            MoveHistoryJSON = new JSONDataMinipulator<FileMoveData>("RuleExecutionHistory.json", "RuleExecutor");
+            MoveHistoryJSON = new JSONDataMinipulator<FileMoveInfo>("RuleExecutionHistory.json", "RuleExecutor");
             myRuleEditor = new RuleEditor();
             AllRules = RuleEditor.GetRules();
         }
@@ -35,7 +35,7 @@ namespace Core.Sorter.Executor
 
             rule.ExecutionCount++;
 
-            FileMoveData ExecutedMove = new()
+            FileMoveInfo ExecutedMove = new()
             {
                 OldPath = fullStartPath,
                 NewPath = fullEndPath
@@ -43,7 +43,7 @@ namespace Core.Sorter.Executor
             MoveHistoryJSON.Set(ExecutedMove);
         }
 
-        public void UndoExecution(FileMoveData UndoMove)
+        public void UndoExecution(FileMoveInfo UndoMove)
         {
             Debug.Assert(File.Exists(UndoMove.NewPath));
         }

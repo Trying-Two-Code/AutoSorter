@@ -150,8 +150,8 @@ internal class SortAlgorithm
 
             FileMoveInfo newInfo = new()
             {
-                OldFileLocation = oldFileLocation,
-                CurrentFile = newFileLocation
+                OldPath = oldFileLocation,
+                NewPath = newFileLocation
             };
             userActionResult.Add(newInfo);
         }
@@ -184,7 +184,7 @@ internal class SortAlgorithm
         {
             SetRequiredStrength();
 
-            FileMoveData[]? AllData = e.AllData;
+            FileMoveInfo[]? AllData = e.AllData;
             if(AllData != null)
             {
                 List<FileInfo> AllFileInfo = FileUtility.ConvertFileMoveData(AllData);
@@ -210,10 +210,10 @@ internal class SortAlgorithm
 static class FileUtility
 {
     /// <UTILITY>
-    public static List<FileInfo> ConvertFileMoveData(FileMoveData[] fileMoveDataPoints)
+    public static List<FileInfo> ConvertFileMoveData(FileMoveInfo[] fileMoveDataPoints)
     {
         List<FileInfo> allData = new();
-        foreach (FileMoveData fileMoveData in fileMoveDataPoints)
+        foreach (FileMoveInfo fileMoveData in fileMoveDataPoints)
         {
             FileInfo fileInfo = new(fileMoveData.NewPath);
             allData.Add(fileInfo);
