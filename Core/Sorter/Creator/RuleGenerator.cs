@@ -80,18 +80,14 @@ namespace Core.Sorter.Creator
                         MyApproximateMatchName = defaultParam.ApproximateMatchMethodName
                     };
 
-                    object? value;
+                    object? value = null;
 
-                    try
+                    if (File.Exists(forFile.FullName))
                     {
                         value =
                             typeof(FileInfo)
                             ?.GetProperty(defaultParam.name)
                             ?.GetValue(forFile);
-                    }
-                    catch
-                    {
-                        value = null;
                     }
 
                     //Important:

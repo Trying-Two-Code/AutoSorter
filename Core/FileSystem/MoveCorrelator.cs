@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Helpers.DataGathering;
 
 namespace Core.FileSystem;
 
@@ -163,7 +164,7 @@ public class MoveCorrelator
                 p.DeletedAtUtc == null &&
                 p.SourcePath.Equals(normalized, StringComparison.OrdinalIgnoreCase));
 
-            bool isUserDeleted = UserDeleted(path);
+            bool isUserDeleted = Cleaner.UserFile(path);
             if (match == null && !isUserDeleted)
                 return false;
 
@@ -187,58 +188,7 @@ public class MoveCorrelator
         }
     }
 
-    /// <summary>
-    /// Filter used to detect if a user drag moved a file. Returns false
-    /// if the path belongs to a background process.
-    /// </summary>
-    public bool UserDeleted(string path)
-    {
-        //TODO: check if deletion is background process or user action
-        
-        //TODO: Is in background process path:
-        bool IsBackgroundPath()
-        {
-            string AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string AppDataPath2 = Environment.ExpandEnvironmentVariables("%AppData%");
-            string LocalAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string AutosorterPath = Environment.ProcessPath;
-            string[] BackgroundPaths = [
-                AppDataPath, LocalAppDataPath, 
-                AppDataPath2, AutosorterPath]; //TODO: add more
-
-            if (BackgroundPaths.Any(
-                _BackgroundPath =>
-                {
-                    return path.Contains(_BackgroundPath);
-                }))
-                return true;
-            else
-                return false;
-        }
-
-        //TODO: Is a background extension:
-        bool IsBackgroundExtension()
-        {
-            string[] BackgroundExtensions = [
-                ".tmp", ".lock", ".exe", ".dll", ".baml", 
-                ".cs", ".cache", ".pbd", ".pdb", ".sqlite-journal",
-            ];
-            if (BackgroundExtensions.Any(
-                _BackgroundExtension =>
-                {
-                    return Path.GetExtension(path) == _BackgroundExtension;
-                }))
-                return true;
-            else
-                return false;
-        }
-
-        bool[] DependantMethods = [
-            IsBackgroundPath(), 
-            IsBackgroundExtension()];
-
-        return !DependantMethods.Contains(true); //only return true if everything is false
-    }
+   
 
     /// <summary>
     /// Cheap pre-filter used before a size lookup is performed. Returns true

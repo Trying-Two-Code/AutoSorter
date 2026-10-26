@@ -41,12 +41,8 @@ public class AutoSorter
 
     private void SetCallbacks()
     {
-        Log.AppendLog("Registering callbacks...");
-
         _fileSystem.FileChanged += OnFileChanged;
         _clipboardWatcher.ClipboardChanged += OnClipboardChanged;
-
-        Log.AppendLog("Callbacks registered.");
     }
 
     private void OnClipboardChanged(ClipboardChange change)
@@ -86,7 +82,7 @@ public class AutoSorter
             case FileChangeType.Deleted:
             {
                 if (_moveCorrelator.NotifyDeleted(change.Path))
-                    Log.AppendLog($"[PendingMove] Source deleted: {change.Path}");
+                    Log.AppendLog($"[PendingMove] Source deleted: {change.Path}", change.Path);
 
                 break;
             }
@@ -161,7 +157,7 @@ public class AutoSorter
         Log.AppendLog(
             "[FileMoved] " +
             $"From={oldPath}, " +
-            $"To={newPath}");
+            $"To={newPath}", newPath);
 
         _userActionGather.appendMove(
             oldPath,
@@ -173,22 +169,14 @@ public class AutoSorter
 
     public void Start()
     {
-        Log.AppendLog("AutoSorter starting...");
-
         _fileSystem.Start();
         _clipboardWatcher.Start();
-
-        Log.AppendLog("AutoSorter started.");
     }
 
     public void Stop()
     {
-        Log.AppendLog("AutoSorter stopping...");
-
         _fileSystem.Stop();
         _clipboardWatcher.Stop();
-
-        Log.AppendLog("AutoSorter stopped.");
     }
 
 }

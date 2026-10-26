@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Core.Sorter
 {
-    class JSONDataMinipulator<ClassType>
+    public class JSONDataMinipulator<ClassType>
     {
         private static Mutex Mut;
         public string Path { get; set; }
