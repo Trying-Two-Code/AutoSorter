@@ -34,7 +34,7 @@ public partial class MainWindow : Window
 
         Loaded += new RoutedEventHandler(Window_Loaded);
 
-        _settings = Settings.Get();
+        _settings = UserSettings.GetSettings();
         if (_settings.running)
         {
             MainStartStopButton.ToggleRunning();
@@ -93,12 +93,12 @@ public partial class MainWindow : Window
 
         if (start)
         {
-            UserSettings.Set<bool>("running", true);
+            UserSettings.Set("running", true);
             StartApps();
         }
         else if(!start)
         {
-            UserSettings.Set<bool>("running", false);
+            UserSettings.Set("running", false);
             StopApps();
         }
     }
@@ -150,7 +150,7 @@ public partial class MainWindow : Window
 
     public object OnGetSettingsRecieved(object sender, EventArgs args)
     {
-        return Settings.Get();
+        return UserSettings.GetSettings();
     }
 }
 

@@ -14,11 +14,11 @@ namespace App.Ui.UiComponents
         public IntensitySlider()
         {
             UserSettings.GetSettings();
+            int? oldValue = (int?)UserSettings.GetSettings("promptUserAmm");
             InitializeComponent();
-            int oldValue = UserSettings.promptUserAmm;
             if(oldValue != null)
-            {
-                IntensitySliderInst.Value = oldValue;
+            { 
+                IntensitySliderInst.Value = (double)oldValue;
             }
             else
             {
@@ -37,7 +37,7 @@ namespace App.Ui.UiComponents
             {
                 oldSliderValue = _newValue;
                 IntensityLabel.Content = _newValue;
-                UserSettings.Set<int>("promptUserAmm", _newValue);
+                UserSettings.Set("promptUserAmm", _newValue);
             }
         }
     }

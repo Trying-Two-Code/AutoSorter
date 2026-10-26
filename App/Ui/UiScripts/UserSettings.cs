@@ -1,130 +1,141 @@
-﻿using Newtonsoft;
-using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Shapes;
-using static System.Resources.ResXFileRef;
 using Path = System.IO.Path;
 
 namespace App.Ui.UiScripts;
 
 static class UserSettings
 {
-    public static readonly string UserFileDataPath = 
+    public static readonly string UserFileDataPath =
         Path.Combine(AppContext.BaseDirectory, @"Ui\UserSettings\userSettings.json");
 
-    public static object _lock = new();
-    public static bool running = false;
-    public static int promptUserAmm = 50;
-    public static bool muted = false;
-    public static void GetSettings()
+    public static JSONSettingsMinipulator JSONMinipulator = new("UserSettings.json", "UserSettings");
+
+    public static Settings GetSettings()
     {
-        lock (_lock)
-        {
-            running = JsonFileReader.Read<bool>("running");
-            promptUserAmm = JsonFileReader.Read<int>("promptUserAmm");
-            muted = JsonFileReader.Read<bool>("muted");
-        }
+        Settings settings = JSONMinipulator.Data;
+
+        return settings;
+    }
+    
+    public static object? GetSettings(string key)
+    {
+        Settings settings = GetSettings();
+
+        object? value = typeof(Settings)?.GetProperty(key)?.GetValue(settings);
+
+        return value;
     }
 
-    public static T? Set<T>(string key, T value)
+    public static void Set(Settings settings)
     {
-        lock (_lock)
-        {
-            JsonFileWriter.FilePath = UserFileDataPath;
-            return JsonFileWriter.Write<T>(key, value);
-        }
+        JSONMinipulator.Data = settings;
     }
 
-    public static class JsonFileReader
+    public static void Set(string key, object? value)
     {
-        public static T? Read<T>(string filePath, string key)
+        Settings settings = GetSettings();
+        typeof(Settings)?.GetProperty(key)?.SetValue(settings, value);
+        JSONMinipulator.Data = settings;
+        Debug.WriteLine($"Set {key} : {value}");
+        Debug.Write($"Settings is now : {GetSettings(key)}");
+        //Debug.Assert(value == GetSettings(key));
+    }
+
+}
+public class JSONSettingsMinipulator
+{
+    private static Mutex Mut;
+    public string MyPath { get; set; }
+    public bool Active { get; set; }
+    public Settings Data
+    {
+        get => Get<Settings>(); 
+        set => Set<Settings>(value);
+    }
+
+    public JSONSettingsMinipulator(string _path, string _MutexIdentity, Settings? _Data = null)
+    {
+        MyPath = Path.Combine(AppContext.BaseDirectory, _path);
+        Active = true;
+
+        Mut = new(false, $"Global\\{_MutexIdentity}");
+
+        EnsureFileExists();
+
+        _Data ??= Get();
+        Data = _Data;
+    }
+
+    private void EnsureFileExists()
+    {
+        bool ExistsAndPopulated = File.Exists(MyPath) && new FileInfo(MyPath).Length != 0;
+
+        if (!ExistsAndPopulated)
         {
-            lock (_lock)
+            if (Mut.WaitOne(10000))
             {
-                if (File.Exists(filePath))
-                {
-                    string json = File.ReadAllText(filePath);
-                    dynamic? jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-                    if (jsonObj != null)
-                        return (T?)jsonObj[key];
-                }
+                CreateDefaultFile(MyPath);
             }
-            return default;
-        }
-
-        public static T? Read<T>(string key)
-        {
-            return Read<T>(UserFileDataPath, key);
+            Mut.ReleaseMutex();
         }
     }
 
-    public static class JsonFileWriter
+    public T Get<T>()
     {
-        public static string? FilePath { get; set; } = UserFileDataPath;
-        public static T? Write<T>(string key, T value)
-        {
-            if(FilePath != null)
-                if(!MakeSafeToWrite(FilePath))
-                    return Write<T>(FilePath, key, value);
-            return default;
-        }
+        T data = default;
 
-        public static T? Write<T>(string path, string key, T value)
+        if (Mut.WaitOne(1000))
         {
-            lock (_lock)
+            using (StreamReader r = new StreamReader(MyPath))
             {
-                if(!MakeSafeToWrite(path)) { return default; }
-
-                dynamic? jsonObj;
-                string json = File.ReadAllText(path);
-
-                if (string.IsNullOrEmpty(json))
-                {
-                    jsonObj = new Newtonsoft.Json.Linq.JObject();
-                }
-                else
-                {
-                    jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-                }
-
-                if(jsonObj != null)
-                    jsonObj[key] = value;
-
-                string output = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Newtonsoft.Json.Formatting.Indented);
-                File.WriteAllText(path, output);
-                return value;
+                string d = r.ReadToEnd();
+                data = JsonSerializer.Deserialize<T>(d);
             }
         }
 
-        private static bool MakeSafeToWrite(string path)
+        Mut.ReleaseMutex();
+
+        return data;
+    }
+
+    public Settings Get()
+    {
+        return Get<Settings>();
+    }
+
+    public void Set<T>(T data)
+    {
+        if (Mut.WaitOne(1000))
         {
-            if (string.IsNullOrWhiteSpace(path)) return false;
-
-            if (!File.Exists(path)) CreateDefaultFile(path);
-
-            return true;
+            using (StreamWriter r = new StreamWriter(MyPath))
+            {
+                string json = JsonSerializer.Serialize(data);
+                r.Write(json);
+            }
         }
+        Mut.ReleaseMutex();
+    }
 
-        private static void CreateDefaultFile(string path)
-        {
-            string? pathDirectory = Path.GetDirectoryName(path);
-            if(pathDirectory == null) return;
+    public void Set(Settings data)
+    {
+        Set<Settings>(data);
+    }
 
-            Directory.CreateDirectory(pathDirectory);
-            File.WriteAllText(path, 
-                "{" +
-                    "\r\n  \"running\": true," +
-                    "\r\n  \"promptUserAmm\": 15," +
-                    "\r\n  \"muted\": false\r\n" +
-                "}"
-                );
-        }
+    private static void CreateDefaultFile(string path)
+    {
+        string? pathDirectory = Path.GetDirectoryName(path);
+        if (pathDirectory == null) return;
+
+        Directory.CreateDirectory(pathDirectory);
+        File.WriteAllText(path,
+            "{" +
+                "\r\n  \"running\": true," +
+                "\r\n  \"promptUserAmm\": 15," +
+                "\r\n  \"muted\": false\r\n" +
+            "}"
+            );
     }
 }
 
@@ -133,18 +144,4 @@ public class Settings()
     public bool running { get; set; } = true;
     public int promptUserAmm { get; set; } = 50;
     public bool muted { get; set; } = false;
-
-    public static Settings Get()
-    {
-        UserSettings.GetSettings();
-
-        Settings _settings = new()
-        {
-            running = UserSettings.running,
-            promptUserAmm = UserSettings.promptUserAmm,
-            muted = UserSettings.muted
-        };
-
-        return _settings;
-    }
 }
