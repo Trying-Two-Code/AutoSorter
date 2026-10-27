@@ -87,5 +87,45 @@ namespace Core.Sorter.Test
                 return TestNoRules.Count == 0 && TestAllRules.Count > 0;
             };
         }
+        internal class TestFilter : ITestAutoSorter
+        {
+            public List<AutoSorterTestMethod> TestMethods { set; get; } = new();
+            public static FilterData MyFilterData { set; get; } = new();
+
+            public TestFilter()
+            {
+                TestMethods.Add(TestStrongRules);
+            }
+
+            public bool TestsAllSucceed()
+            {
+                return !TestMethods.Any(method =>
+                {
+                    return method() == false;
+                });
+            }
+
+            AutoSorterTestMethod TestStrongRules = () =>
+            {
+                List<Rule> TestAllRules = new();
+
+                Rule TestRule1 = new();
+                TestRule1.ExecutionCount = 10;
+
+                TestAllRules.Add(TestRule1);
+
+                int TestRequiredStrength = 10;
+                int TestRequiredParams = 3;
+                int TestRequiredMatches = 3;
+                int TestLimit = 100;
+
+                List<Rule> StrongRules = MyFilterData.StrongRules(
+                    TestAllRules, TestRequiredStrength,
+                    TestRequiredParams, TestRequiredMatches,
+                    TestLimit);
+
+                return StrongRules.Count == 1;
+            };
+        }
     }
 }
