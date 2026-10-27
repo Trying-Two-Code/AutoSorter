@@ -132,8 +132,8 @@ namespace Core.Sorter.MatchDetectors
             {
                 List<string> properties = Paramaters.Select(param => { return param.FileProperty; }).ToList();
                 int notCertainUnique = properties.Count;
-                properties.Distinct();
-                return properties.Count == notCertainUnique;
+                properties = properties.Distinct().ToList();
+                return properties.Count != notCertainUnique;
             }
         }
 
