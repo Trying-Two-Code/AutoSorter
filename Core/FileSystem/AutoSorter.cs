@@ -2,12 +2,15 @@ using Helper.DataGathering;
 using Helper.FileSystem;
 using Core.Sorter.Executor;
 using Core.Sorter.Creator;
+using Core.Sorter.Test;
 
 namespace Core.FileSystem;
 
 public class AutoSorter
 {
     public SendAllData SendAllDataInstance;
+
+    private readonly TestAll AutoSorterTester;
 
     private readonly FileSystemManager _fileSystem;
 
@@ -30,6 +33,8 @@ public class AutoSorter
         _clipboardWatcher = new ClipboardWatcher();
         _moveCorrelator = new MoveCorrelator(sourceRoot);
         _ruleExecuter = new RuleExecuter();
+        AutoSorterTester = new TestAll();
+        AutoSorterTester.Start();
 
         SetCallbacks();
 

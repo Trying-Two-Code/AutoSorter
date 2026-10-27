@@ -36,7 +36,7 @@ namespace Core.Sorter.Creator
             for (int subsetI = 0; subsetI < Math.Min(possibleSubsetCount, limit); subsetI += 1)
             {
                 int Count = GetSubsetCount(subsetI);
-                if(Count >= minParams)
+                if (Count >= minParams)
                 {
                     List<Param> paramList = CreateParamList(subsetI, forFile);
                     Debug.Assert(paramList.Count == Count);
@@ -113,15 +113,17 @@ namespace Core.Sorter.Creator
         /// <returns>The list of rules that can be created for a given file</returns>
         public List<Rule> AllRules(
             List<FileInfo> allData,
-            List<FileMoveInfo> userActions, 
+            List<FileMoveInfo> userActions,
             FileInfo newData,
-            string oldPath, 
+            string oldPath,
             int limit,
             int minParams)
         {
             List<List<Param>> allParameters = AllParams(allData, newData, limit, minParams);
+            Debug.WriteLine($"allparams:{allParameters.Count}");
             List<Rule> allRules = ConvertParamsToRules(
                 allData, userActions, oldPath, newData.DirectoryName, allParameters);
+            Debug.WriteLine($"allrules:{allRules.Count}");
 
             return allRules;
         }
@@ -147,7 +149,7 @@ namespace Core.Sorter.Creator
 
                 if (newRule.ContainsDuplicateParam)
                 {
-                    Debug.WriteLine("newRule contains duplicate parameters, not added.");
+                    //newRule contains duplicate parameters, not added.
                 }
                 else
                 {
