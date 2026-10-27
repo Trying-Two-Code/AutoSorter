@@ -120,10 +120,8 @@ namespace Core.Sorter.Creator
             int minParams)
         {
             List<List<Param>> allParameters = AllParams(allData, newData, limit, minParams);
-            Debug.WriteLine($"allparams:{allParameters.Count}");
             List<Rule> allRules = ConvertParamsToRules(
                 allData, userActions, oldPath, newData.DirectoryName, allParameters);
-            Debug.WriteLine($"allrules:{allRules.Count}");
 
             return allRules;
         }
