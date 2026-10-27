@@ -7,7 +7,7 @@ namespace Core.Sorter.Test.Helpers
     public class MassFileCreator
     {
         public string FilePath { get; set; }
-        private List<string> MyFiles { get; set; }
+        private List<string> MyFiles { get; set; } = new();
         public List<FileInfo> MyFileInfos { get {
                 return MyFiles.Select(file =>
                 {
