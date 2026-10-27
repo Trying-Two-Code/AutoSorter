@@ -23,24 +23,33 @@
         <SolidColorBrush x:Key="SliderThumb.Static.Background" Color="#FFF"/>
         <SolidColorBrush x:Key="SliderThumb.Static.Border" Color="#FFF"/>
         <SolidColorBrush x:Key="SliderThumb.Static.Foreground" Color="#FFF"/>
-        <SolidColorBrush x:Key="SliderThumb.MouseOver.Background" Color="#FFF"/>
+        <SolidColorBrush x:Key="SliderThumb.MouseOver.Background" Color="#FF7Eb4EA"/>
         <SolidColorBrush x:Key="SliderThumb.MouseOver.Border" Color="#FF7Eb4EA"/>
         <SolidColorBrush x:Key="SliderThumb.Pressed.Background" Color="#FF7Eb4EA"/>
         <SolidColorBrush x:Key="SliderThumb.Pressed.Border" Color="#FF7Eb4EA"/>
-        <SolidColorBrush x:Key="SliderThumb.Disabled.Background" Color="#FFF0F0F0"/>
+        <SolidColorBrush x:Key="SliderThumb.Disabled.Background" Color="#FFD9D9D9"/>
         <SolidColorBrush x:Key="SliderThumb.Disabled.Border" Color="#FFD9D9D9"/>
         <SolidColorBrush x:Key="SliderThumb.Track.Background" Color="#00E7EA00"/>
-        <SolidColorBrush x:Key="SliderThumb.Track.Border" Color="#00D6D6D6"/>
+        <SolidColorBrush x:Key="SliderThumb.Track.Border" Color="#00E7EA00"/>
         <ControlTemplate x:Key="SliderThumbHorizontalDefault" TargetType="{x:Type Thumb}">
-            <Grid HorizontalAlignment="Center" UseLayoutRounding="True" VerticalAlignment="Center">
+            <Grid HorizontalAlignment="Center" UseLayoutRounding="False" VerticalAlignment="Center">
+                <!--Image
+                    Source="/Ui/Assets/Visual/logo.svg"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                </Image-->
                 <Path x:Name="grip" 
-                      Data="M 2.29735 1.12641 C 2.95922 1.09258 4.12977 1.73536 4.01332 2.70516 C 3.89688 3.67497 3.22888 4.06402 2.76311 4.08657 C 2.29735 4.10913 1.04713 3.97944 1.09003 2.69953 C 1.13293 1.41961 1.88061 1.16588 2.29735 1.12641 Z" 
+                      Data="M 1.013 101.624 C -0.6 131.643 -0.711 499.75 -0.711 499.75 C -0.711 499.75 198.352 600.574 198.352 600.574 C 198.352 600.574 600.786 600.574 600.786 600.574 C 600.786 600.574 799.849 498.888 799.849 498.888 C 799.849 498.888 799.849 103.347 799.849 103.347 C 799.849 103.347 598.201 -0.062 598.201 -0.062 C 598.201 -0.062 196.628 0.8 196.628 0.8 C 168.888 15.518 1.115 99.725 1.013 101.624 Z"
                       Fill="{StaticResource SliderThumb.Static.Background}" 
                       Stroke="{StaticResource SliderThumb.Static.Border}" 
-                      SnapsToDevicePixels="True" Stretch="UniformToFill" 
+                      SnapsToDevicePixels="True" Stretch="Fill" 
                       StrokeThickness="1" 
-                      UseLayoutRounding="False"
-                      VerticalAlignment="Center"
+                      UseLayoutRounding="True"
+                      VerticalAlignment="Top"
+                      Margin="0, -0.6, 0, 0"
+                      HorizontalAlignment="Center"
                       />
             </Grid>
             <ControlTemplate.Triggers>
