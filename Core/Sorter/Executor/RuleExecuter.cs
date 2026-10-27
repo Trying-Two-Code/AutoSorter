@@ -77,7 +77,6 @@ namespace Core.Sorter.Executor
         {
             const int fileLimit = 100;
             List<FileInfo> files = FileUtility.GetFileInfoOfFolder(folder, fileLimit);
-            Debug.WriteLine(files.Count);
 
             foreach (FileInfo file in files)
             {
