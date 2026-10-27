@@ -8,10 +8,7 @@ namespace Core.Sorter.Test
 {
     internal class TestAll
     {
-        public List<ITestAutoSorter> AllTests = new()
-        {
-
-        };
+        public List<ITestAutoSorter> AllTests = new();
 
         public TestAll()
         {
