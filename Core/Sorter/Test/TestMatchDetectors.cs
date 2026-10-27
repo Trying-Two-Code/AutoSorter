@@ -1,5 +1,6 @@
 ﻿using Core.Sorter.Creator;
 using Core.Sorter.MatchDetectors;
+using Core.Sorter.Test.Helpers;
 
 namespace Core.Sorter.Test
 {
@@ -10,12 +11,14 @@ namespace Core.Sorter.Test
             public List<AutoSorterTestMethod> TestMethods { set; get; }
             public static readonly string MyDirectory = Path.Combine(AppContext.BaseDirectory, "\\test\\testrule\\");
             public static readonly string MyOldDirectory = Path.Combine(AppContext.BaseDirectory, "\\test\\testoldrule\\");
+            public static MassFileCreator MyFileCreator;
 
-            TestRule()
+            public TestRule()
             {
                 TestMethods.Add(TestRuleInit);
                 Directory.CreateDirectory(MyDirectory);
                 Directory.CreateDirectory(MyOldDirectory);
+                MyFileCreator = new(MyDirectory);
             }
 
             public bool TestsAllSucceed()
@@ -28,16 +31,31 @@ namespace Core.Sorter.Test
 
             AutoSorterTestMethod TestRuleInit = () =>
             {
-                List<FileInfo> TestAllData = new();
-                List<FileMoveInfo> TestUserActions = new();
-                List<Param> TestParameters = new();
-                string TestStartPath = MyOldDirectory;
-                string TestEndPath = MyDirectory;
+                List<string> NewFiles = new List<string>()
+                {
+                    "File1.txt", "File2.txt", "File3.txt", "File4.txt"
+                };
 
-                Rule TestRule = new Rule(
-                    TestAllData, TestUserActions, TestParameters, TestStartPath, TestEndPath);
+                AutoSorterTestMethod TestStrength0 = () =>
+                {
 
-                return TestRule.MatchingFiles.Count == 0;
+                    MyFileCreator.CreateAndForget(NewFiles);
+
+                    List<FileInfo> TestAllData = MyFileCreator.MyFileInfos;
+                    List<FileMoveInfo> TestUserActions = new();
+                    List<Param> TestParameters = new();
+                    string TestStartPath = MyOldDirectory;
+                    string TestEndPath = MyDirectory;
+
+                    Rule MyTestRule = new Rule(
+                        TestAllData, TestUserActions, TestParameters, TestStartPath, TestEndPath);
+
+                    MyFileCreator.Delete();
+
+                    return MyTestRule.Strength == 0;
+                };
+
+                return TestStrength0();
             };
         }
     }
