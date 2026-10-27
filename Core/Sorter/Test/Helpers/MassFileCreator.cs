@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Core.Sorter.Test.Helpers
 {
     public class MassFileCreator
     {
-        public string FilePath { get; set; }
-        private List<string> MyFiles { get; set; } = new();
+        public string FilePath { get; private set; }
+        public List<string> MyFiles { get; private set; } = new();
+
         public List<FileInfo> MyFileInfos { get {
                 return MyFiles.Select(file =>
                 {
@@ -22,12 +24,13 @@ namespace Core.Sorter.Test.Helpers
 
         public List<FileStream> Create(List<string> Files)
         {
-            MyFiles.AddRange(Files);
             List<FileStream> AllFiles = new();
             foreach(string filename in Files)
             {
-                FileStream file = File.Create(Path.Combine(FilePath, filename));
+                string path = Path.Combine(FilePath, filename);
+                FileStream file = File.Create(path);
                 AllFiles.Add(file);
+                MyFiles.Add(file.Name);
             }
             return AllFiles;
         }
@@ -42,14 +45,16 @@ namespace Core.Sorter.Test.Helpers
 
         public void CreateAndForget(List<string> Files)
         {
-            DisposeAll(Create(MyFiles));
+            DisposeAll(Create(Files));
         }
 
         public void Delete(List<string> Files)
         {
-            foreach (string filename in Files)
+            for (int i = Files.Count - 1; i >= 0; i--)
             {
+                string filename = Files[i];
                 File.Delete(Path.Combine(FilePath, filename));
+                MyFiles.Remove(filename);
             }
         }
 
@@ -57,5 +62,6 @@ namespace Core.Sorter.Test.Helpers
         {
             Delete(MyFiles);
         }
+
     }
 }

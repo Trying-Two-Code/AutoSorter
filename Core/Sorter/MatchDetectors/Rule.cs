@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection.Metadata;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -24,17 +25,17 @@ namespace Core.Sorter.MatchDetectors
             StartPath = startPath;
             EndPath = endPath;
 
-            List<string> MatchingUserActions = userActions
+            List<string> PotentialMatchingUserActions = userActions
                 .Where(file => 
-                    (Path.GetDirectoryName(file.OldPath) == StartPath) &&
-                    (Path.GetDirectoryName(file.NewPath) == EndPath))
+                    (Path.GetDirectoryName(file.OldPath) == Path.GetDirectoryName(StartPath)) &&
+                    (Path.GetDirectoryName(file.NewPath) == Path.GetDirectoryName(EndPath)))
                 .Select(file =>
                     { return file.NewPath; })
                 .Distinct()
                 .ToList();
 
-            List<string> matchingUserActionList = Matches(MatchingUserActions);
-            StartCertain = matchingUserActionList.Count;
+            List<string> MatchingUserActions = Matches(PotentialMatchingUserActions);
+            StartEstimation = MatchingUserActions.Count;
 
             List<string> allDataList = allData
                 .Select(data =>
@@ -44,11 +45,11 @@ namespace Core.Sorter.MatchDetectors
 
             List<string> matchingFileList = Matches(allDataList);
 
-            List<string> MinimumMatchingFileList = matchingFileList.Intersect(matchingUserActionList).ToList();
+            List<string> MinimumMatchingFileList = matchingFileList.Intersect(MatchingUserActions).ToList();
 
             MatchingFiles = MinimumMatchingFileList;
 
-            StartEstimation = MinimumMatchingFileList.Count;
+            StartCertain = MinimumMatchingFileList.Count;
         }
 
         public List<Param> Paramaters { get; set; }
@@ -62,15 +63,15 @@ namespace Core.Sorter.MatchDetectors
         public int ExecutionCount { get; set; } = 0;
 
         /// <summary>
-        /// the amount of files that match the rules parameters
-        /// in the folder at time of rule creation
+        /// the amount of files that are known to have moved
+        /// from the start location to the end
         /// </summary>
         public int StartEstimation { get; set; } = 0;
 
         /// <summary>
-        /// the amount of files that are known to have moved
-        /// from the start location to the end that match
-        /// all parameters
+        /// the amount of files that match the rules parameters
+        /// and moved from the StartPath currently in the folder 
+        /// at time of rule creation
         /// </summary>
         public int StartCertain { get; set; } = 0;
 
@@ -119,7 +120,7 @@ namespace Core.Sorter.MatchDetectors
 
         public int Strength
         {
-            get => StartEstimation * Paramaters.Count;
+            get => StartCertain * Paramaters.Count;
         }
 
         /// <summary>
@@ -145,7 +146,8 @@ namespace Core.Sorter.MatchDetectors
         /// <returns>The list of files that match the rule</returns>
         public List<string> Matches(List<string> corralationFiles)
         {
-            List<string> UniqueCorralationFiles = new List<string>();
+            List<string> UniqueCorralationFiles = /*new List<string>();
+
             for (int i = corralationFiles.Count; i < 0; i--)
             {
                 string cFile = corralationFiles[i];
@@ -154,7 +156,8 @@ namespace Core.Sorter.MatchDetectors
                 {
                     UniqueCorralationFiles.Add(cFile);
                 }
-            }
+            }*/ corralationFiles.Distinct().ToList();
+
             foreach (Param param in Paramaters)
             {
                 for (int i = UniqueCorralationFiles.Count - 1; i >= 0; i--)
@@ -167,7 +170,7 @@ namespace Core.Sorter.MatchDetectors
                     }
                 }
             }
-            return corralationFiles;
+            return UniqueCorralationFiles;
         }
 
         public bool CheapRuleEqualityCheck(Rule OtherRule)

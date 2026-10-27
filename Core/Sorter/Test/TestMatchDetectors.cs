@@ -1,6 +1,7 @@
 ﻿using Core.Sorter.Creator;
 using Core.Sorter.MatchDetectors;
 using Core.Sorter.Test.Helpers;
+using System.Diagnostics;
 
 namespace Core.Sorter.Test
 {
@@ -9,8 +10,8 @@ namespace Core.Sorter.Test
         public class TestRule : ITestAutoSorter
         {
             public List<AutoSorterTestMethod> TestMethods { set; get; } = new();
-            public static readonly string MyDirectory = Path.Combine(AppContext.BaseDirectory, "\\test\\testrule\\");
-            public static readonly string MyOldDirectory = Path.Combine(AppContext.BaseDirectory, "\\test\\testoldrule\\");
+            public static readonly string MyDirectory = Path.Combine(AppContext.BaseDirectory, @"test\testrule\");
+            public static readonly string MyOldDirectory = Path.Combine(AppContext.BaseDirectory, @"test\testoldrule\");
             public static MassFileCreator MyFileCreator;
 
             public TestRule()
@@ -38,7 +39,6 @@ namespace Core.Sorter.Test
 
                 AutoSorterTestMethod TestStrength0 = () =>
                 {
-
                     MyFileCreator.CreateAndForget(NewFiles);
 
                     List<FileInfo> TestAllData = MyFileCreator.MyFileInfos;
@@ -52,10 +52,47 @@ namespace Core.Sorter.Test
 
                     MyFileCreator.Delete();
 
-                    return MyTestRule.Strength == 0 && MyTestRule.ExecutionCount == 0 && MyTestRule.StartEstimation != 0;
+                    return MyTestRule.Strength == 0 && MyTestRule.ExecutionCount == 0 && MyTestRule.StartEstimation == 0;
                 };
 
-                return TestStrength0();
+                AutoSorterTestMethod TestStrengthPositive = () =>
+                {
+                    MyFileCreator.CreateAndForget(NewFiles);
+
+                    List<string> NewPaths = new List<string>();
+                    foreach (string filename in NewFiles)
+                    {
+                        NewPaths.Add(Path.Combine(MyDirectory, filename));
+                    }
+
+                    List<FileInfo> TestAllData = MyFileCreator.MyFileInfos;
+                    List<FileMoveInfo> TestUserActions = new();
+                    foreach (string path in NewPaths)
+                    {
+                        TestUserActions.Add(new()
+                            {
+                                OldPath = Path.Combine(MyOldDirectory, Path.GetFileName(path)),
+                                NewPath = path
+                            });
+                    }
+
+                    List<Param> TestParameters = new List<Param>()
+                    {
+                        new Param("Extension"){PropertyContains = "."}
+                    };
+
+                    string TestStartPath = MyOldDirectory;
+                    string TestEndPath = MyDirectory;
+
+                    Rule MyTestRule = new Rule(
+                        TestAllData, TestUserActions, TestParameters, TestStartPath, TestEndPath);
+
+                    MyFileCreator.Delete();
+                    
+                    return MyTestRule.Strength > 0 && MyTestRule.StartCertain == TestUserActions.Count && MyTestRule.StartEstimation > 0;
+                };
+
+                return TestStrength0() && TestStrengthPositive();
             };
         }
     }
