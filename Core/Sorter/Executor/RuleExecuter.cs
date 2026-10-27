@@ -73,15 +73,17 @@ namespace Core.Sorter.Executor
         /// </summary>
         /// <param name="rule">the rule to check</param>
         /// <param name="folder">the path of the folder to check</param>
-        void ExecuteRuleOnFolder(MatchDetectors.Rule rule, string folder)
+        public void ExecuteRuleOnFolder(MatchDetectors.Rule rule, string folder)
         {
             const int fileLimit = 100;
             List<FileInfo> files = FileUtility.GetFileInfoOfFolder(folder, fileLimit);
+            Debug.WriteLine(files.Count);
 
             foreach (FileInfo file in files)
             {
                 if (rule.ShouldMove(file))
                 {
+                    Debug.WriteLine("file passed should move: " + file.FullName);
                     ExecuteRule(rule, file);
                 }
             }
@@ -96,7 +98,6 @@ namespace Core.Sorter.Executor
             //issue, what if ExecuteRules.Count > 1
             foreach(MatchDetectors.Rule rule in ExecuteRules)
             {
-                Debug.WriteLine("WORKING!");
                 ExecuteRule(rule, file);
             }
         }
