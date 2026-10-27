@@ -16,6 +16,8 @@ namespace Core.Sorter.Test
             AllTests.Add(MyTestExecutor);
             TestRuleGenerator MyTestCreator = new TestRuleGenerator();
             AllTests.Add(MyTestCreator);
+            TestMatchDetectors.TestRule MyTestRule = new TestMatchDetectors.TestRule();
+            AllTests.Add(MyTestRule);
         }
 
         public void Start()

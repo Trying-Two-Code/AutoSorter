@@ -4,11 +4,11 @@ using Core.Sorter.Test.Helpers;
 
 namespace Core.Sorter.Test
 {
-    internal class TestMatchDetectors
+    public class TestMatchDetectors
     {
-        internal class TestRule : ITestAutoSorter
+        public class TestRule : ITestAutoSorter
         {
-            public List<AutoSorterTestMethod> TestMethods { set; get; }
+            public List<AutoSorterTestMethod> TestMethods { set; get; } = new();
             public static readonly string MyDirectory = Path.Combine(AppContext.BaseDirectory, "\\test\\testrule\\");
             public static readonly string MyOldDirectory = Path.Combine(AppContext.BaseDirectory, "\\test\\testoldrule\\");
             public static MassFileCreator MyFileCreator;
@@ -52,7 +52,7 @@ namespace Core.Sorter.Test
 
                     MyFileCreator.Delete();
 
-                    return MyTestRule.Strength == 0;
+                    return MyTestRule.Strength == 0 && MyTestRule.ExecutionCount == 0 && MyTestRule.StartEstimation != 0;
                 };
 
                 return TestStrength0();
