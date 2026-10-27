@@ -83,7 +83,6 @@ namespace Core.Sorter.Executor
             {
                 if (rule.ShouldMove(file))
                 {
-                    Debug.WriteLine("file passed should move: " + file.FullName);
                     ExecuteRule(rule, file);
                 }
             }

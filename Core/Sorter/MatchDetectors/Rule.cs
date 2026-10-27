@@ -77,14 +77,10 @@ namespace Core.Sorter.MatchDetectors
 
         public bool ShouldMove(FileInfo fileInfo)
         {
-            Debug.WriteLine(Path.Combine(EndPath, fileInfo.Name));
-            Debug.WriteLine(File.Exists(Path.Combine(EndPath, fileInfo.Name)));
-
             if (File.Exists(Path.Combine(EndPath, fileInfo.Name)))
             {
                 return false;
             }
-            Debug.WriteLine("testing should move on " + fileInfo.Name);
 
             return IsMatch(fileInfo);
         }
@@ -92,7 +88,6 @@ namespace Core.Sorter.MatchDetectors
         public List<string> MatchingFiles { get; set; } = new();
         public bool IsMatch(FileInfo fileInfo)
         {
-            Debug.WriteLine(fileInfo.DirectoryName +"\n"+ Path.GetDirectoryName(StartPath));
             if (fileInfo.DirectoryName != Path.GetDirectoryName(StartPath)) { return false; }
 
             if (Paramaters.Any((parameter) =>
@@ -105,7 +100,6 @@ namespace Core.Sorter.MatchDetectors
                 foreach (Param param in Paramaters)
                 {
                     if (param.IsMatch(fileInfo)) { continue; }
-                    Debug.WriteLine("param didn't match: " + param.FileProperty);
 
                     bool? isApproximateMatch = null;
 

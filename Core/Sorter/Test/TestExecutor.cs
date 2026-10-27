@@ -81,8 +81,6 @@ namespace Core.Sorter.Test
             string TestDirectoryName = MyDirectory;
             string TestNewDirectoryName = MyNewDirectory;
 
-            Debug.WriteLine(TestDirectoryName + "\n" + TestNewDirectoryName);
-
             Rule TestRule = new()
             {
                 StartPath = TestDirectoryName,
@@ -93,8 +91,6 @@ namespace Core.Sorter.Test
                 } }
             };
 
-            Debug.WriteLine(TestRule.EndPath);
-
             RuleExecuterTest.ExecuteRuleOnFolder(TestRule, TestDirectoryName);
 
             bool txtInRightPlace = !File.Exists(Path.Combine(MyDirectory, TestFiles[0])) && 
@@ -102,9 +98,6 @@ namespace Core.Sorter.Test
 
             bool difInRightPlace = File.Exists(Path.Combine(MyDirectory, TestFiles[^1])) &&
                 !File.Exists(Path.Combine(MyNewDirectory, TestFiles[^1]));
-
-            Debug.WriteLine(txtInRightPlace + " txt : dif " + difInRightPlace);
-            Debug.WriteLine(MyNewDirectory);
 
             MyFileCreator.Delete();
 
