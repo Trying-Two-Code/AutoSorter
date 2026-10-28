@@ -7,7 +7,7 @@ Simply call the "Start" method in TestAll.cs.
 
 To do this, I create an instance of TestAll in Core/CoreAlgorithm.cs and call Start();
 
-Do not create an instance in any of the tested classes, this will cause a stack overflow exception.
+Do not create an instance in any of the tested classes, this may cause a stack overflow exception.
 
 
 ## If they succeed
