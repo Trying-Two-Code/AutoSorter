@@ -33,8 +33,6 @@ public class AutoSorter
         _clipboardWatcher = new ClipboardWatcher();
         _moveCorrelator = new MoveCorrelator(sourceRoot);
         _ruleExecuter = new RuleExecuter();
-        AutoSorterTester = new TestAll();
-        AutoSorterTester.Start();
 
         SetCallbacks();
 

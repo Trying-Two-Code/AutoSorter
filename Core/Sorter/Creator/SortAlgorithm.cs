@@ -9,9 +9,8 @@
 // - StartPath == C://Downloads/A && EndPath == C://Downloads/B
 //is returned
 using Core.FileSystem;
-using Core.Sorter.Executor;
+using static Core.Sorter.Executor.RuleExecuter;
 using Core.Sorter.MatchDetectors;
-using System.Data;
 using System.Diagnostics;
 
 namespace Core.Sorter.Creator;
@@ -24,19 +23,38 @@ internal class SortAlgorithm
     private PromptUser _myPromptUser { get; set; }
     private StrengthDetector _myStrengthDetector { get; set; }
     private RuleGenerator _myRuleGenerator { get; set; }
-    private RuleExecuter _myRuleExecuter { get; set; }
+    private Executor.RuleExecuter _myRuleExecuter { get; set; }
     private FilterData _myFilterData { get; set; }
 
     private const int RuleLimit = 10000;
     private int MinimumParams = 3;
     private int MinimumFileMatches = 2;
 
+    //never initialize this way unless you want to be lazy:
+    public SortAlgorithm(string Directory)
+    {
+        UITask TempTask = (object _, EventArgs _) => { return null; };
+        PromptUser TempPromptUser = new(TempTask);
+        GetSettingsTask TempGetSettings = new(TempTask);
+        GetUserActionTask TempGetUserAction = new((object _, EventArgs _) => { return new(); });
+        
+        _myFolder = Directory;
+        _myPromptUser = TempPromptUser;
+        _myGetSettingsTask = TempGetSettings;
+        _myGetUserActionTask = TempGetUserAction;
+        _myStrengthDetector = new StrengthDetector();
+        _myRuleGenerator = new RuleGenerator(_myStrengthDetector);
+        _myRuleExecuter = new();
+        _myFilterData = new FilterData();
+    }
+
+    //always initialize this way:
     public SortAlgorithm(
         string myfolder,
         PromptUser _promptUser, 
         GetSettingsTask myGetSettingsTask, 
         GetUserActionTask myGetUserActionTask,
-        RuleExecuter myRuleExecutor)
+        Executor.RuleExecuter myRuleExecutor)
     {
         _myFolder = myfolder;
         _myPromptUser = _promptUser;
@@ -62,54 +80,26 @@ internal class SortAlgorithm
         IsEnabled = false;
     }
 
-    public int RequiredStrength = 10;
+    private const int DefaultRequiredStrength = 10;
+    public int RequiredStrength { get
+        {
+            object? data = _myGetSettingsTask?.Invoke(this, new());
+
+            if (data != null)
+            {
+                int? dataStrength = data.GetType()?.GetProperty("promptUserAmm")?.GetValue(data) as int?;
+                if (dataStrength != null)
+                {
+                    return (int)dataStrength;
+                }
+            }
+
+            return DefaultRequiredStrength;
+        } }
 
     public void SetRequiredStrength()
     {
-        object? data = _myGetSettingsTask?.Invoke(this, new());
-
-        if (data != null)
-        {
-            int? dataStrength = data.GetType()?.GetProperty("promptUserAmm")?.GetValue(data) as int?;
-            if(dataStrength != null)
-            {
-                RequiredStrength = (int)dataStrength;
-            }
-        }
-    }
-
-    public MatchDetectors.Rule? GenerateStrongRule(List<FileInfo> allData, List<FileMoveInfo> userActions, FileInfo newData, string oldPath)
-    {
-        //generate a list of rules
-        List<MatchDetectors.Rule> GeneratedRules = _myRuleGenerator.AllRules(
-            allData, userActions,
-            newData, oldPath,
-            RuleLimit,
-            MinimumParams);
-
-        //remove any weak rules
-        GeneratedRules = _myFilterData.StrongRules(
-            allRules: GeneratedRules,
-            requiredStrength: RequiredStrength,
-            requiredParams: MinimumParams,
-            requiredMatches: MinimumFileMatches,
-            limit: RuleLimit);
-
-        //remove any rules if they already exist
-        List<MatchDetectors.Rule> OldRules = RuleEditor.GetRules();
-        GeneratedRules = _myFilterData.DetectDuplicateRules(GeneratedRules, OldRules);
-
-        //find the strongest rule
-        List<MatchDetectors.Rule>? StrongestRules = _myStrengthDetector.StrongestRules(GeneratedRules);
-
-        MatchDetectors.Rule? newRule = null;
-
-        //arbitrary, since all the strongest rules are equal in their effectiveness
-        //TODO: make rules slightly stronger depending on if param has an approximate
-        if(StrongestRules.Count > 0)
-            newRule = StrongestRules[0];
-
-        return newRule;
+        
     }
 
     /// <summary>
@@ -124,13 +114,22 @@ internal class SortAlgorithm
 
         List<FileMoveInfo> userActions = GetUserActions();
 
-        MatchDetectors.Rule? newRule = GenerateStrongRule(FilteredFiles, userActions, newData, oldPath);
+        Rule? newRule = _myRuleGenerator.GenerateStrongRule(
+            FilteredFiles, 
+            userActions, 
+            newData, 
+            oldPath,
+            MinimumParams,
+            MinimumFileMatches,
+            RequiredStrength,
+            RuleLimit);
 
         if (newRule != null)
         {
             if (_myPromptUser.Prompt(newRule))
             {
-                _myRuleExecuter.OnRuleMade(newRule);
+                //_myRuleGenerator.
+                RuleExecuter.OnRuleMade(newRule);
             }
         }
     }
@@ -177,8 +176,6 @@ internal class SortAlgorithm
 
         bool isInCorrectFolder = e.NewFile.DirectoryName.Contains(_myFolder);
         bool isRedundantData = _myFilterData.RedundantData(e.NewFile);
-
-        Debug.WriteLine($"isCorrectFolder:{isInCorrectFolder}|| isRedundant:{isRedundantData}||");
 
         if (isInCorrectFolder && !isRedundantData)
         {
@@ -236,6 +233,36 @@ static class FileUtility
         }
 
         return result;
+    }
+    public static List<Rule> ConvertParamsToRules(
+            List<FileInfo> allData,
+            List<FileMoveInfo> userActions,
+            string startPath,
+            string endPath,
+            List<List<Param>> paramLists)
+    {
+        List<Rule> allRules = new();
+
+        foreach (List<Param> paramList in paramLists)
+        {
+            Rule newRule = new(
+                allData: allData,
+                userActions: userActions,
+                parameters: paramList,
+                startPath: startPath,
+                endPath: endPath
+                );
+
+            if (newRule.ContainsDuplicateParam)
+            {
+                //newRule contains duplicate parameters, not added.
+            }
+            else
+            {
+                allRules.Add(newRule);
+            }
+        }
+        return allRules;
     }
     /// </UTILITY>
 

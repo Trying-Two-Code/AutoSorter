@@ -1,5 +1,6 @@
 ﻿using Core.FileSystem;
 using Core.Sorter.Creator;
+using Core.Sorter.Test;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -19,10 +20,13 @@ public class CoreAlgorithm
 
     private readonly AutoSorter _autoSorter;
     private readonly SortAlgorithm _sortAlgorithm;
+    private readonly TestAll AutoSorterTester;
 
     public CoreAlgorithm(String path, String sourceRoot, UITask _uIEvent, GetSettingsTask _getSettings)
     {
         _autoSorter = new AutoSorter(path, sourceRoot);
+        AutoSorterTester = new TestAll();
+        AutoSorterTester.Start();
         PromptUser _promptUser = new PromptUser(_uIEvent);
 
         GetUserActionTask _getUserAction = _autoSorter.SendAllDataInstance.GetUserActions;

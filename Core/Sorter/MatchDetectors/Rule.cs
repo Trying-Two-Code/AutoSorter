@@ -18,17 +18,27 @@ namespace Core.Sorter.MatchDetectors
             List<FileInfo> allData,
             List<FileMoveInfo> userActions,
             List<Param> parameters,
-            string startPath, 
+            string startPath,
             string endPath)
         {
             Paramaters = parameters;
             StartPath = startPath;
             EndPath = endPath;
 
+            if (Path.EndsInDirectorySeparator(startPath))
+            {
+                StartPath = Path.GetDirectoryName(startPath);
+            }
+
+            if (Path.EndsInDirectorySeparator(endPath))
+            {
+                EndPath = Path.GetDirectoryName(endPath);
+            }
+
             List<string> PotentialMatchingUserActions = userActions
                 .Where(file => 
-                    (Path.GetDirectoryName(file.OldPath) == Path.GetDirectoryName(StartPath)) &&
-                    (Path.GetDirectoryName(file.NewPath) == Path.GetDirectoryName(EndPath)))
+                    (Path.GetDirectoryName(file.OldPath) == StartPath) &&
+                    (Path.GetDirectoryName(file.NewPath) == EndPath))
                 .Select(file =>
                     { return file.NewPath; })
                 .Distinct()

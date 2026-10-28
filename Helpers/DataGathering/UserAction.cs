@@ -120,7 +120,6 @@ public class UserActionGather
 
             string json = File.ReadAllText(_path);
 
-
             if (string.IsNullOrWhiteSpace(json))
                 return new UserActionGatherFile();
 

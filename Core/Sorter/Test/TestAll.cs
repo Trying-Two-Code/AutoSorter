@@ -18,6 +18,10 @@ namespace Core.Sorter.Test
             AllTests.Add(MyTestCreator);
             TestMatchDetectors.TestRule MyTestRule = new TestMatchDetectors.TestRule();
             AllTests.Add(MyTestRule);
+            TestSortAlgorithm MyTestSortAlgorithm = new TestSortAlgorithm();
+            AllTests.Add(MyTestSortAlgorithm);
+            TestStrengthDetector MyTestStrengthDetector = new TestStrengthDetector();
+            AllTests.Add(MyTestStrengthDetector);
         }
 
         public void Start()
@@ -33,7 +37,7 @@ namespace Core.Sorter.Test
                 index++;
             }
             Debug.WriteLine("!!! FINAL RESULT !!!");
-            if (results.Any(result => !result))
+            if (results.Any(result => result == false))
                 Debug.WriteLine(":::Tests Failed:::");
             else
                 Debug.WriteLine(":::Tests Passed:::");

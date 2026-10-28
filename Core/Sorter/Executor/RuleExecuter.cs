@@ -17,7 +17,6 @@ namespace Core.Sorter.Executor
 
         public RuleExecuter()
         {
-
             MoveHistoryJSON = new JSONDataMinipulator<FileMoveInfo>("RuleExecutionHistory.json", "RuleExecutor");
             myRuleEditor = new RuleEditor();
             AllRules = RuleEditor.GetRules();
@@ -122,7 +121,7 @@ namespace Core.Sorter.Executor
                 ExecuteRuleOnFolder(rule, startDirectory);
             }
 
-            myRuleEditor.AddRule(rule);
+            RuleEditor.AddRule(rule);
         }
     }
 }

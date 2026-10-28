@@ -26,8 +26,6 @@ namespace Helpers.DataGathering
                 return PreviousCalculations[content];
             }
 
-            Debug.WriteLine($"result was {result}");
-
             result = UserFile(content);
             PreviousCalculations.Add(content, result);
 

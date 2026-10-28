@@ -39,10 +39,15 @@ namespace Core.Sorter.Creator
                 if (Count >= minParams)
                 {
                     List<Param> paramList = CreateParamList(subsetI, forFile);
-                    Debug.Assert(paramList.Count == Count);
+                    //Debug.Assert(paramList.Count == Count);
+                    if(paramList.Count != Count)
+                    {
+                        continue;
+                    }
                     AllParamList.Add(paramList);
                 }
             }
+            Debug.WriteLine($"AllParamList.Count={AllParamList.Count}");
 
             return AllParamList;
         }
@@ -59,7 +64,8 @@ namespace Core.Sorter.Creator
 
         public List<Param> CreateParamList(
             int subsetI,
-            FileInfo forFile
+            FileInfo forFile,
+            bool canContainNullParams = false
             )
         {
             List<Param> tempList = new();
@@ -76,7 +82,6 @@ namespace Core.Sorter.Creator
 
                     Param newParameter = new(PropertyName)
                     {
-                        FileProperty = PropertyName,
                         MyApproximateMatchName = defaultParam.ApproximateMatchMethodName
                     };
 
@@ -94,6 +99,11 @@ namespace Core.Sorter.Creator
                     if (value?.GetType() == defaultParam.ValueType)
                     {
                         newParameter.PropertyContains = value.ToString();
+                    }
+                    else
+                    {
+                        if(!canContainNullParams)
+                            break;
                     }
 
                     tempList.Add(newParameter);
@@ -120,41 +130,56 @@ namespace Core.Sorter.Creator
             int minParams)
         {
             List<List<Param>> allParameters = AllParams(allData, newData, limit, minParams);
-            List<Rule> allRules = ConvertParamsToRules(
+            List<Rule> allRules = FileUtility.ConvertParamsToRules(
                 allData, userActions, oldPath, newData.DirectoryName, allParameters);
 
             return allRules;
         }
 
-        public static List<Rule> ConvertParamsToRules(
-            List<FileInfo> allData,
-            List<FileMoveInfo> userActions,
-            string startPath,
-            string endPath,
-            List<List<Param>> paramLists)
+        public Rule? GenerateStrongRule(
+            List<FileInfo> allData, 
+            List<FileMoveInfo> userActions, 
+            FileInfo newData, 
+            string oldPath,
+            int MinimumParams,
+            int MinimumFileMatches,
+            int RequiredStrength,
+            int RuleLimit
+            )
         {
-            List<Rule> allRules = new();
+            FilterData myFilterData = new();
+            StrengthDetector myStrengthDetector = new();
 
-            foreach (List<Param> paramList in paramLists)
-            {
-                Rule newRule = new(
-                    allData: allData,
-                    userActions: userActions,
-                    parameters: paramList,
-                    startPath: startPath,
-                    endPath: endPath
-                    );
+            //generate a list of rules
+            List<MatchDetectors.Rule> GeneratedRules = AllRules(
+                allData, userActions,
+                newData, oldPath,
+                RuleLimit,
+                MinimumParams);
 
-                if (newRule.ContainsDuplicateParam)
-                {
-                    //newRule contains duplicate parameters, not added.
-                }
-                else
-                {
-                    allRules.Add(newRule);
-                }
-            }
-            return allRules;
+            //remove any weak rules
+            List<MatchDetectors.Rule> StrongGeneratedRules = myStrengthDetector.StrongRules(
+                allRules: GeneratedRules,
+                requiredStrength: RequiredStrength,
+                requiredParams: MinimumParams,
+                requiredMatches: MinimumFileMatches,
+                limit: RuleLimit);
+
+            //remove any rules if they already exist
+            List<MatchDetectors.Rule> OldRules = RuleEditor.GetRules();
+            StrongGeneratedRules = myFilterData.DetectDuplicateRules(StrongGeneratedRules, OldRules);
+
+            //find the strongest rule
+            List<MatchDetectors.Rule>? Strongest = myStrengthDetector.StrongestRules(StrongGeneratedRules);
+
+            MatchDetectors.Rule? newRule = null;
+
+            //arbitrary, since all the strongest rules are equal in their effectiveness
+            //TODO: make rules slightly stronger depending on if param has an approximate
+            if (Strongest.Count > 0)
+                newRule = Strongest[0];
+
+            return newRule;
         }
     }
 }

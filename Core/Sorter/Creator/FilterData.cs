@@ -77,68 +77,19 @@ namespace Core.Sorter.Creator
             return result;
         }
 
-
-
-        //NOTE: if tied for first, chooses the first strongest rule
-        public MatchDetectors.Rule? StrongestRule(List<MatchDetectors.Rule>? Rules)
-        {
-            if (Rules == null) return null;
-
-            int LargestStrength = StrengthDetector.GetLargestStrength(Rules);
-            for (int i = 0; i < Rules.Count; i++)
-            {
-                if (Rules[i].Strength == LargestStrength)
-                    return Rules[i];
-            }
-
-            return null;
-        }
-
-        public List<MatchDetectors.Rule> StrongRules(
-            List<MatchDetectors.Rule> allRules, 
-            int requiredStrength = 10, 
-            int requiredParams = 2,
-            int requiredMatches = 2,
-            int limit = 1000)
-        {
-            List<MatchDetectors.Rule> strongRules = new();
-
-            foreach (MatchDetectors.Rule rule in allRules)
-            {
-                int ruleStrength = rule.Strength;
-
-                if(ruleStrength < requiredStrength)
-                {
-                    continue;
-                }
-                if(rule.Paramaters.Count < requiredParams)
-                {
-                    continue;
-                }
-                if (rule.StartCertain < requiredMatches)
-                {
-                    continue;
-                }
-
-                strongRules.Add(rule);
-            }
-
-            return strongRules;
-        }
-
         /// <summary>
         /// How long to wait before prompting the user about a folder after they said no.
         /// </summary>
-        private int promptAmmount = 10;
+        public int promptAmmount { get; set; } = 10;
         private List<FilePromptDatapoint> PreviousDatapoints { get; set; }
         public bool RedundantData(FileInfo newDatapoint)
         {
             List<string> PreviousPrompts = FilePromptDatapoint.GetPromptedFiles(PreviousDatapoints);
 
-            List<FilePromptDatapoint> Matches = PreviousDatapoints.FindAll(match =>
+            List<FilePromptDatapoint> Matches = PreviousDatapoints.Where(match =>
             {
                 return match.File == newDatapoint.DirectoryName;
-            });
+            }).ToList();
 
             if((Matches.Count - PreviousPrompts.Count) > promptAmmount)
             {

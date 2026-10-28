@@ -25,7 +25,6 @@ namespace Core.Sorter.Test
             });
         }
 
-        public static RuleExecuter RuleExecuterTest = new();
         public static readonly string MyDirectory = Path.Combine(AppContext.BaseDirectory, "test\\testexec\\");
         public static readonly string MyNewDirectory = Path.Combine(AppContext.BaseDirectory, "test\\testexecnew\\");
         public static MassFileCreator MyFileCreator { get; set; } = new(MyDirectory);
@@ -53,7 +52,7 @@ namespace Core.Sorter.Test
 
                 MoveFile.Dispose();
 
-                RuleExecuterTest.ExecuteRule(TestRule, new FileInfo(oldFilePath));
+                RuleExecuter.ExecuteRule(TestRule, new FileInfo(oldFilePath));
 
                 bool result = !File.Exists(oldFilePath) && File.Exists(newFilePath);
 
@@ -91,7 +90,7 @@ namespace Core.Sorter.Test
                 } }
             };
 
-            RuleExecuterTest.ExecuteRuleOnFolder(TestRule, TestDirectoryName);
+            RuleExecuter.ExecuteRuleOnFolder(TestRule, TestDirectoryName);
 
             bool txtInRightPlace = !File.Exists(Path.Combine(MyDirectory, TestFiles[0])) && 
                 File.Exists(Path.Combine(MyNewDirectory, TestFiles[0]));

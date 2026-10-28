@@ -1,6 +1,7 @@
 ﻿using Core.Sorter.MatchDetectors;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Core.Sorter.Creator
@@ -33,6 +34,38 @@ namespace Core.Sorter.Creator
                     largestStrength = strength;
             }
             return largestStrength;
+        }
+
+        //NOTE: if tied for first, chooses the first strongest rule
+        public MatchDetectors.Rule? StrongestRule(List<MatchDetectors.Rule>? Rules)
+        {
+            if (Rules == null) return null;
+
+            int LargestStrength = StrengthDetector.GetLargestStrength(Rules);
+            for (int i = 0; i < Rules.Count; i++)
+            {
+                if (Rules[i].Strength == LargestStrength)
+                    return Rules[i];
+            }
+
+            return null;
+        }
+
+        public List<MatchDetectors.Rule> StrongRules(
+            List<MatchDetectors.Rule> allRules,
+            int requiredStrength = 10,
+            int requiredParams = 2,
+            int requiredMatches = 2,
+            int limit = 1000)
+        {
+            List<MatchDetectors.Rule> strongRules = allRules.Where(rule =>
+            {
+                return  rule.StartCertain >= requiredMatches &&
+                        rule.Paramaters.Count >= requiredParams &&
+                        rule.Strength >= requiredStrength;
+            }).ToList();
+
+            return strongRules;
         }
     }
 }
