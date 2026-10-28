@@ -1,0 +1,31 @@
+﻿using Helper.DataGathering;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+using System.Xml.Linq;
+
+namespace Core.Sorter.Test.Helpers
+{
+    /// <summary>
+    /// see how long it takes to do an action
+    /// </summary>
+    public class TimeLog
+    {
+        public TimeLog(string _name)
+        {
+            LastLog = DateTime.Now;
+            Name = _name;
+        }
+
+        private DateTime LastLog { get; set; }
+        public string Name { get; private set; }
+        
+        public void Log(string _action, string _message = " took time to do action: ")
+        {
+            TimeSpan timeSinceLastLog = DateTime.Now - LastLog;
+            Debug.WriteLine(Name + _message + timeSinceLastLog.Milliseconds + $"ms for {_action}");
+            LastLog = DateTime.Now;
+        }
+    }
+}
