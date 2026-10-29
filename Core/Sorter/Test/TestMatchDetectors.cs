@@ -42,7 +42,7 @@ namespace Core.Sorter.Test
                     MyFileCreator.CreateAndForget(NewFiles);
 
                     List<FileInfo> TestAllData = MyFileCreator.MyFileInfos;
-                    List<FileMoveInfo> TestUserActions = new();
+                    List<FileInfo> TestUserActions = new();
                     List<Param> TestParameters = new();
                     string TestStartPath = MyOldDirectory;
                     string TestEndPath = MyDirectory;
@@ -66,14 +66,10 @@ namespace Core.Sorter.Test
                     }
 
                     List<FileInfo> TestAllData = MyFileCreator.MyFileInfos;
-                    List<FileMoveInfo> TestUserActions = new();
+                    List<FileInfo> TestUserActions = new();
                     foreach (string path in NewPaths)
                     {
-                        TestUserActions.Add(new()
-                            {
-                                OldPath = Path.Combine(MyOldDirectory, Path.GetFileName(path)),
-                                NewPath = path
-                            });
+                        TestUserActions.Add(new(path));
                     }
 
                     List<Param> TestParameters = new List<Param>()

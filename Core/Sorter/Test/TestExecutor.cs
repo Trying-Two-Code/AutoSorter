@@ -25,8 +25,9 @@ namespace Core.Sorter.Test
             });
         }
 
-        public static readonly string MyDirectory = Path.Combine(AppContext.BaseDirectory, "test\\testexec\\");
-        public static readonly string MyNewDirectory = Path.Combine(AppContext.BaseDirectory, "test\\testexecnew\\");
+        private static RuleExecuter myRuleExecutor = new();
+        public static readonly string MyDirectory = Path.Combine(AppContext.BaseDirectory, "test\\testexec");
+        public static readonly string MyNewDirectory = Path.Combine(AppContext.BaseDirectory, "test\\testexecnew");
         public static MassFileCreator MyFileCreator { get; set; } = new(MyDirectory);
 
         readonly AutoSorterTestMethod TestExecuteRule = () =>
@@ -39,6 +40,7 @@ namespace Core.Sorter.Test
                 string oldFilePath = Path.Combine(MyDirectory, "ExampleFile.example");
                 string newDirectoryPath = MyNewDirectory;
                 string newFilePath = Path.Combine(newDirectoryPath, "ExampleFile.example");
+                File.Delete(newFilePath);
 
                 var MoveFile = File.Create(oldFilePath);
                 var Destination = Directory.CreateDirectory(newDirectoryPath);
@@ -52,7 +54,7 @@ namespace Core.Sorter.Test
 
                 MoveFile.Dispose();
 
-                RuleExecuter.ExecuteRule(TestRule, new FileInfo(oldFilePath));
+                myRuleExecutor.ExecuteRule(TestRule, new FileInfo(oldFilePath));
 
                 bool result = !File.Exists(oldFilePath) && File.Exists(newFilePath);
 
@@ -66,6 +68,7 @@ namespace Core.Sorter.Test
             //return result
             return MovesWhenItShould;
         };
+
         readonly AutoSorterTestMethod TestExecuteRuleOnFolder = () =>
         {
             List<string> TestFiles = new()
@@ -90,7 +93,7 @@ namespace Core.Sorter.Test
                 } }
             };
 
-            RuleExecuter.ExecuteRuleOnFolder(TestRule, TestDirectoryName);
+            myRuleExecutor.ExecuteRuleOnFolder(TestRule, TestDirectoryName);
 
             bool txtInRightPlace = !File.Exists(Path.Combine(MyDirectory, TestFiles[0])) && 
                 File.Exists(Path.Combine(MyNewDirectory, TestFiles[0]));

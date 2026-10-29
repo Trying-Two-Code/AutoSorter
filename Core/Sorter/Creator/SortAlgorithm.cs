@@ -9,7 +9,7 @@
 // - StartPath == C://Downloads/A && EndPath == C://Downloads/B
 //is returned
 using Core.FileSystem;
-using static Core.Sorter.Executor.RuleExecuter;
+using Core.Sorter.Executor;
 using Core.Sorter.MatchDetectors;
 using System.Diagnostics;
 
@@ -129,7 +129,7 @@ internal class SortAlgorithm
             if (_myPromptUser.Prompt(newRule))
             {
                 //_myRuleGenerator.
-                RuleExecuter.OnRuleMade(newRule);
+                _myRuleExecuter.OnRuleMade(newRule);
             }
         }
     }
@@ -243,11 +243,25 @@ static class FileUtility
     {
         List<Rule> allRules = new();
 
+        List<FileInfo> MatchingUserActions = userActions
+            .Where(file => {
+                if (Path.EndsInDirectorySeparator(startPath))
+                    startPath = Path.GetDirectoryName(startPath);
+                if (Path.EndsInDirectorySeparator(endPath))
+                    endPath = Path.GetDirectoryName(endPath);
+                return (Path.GetDirectoryName(file.OldPath) == startPath) &&
+                (Path.GetDirectoryName(file.NewPath) == endPath);
+            } )
+            .Select(file =>
+            { return new FileInfo(file.NewPath); })
+            .Distinct()
+            .ToList();
+
         foreach (List<Param> paramList in paramLists)
         {
             Rule newRule = new(
                 allData: allData,
-                userActions: userActions,
+                userActions: MatchingUserActions,
                 parameters: paramList,
                 startPath: startPath,
                 endPath: endPath

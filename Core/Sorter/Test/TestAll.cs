@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using static Core.Sorter.Test.TestCreator;
+using Core.Sorter.Test.Helpers;
 
 namespace Core.Sorter.Test
 {
@@ -22,17 +23,23 @@ namespace Core.Sorter.Test
             AllTests.Add(MyTestSortAlgorithm);
             TestStrengthDetector MyTestStrengthDetector = new TestStrengthDetector();
             AllTests.Add(MyTestStrengthDetector);
+            TestFilter MyTestFilter = new TestFilter();
+            AllTests.Add(MyTestFilter);
         }
+
+        private TimeLog _TimeLog = new("TestAll");
 
         public void Start()
         {
             int index = 0;
             Debug.WriteLine(":::Starting Tests:::");
+            _TimeLog.Start();
             List<bool> results = new();
             foreach (ITestAutoSorter test in AllTests)
             {
                 bool result = test.TestsAllSucceed();
                 Debug.WriteLine($"{index} test: {test}, result: {result}");
+                _TimeLog.Log(test.ToString() + " test");
                 results.Add(result);
                 index++;
             }

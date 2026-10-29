@@ -86,17 +86,29 @@ namespace Core.Sorter.Creator
         {
             List<string> PreviousPrompts = FilePromptDatapoint.GetPromptedFiles(PreviousDatapoints);
 
+            if (PreviousPrompts.Count == 0)
+                return promptAmmount >= 0;
+
             List<FilePromptDatapoint> Matches = PreviousDatapoints.Where(match =>
             {
-                return match.File == newDatapoint.DirectoryName;
+                return Path.GetDirectoryName(match.File) == newDatapoint.DirectoryName;
             }).ToList();
 
-            if((Matches.Count - PreviousPrompts.Count) > promptAmmount)
+            for (int i = PreviousDatapoints.Count - 1; i >= 0; i--)
             {
-                return true;
+                FilePromptDatapoint data = PreviousDatapoints[i];
+                if (data.WasPrompted)
+                {
+                    //Negative index is how many falses preceded the true
+                    //aka: how many prompts didn't happen before now
+                    int NegativeIndex = PreviousDatapoints.Count - i; 
+                    return NegativeIndex >= promptAmmount;
+                }
             }
 
-            return false;
+            // (if statement is implied)
+            // if (matches.Count == 0)
+            return promptAmmount >= 0;
         }
 
         public class FilePromptDatapoint

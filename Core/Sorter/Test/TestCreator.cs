@@ -5,6 +5,7 @@ using Core.Sorter.Test.Helpers;
 using Helper.DataGathering;
 using System.Diagnostics;
 using System.Text.Json;
+using static Core.Sorter.Creator.FilterData;
 
 namespace Core.Sorter.Test
 {
@@ -35,13 +36,17 @@ namespace Core.Sorter.Test
                 }
             }
 
+            private static TimeLog _MyTimeLog = new("TestCreator");
             public bool TestsAllSucceed()
             {
                 lock (_lock)
                 {
                     return !TestMethods.Any(method =>
                     {
-                        return method() == false;
+                        bool result = method();
+                        Debug.WriteLine(result);
+                        _MyTimeLog.Log(method.ToString());
+                        return result == false;
                     });
                 }
             }
@@ -80,7 +85,6 @@ namespace Core.Sorter.Test
                     MyOldDirectory,
                     0,
                     TestMinParams);
-
                 List<Rule> TestAllRules = MyRuleGenerator.AllRules(
                     TestAllData,
                     TestFileMoveInfos,
@@ -101,10 +105,7 @@ namespace Core.Sorter.Test
                 FileStream TestFile = File.Create(Path.Combine(MyDirectory, "test.txt"));
                 List<Param> TestOne = MyRuleGenerator.CreateParamList(1, new FileInfo(TestFile.Name));
 
-                Debug.WriteLine(TestOne.Count);
-
                 TestFile.Dispose();
-                File.Delete(TestFile.Name);
 
                 return TestOne.Count == 1 && TestNull.Count == 0 && TestNonExistant.Count == 0;
             };
@@ -126,12 +127,14 @@ namespace Core.Sorter.Test
                 FileInfo newData = FileInfos[0];
                 string newDataOldPath = Path.Combine(MyOldDirectory, newData.Name);
 
+                _MyTimeLog.Log("init", " took time to do subaction:");
                 Rule? NoRule = MyRuleGenerator.GenerateStrongRule(
                     allData,
                     fileMoveInfo,
                     newData,
                     newDataOldPath,
                     2,2,2,1);
+                _MyTimeLog.Log("weak rule", " took time to do subaction:");
 
                 foreach (FileInfo file in FileInfos)
                 {
@@ -150,7 +153,7 @@ namespace Core.Sorter.Test
                     newData,
                     MyOldDirectory,
                     2, 2, 2, 500);
-
+                _MyTimeLog.Log("strong rule", " took time to do subaction:");
                 MyFileCreator.Delete();
 
                 return NoRule == null && GoodRule != null;
@@ -205,8 +208,6 @@ namespace Core.Sorter.Test
                     TestRequiredParams, TestRequiredMatches,
                     TestLimit);
 
-                Debug.WriteLine(StrongRules.Count);
-
                 return StrongRules.Contains(TestRule1) && !StrongRules.Contains(WeakTestRule2);
             };
         }
@@ -220,6 +221,7 @@ namespace Core.Sorter.Test
             public TestFilter()
             {
                 TestMethods.Add(TestRedundantData);
+                Directory.CreateDirectory(MyDirectory);
             }
 
             public bool TestsAllSucceed()
@@ -238,13 +240,21 @@ namespace Core.Sorter.Test
                 MyFilterData.promptAmmount = 2;
 
                 bool take1 = MyFilterData.RedundantData(new FileInfo(file.Name));
+                MyFilterData.AddOldData(file.Name, take1);
                 bool take2 = MyFilterData.RedundantData(new FileInfo(file.Name));
+                MyFilterData.AddOldData(file.Name, take2);
                 bool take3 = MyFilterData.RedundantData(new FileInfo(file.Name));
+                MyFilterData.AddOldData(file.Name, take3);
                 bool take4 = MyFilterData.RedundantData(new FileInfo(file.Name));
+                MyFilterData.AddOldData(file.Name, take4);
 
                 Debug.WriteLine($"1:{take1}2:{take2}3:{take3}4:{take4}");
 
-                return !take1 && take2 && !take3 && take4;
+                return 
+                    take1 == true && 
+                    take2 == false && 
+                    take3 == true && 
+                    take4 == false;
             };
         }
         internal class TestSortAlgorithm : ITestAutoSorter

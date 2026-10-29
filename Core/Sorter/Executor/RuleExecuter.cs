@@ -101,12 +101,20 @@ namespace Core.Sorter.Executor
 
         public void OnFileMove(string NewFilePath, string OldFilePath)
         {
-            LoopThroughRules(AllRules, new(NewFilePath), OldFilePath);
+            SafeLoopThroughRules(AllRules, new(NewFilePath), OldFilePath);
+        }
+
+        public async void SafeLoopThroughRules(List<MatchDetectors.Rule>? rules, FileInfo file, string? oldPath)
+        {
+            while (!File.Exists(file.FullName))
+                await Task.Delay(100);
+
+            LoopThroughRules(rules, file, oldPath);
         }
 
         public void OnFileCreated(string NewFilePath)
         {
-            LoopThroughRules(AllRules, new(NewFilePath), null);
+            SafeLoopThroughRules(AllRules, new(NewFilePath), null);
         }
 
         static List<MatchDetectors.Rule>? AllRules {get; set;}
@@ -121,7 +129,7 @@ namespace Core.Sorter.Executor
                 ExecuteRuleOnFolder(rule, startDirectory);
             }
 
-            RuleEditor.AddRule(rule);
+            myRuleEditor.AddRule(rule);
         }
     }
 }
