@@ -4,7 +4,8 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
-
+using JsonRepairSharp;
+using static JsonRepairSharp.JsonRepair;
 
 public enum Action
 {
@@ -123,7 +124,18 @@ public class UserActionGather
             if (string.IsNullOrWhiteSpace(json))
                 return new UserActionGatherFile();
 
-            fileData = JsonSerializer.Deserialize<UserActionGatherFile>(json);
+            //Todo: ensure user data does not get deleted randomly.
+            //Todo: check how long it takes to get user actions
+            try
+            {
+                fileData = JsonSerializer.Deserialize<UserActionGatherFile>(json);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                string fixedJson = RepairJson(json, InputType.Other, false);
+                fileData = JsonSerializer.Deserialize<UserActionGatherFile>(json);
+            }
         }
         finally
         {
