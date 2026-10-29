@@ -32,7 +32,7 @@ namespace Core.Sorter.MatchDetectors
 
         private void updateApproximateMatch()
         {
-            if (MyApproximateMatchName != "")
+            if (MyApproximateMatchName != "" && MyApproximateMatch == null)
             {
                 MyApproximateMatch =
                     ParamApproximates
@@ -47,14 +47,7 @@ namespace Core.Sorter.MatchDetectors
         /// <param name="fileInfo">The file detected.</param>
         public bool IsMatch(FileInfo fileInfo)
         {
-            if (!File.Exists(fileInfo.FullName))
-                return false;
-
-            string? value = 
-                (string?)(typeof(FileInfo)
-                ?.GetProperty(FileProperty)
-                ?.GetValue(fileInfo)
-                ?.ToString());
+            string? value = GetValueOfFileInfo(fileInfo).ToString();
 
             if(value == null)
                 throw new ParamValueNullError();
@@ -71,6 +64,48 @@ namespace Core.Sorter.MatchDetectors
             }
 
             return PerfectMatch;
+        }
+
+        private object? GetValueOfFileInfo(FileInfo fileInfo)
+        {
+            switch (FileProperty)
+            {
+                case "CreationTime":
+                    return fileInfo.CreationTime;
+                case "CreationTimeUTC":
+                    return fileInfo.CreationTimeUtc;
+                case "Directory":
+                    return fileInfo.Directory;
+                case "DirectoryName":
+                    return fileInfo.DirectoryName;
+                case "Exists":
+                    return fileInfo.Exists;
+                case "Extension":
+                    return fileInfo.Extension;
+                case "FullName":
+                    return fileInfo.FullName;
+                case "IsReadOnly":
+                    return fileInfo.IsReadOnly;
+                case "LastAccessTime":
+                    return fileInfo.LastAccessTime;
+                case "LastAccessTimeUTC":
+                    return fileInfo.LastAccessTimeUtc;
+                case "LastWriteTime":
+                    return fileInfo.LastWriteTime;
+                case "LastWriteTimeUTC":
+                    return fileInfo.LastWriteTimeUtc;
+                case "Length":
+                    return fileInfo.Length;
+                case "LinkTarget":
+                    return fileInfo.LinkTarget;
+                case "Name":
+                    return fileInfo.Name;
+                case "UnixFileMode":
+                    return fileInfo.UnixFileMode;
+                default:
+                    break;
+            }
+            return null;
         }
 
         public bool CheapEqual(Param otherParam)
