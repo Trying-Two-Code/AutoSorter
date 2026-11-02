@@ -25,7 +25,7 @@ namespace Core.Sorter.Creator
         private DateTime lastCheck = DateTime.MinValue;
         private bool isSpam { get
             {
-                return (lastCheck - DateTime.Now) < promptAmmount;
+                return (DateTime.Now - lastCheck) < promptAmmount;
             } }
 
         public bool Prompt(Rule rule)
@@ -51,7 +51,7 @@ namespace Core.Sorter.Creator
             string folderPath = $"Would you like to make a rule that goes from " +
                 $"{rule.StartPath} to {rule.EndPath}? ";
             string StrengthInfo = $"It is estimated that similar actions were done (manually) up to " +
-                $"{rule.StartEstimation} times already. ";
+                $"{rule.StartCertain} times already. ";
             string ParameterInfo = $"The rule contains ${rule.Parameters.Count} parameters. ";
 
             foreach(Param param in rule.Parameters)
