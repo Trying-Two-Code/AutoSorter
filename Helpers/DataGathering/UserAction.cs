@@ -47,7 +47,7 @@ public class UserActionGather
 
     public void appendMove(string from, string to)
     {
-        UserActionGatherFile data = getFileDataFromJSON();
+        UserActionGatherFile data = GetFileDataFromJSONQuick();
         
         data.Lines.Add(new UserActionGatherLine
         {
@@ -63,7 +63,7 @@ public class UserActionGather
 
     public void appendRename(string from, string to)
     {
-        UserActionGatherFile data = getFileDataFromJSON();
+        UserActionGatherFile data = GetFileDataFromJSONQuick();
 
         data.Lines.Add(new UserActionGatherLine
         {
@@ -79,7 +79,7 @@ public class UserActionGather
 
     public void appendCopy(string from, string to)
     {
-        UserActionGatherFile data = getFileDataFromJSON();
+        UserActionGatherFile data = GetFileDataFromJSONQuick();
         
         data.Lines.Add(new UserActionGatherLine
         {
@@ -95,7 +95,7 @@ public class UserActionGather
 
     public void appendDelete(string file)
     {
-        UserActionGatherFile data = getFileDataFromJSON();
+        UserActionGatherFile data = GetFileDataFromJSONQuick();
 
         UserActionGatherLine userActionGatherLine = new UserActionGatherLine
         {
@@ -109,6 +109,7 @@ public class UserActionGather
         writeFileDataToJSON(data);
     }
 
+    private static UserActionGatherFile oldData = new();
     public UserActionGatherFile getFileDataFromJSON()
     {
         if (!File.Exists(_path))
@@ -134,7 +135,7 @@ public class UserActionGather
             {
                 Debug.WriteLine(ex);
                 string fixedJson = RepairJson(json, InputType.Other, false);
-                fileData = JsonSerializer.Deserialize<UserActionGatherFile>(json);
+                fileData = JsonSerializer.Deserialize<UserActionGatherFile>(fixedJson);
             }
         }
         finally
@@ -142,7 +143,31 @@ public class UserActionGather
             mut.ReleaseMutex();
         }
 
+        oldData = fileData ?? new();
+
         return fileData ?? new UserActionGatherFile();
+    }
+
+    /// <summary>
+    /// makes sure that old data gets turned into new data, 
+    /// and just gives old data back
+    /// </summary>
+    /// <returns>old data</returns>
+    public UserActionGatherFile GetFileDataFromJSONQuick()
+    {
+        //no point in returning an old useless data
+        if (oldData == null || oldData.Lines.Count == 0)
+        {
+            oldData = getFileDataFromJSON();
+        }
+        else
+        {
+            Task.Run(() =>
+            {
+                oldData = getFileDataFromJSON();
+            });
+        }
+        return oldData;
     }
 
     private void writeFileDataToJSON(UserActionGatherFile data)
@@ -153,14 +178,14 @@ public class UserActionGather
 
             Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
 
-            string json = JsonSerializer.Serialize(
-                data,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
-
-            File.WriteAllText(_path, json);
+            File.WriteAllText(_path,
+                JsonSerializer.Serialize(
+                    data,
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    })
+                );
         }
         finally
         {

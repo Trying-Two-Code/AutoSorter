@@ -11,6 +11,7 @@
 using Core.FileSystem;
 using Core.Sorter.Executor;
 using Core.Sorter.MatchDetectors;
+using Core.Sorter.Test.Helpers;
 using System.Diagnostics;
 
 namespace Core.Sorter.Creator;
@@ -107,10 +108,10 @@ internal class SortAlgorithm
     /// </summary>
     public void ManageRules(List<FileInfo> allData, FileInfo newData, string oldPath)
     {
-        allData = allData.Distinct().ToList();
+        HashSet<FileInfo> allUniqueData = allData.ToHashSet();
 
         //sort old data for only those files that match the start folder and end destination paths
-        List <FileInfo> FilteredFiles = _myFilterData.Filter(allData, newData);
+        HashSet<FileInfo> FilteredFiles = _myFilterData.Filter(allUniqueData, newData);
 
         List<FileMoveInfo> userActions = GetUserActions();
 
@@ -162,8 +163,11 @@ internal class SortAlgorithm
     //Called when, for example, a data entry is added to userAction.json
     public void OnDataGained(object? sender, OnFileMoveEventArgs? e)
     {
-        if(IsEnabled)
-            HandleData(sender, e);
+        Task.Run(() =>
+        {
+            if (IsEnabled)
+                HandleData(sender, e);
+        });
     }
 
     private void HandleData(object? sender, OnFileMoveEventArgs? e)
@@ -234,16 +238,18 @@ static class FileUtility
 
         return result;
     }
+    static TimeLog myTimeLog = new("Sort Algo");
     public static List<Rule> ConvertParamsToRules(
-            List<FileInfo> allData,
+            HashSet<FileInfo> allData,
             List<FileMoveInfo> userActions,
             string startPath,
             string endPath,
             List<List<Param>> paramLists)
     {
+        myTimeLog.Start();
         List<Rule> allRules = new();
-
-        List<FileInfo> MatchingUserActions = userActions
+        allData = allData.ToHashSet();
+        HashSet<FileInfo> MatchingUserActions = userActions
             .Where(file => {
                 if (Path.EndsInDirectorySeparator(startPath))
                     startPath = Path.GetDirectoryName(startPath);
@@ -254,8 +260,13 @@ static class FileUtility
             } )
             .Select(file =>
             { return new FileInfo(file.NewPath); })
-            .Distinct()
-            .ToList();
+            .Where(file =>
+            {
+                if (!file.Exists)
+                    return false;
+                return true;
+            }).ToHashSet();
+        myTimeLog.Log("FindUserActions");
 
         foreach (List<Param> paramList in paramLists)
         {
@@ -276,6 +287,7 @@ static class FileUtility
                 allRules.Add(newRule);
             }
         }
+        myTimeLog.Log("Everything else");
         return allRules;
     }
     /// </UTILITY>

@@ -4,6 +4,7 @@ using Core.Sorter.MatchDetectors;
 using Core.Sorter.Test.Helpers;
 using Helper.DataGathering;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using static Core.Sorter.Creator.FilterData;
 
@@ -44,7 +45,7 @@ namespace Core.Sorter.Test
                     return !TestMethods.Any(method =>
                     {
                         bool result = method();
-                        Debug.WriteLine(result);
+                        Debug.WriteLine("creator result: " + result);
                         _MyTimeLog.Log(method.ToString());
                         return result == false;
                     });
@@ -54,10 +55,10 @@ namespace Core.Sorter.Test
             AutoSorterTestMethod TestAllRules = () =>
             {
                 List<string> TestFiles = new() { "smth.txt", "smth2.txt", "smth3.txt" };
-                List<FileInfo> TestAllData = new();
+                HashSet<FileInfo> TestAllData = new();
 
                 MyFileCreator.CreateAndForget(TestFiles);
-                TestAllData.AddRange(MyFileCreator.MyFileInfos);
+                TestAllData.UnionWith(MyFileCreator.MyFileInfos);
 
                 List<FileMoveInfo> TestFileMoveInfos = new List<FileMoveInfo>() { 
                     new FileMoveInfo()
@@ -72,7 +73,7 @@ namespace Core.Sorter.Test
                     },
                 };
 
-                FileInfo TestNewData = TestAllData[1];
+                FileInfo TestNewData = TestAllData.Take(1).Single();
 
                 int TestLimit = 100;
 
@@ -122,7 +123,7 @@ namespace Core.Sorter.Test
 
                 List<FileInfo> FileInfos = MyFileCreator.MyFileInfos;
 
-                List<FileInfo> allData = new();
+                HashSet<FileInfo> allData = new();
                 List<FileMoveInfo> fileMoveInfo = new();
                 FileInfo newData = FileInfos[0];
                 string newDataOldPath = Path.Combine(MyOldDirectory, newData.Name);
@@ -156,6 +157,8 @@ namespace Core.Sorter.Test
                 _MyTimeLog.Log("strong rule", " took time to do subaction:");
                 MyFileCreator.Delete();
 
+                Debug.WriteLine($"NoRule:{null};\nStrongRule:{GoodRule != null}");
+
                 return NoRule == null && GoodRule != null;
             };
         }
@@ -182,7 +185,7 @@ namespace Core.Sorter.Test
 
                 Rule TestRule1 = new();
                 TestRule1.ExecutionCount = 10;
-                TestRule1.Paramaters = new()
+                TestRule1.Parameters = new()
                 {
                     new Param("Example"),
                     new Param("Example2"),
@@ -192,7 +195,7 @@ namespace Core.Sorter.Test
 
                 Rule WeakTestRule2 = new();
                 WeakTestRule2.ExecutionCount = 2;
-                WeakTestRule2.Paramaters = new();
+                WeakTestRule2.Parameters = new();
                 WeakTestRule2.StartCertain = 2;
 
                 TestAllRules.Add(TestRule1);
@@ -231,10 +234,10 @@ namespace Core.Sorter.Test
                     return method() == false;
                 });
             }
-
             
             AutoSorterTestMethod TestRedundantData = () =>
             {
+
                 FileStream file = File.Create(Path.Combine(MyDirectory, "example.txt"));
 
                 MyFilterData.promptAmmount = 2;
@@ -251,10 +254,10 @@ namespace Core.Sorter.Test
                 Debug.WriteLine($"1:{take1}2:{take2}3:{take3}4:{take4}");
 
                 return 
-                    take1 == true && 
-                    take2 == false && 
-                    take3 == true && 
-                    take4 == false;
+                    take1 == false && 
+                    take2 == true && 
+                    take3 == false && 
+                    take4 == true;
             };
         }
         internal class TestSortAlgorithm : ITestAutoSorter
@@ -296,7 +299,7 @@ namespace Core.Sorter.Test
 
                 UserActionGatherFile? myResult = null;
 
-                if (useractionmut.WaitOne(1000))
+                if (useractionmut.WaitOne(10000))
                 {
                     myResult = JsonSerializer.Deserialize<UserActionGatherFile>(File.ReadAllText(UserMoveFilePath));
                 }

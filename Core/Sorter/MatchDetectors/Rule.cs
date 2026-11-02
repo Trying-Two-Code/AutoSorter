@@ -15,31 +15,27 @@ namespace Core.Sorter.MatchDetectors
         public Rule() { }
 
         public Rule(
-            List<FileInfo> allData,
-            List<FileInfo> userActions,
+            HashSet<FileInfo> allData,
+            HashSet<FileInfo> userActions,
             List<Param> parameters,
             string startPath,
             string endPath)
         {
-            Paramaters = parameters;
+            //Debug.WriteIf(allData.Count <= 0, "all data no good\n");
+            //Debug.WriteIf(userActions.Count <= 0, "useractions no good\n");
+            Parameters = parameters;
             StartPath = startPath;
             EndPath = endPath;
 
-            if (Path.EndsInDirectorySeparator(startPath))
-            {
-                StartPath = Path.GetDirectoryName(startPath);
-            }
-
-            if (Path.EndsInDirectorySeparator(endPath))
-            {
-                EndPath = Path.GetDirectoryName(endPath);
-            }
+            FixStartAndEndPath();
 
             List<string> MatchingUserActions = Matches(userActions);
+            //Debug.WriteIf(MatchingUserActions.Count <= 0, "MatchingUserActions useractions no good\n");
             StartEstimation = MatchingUserActions.Count;
 
             List<string> matchingFileList = Matches(allData);
 
+            //Debug.WriteLine($"matchingFiles:{matchingFileList.Count}\nMatchingUserActions:{MatchingUserActions.Count}");
             List<string> MinimumMatchingFileList = matchingFileList.Intersect(MatchingUserActions).ToList();
 
             MatchingFiles = MinimumMatchingFileList;
@@ -47,7 +43,26 @@ namespace Core.Sorter.MatchDetectors
             StartCertain = MinimumMatchingFileList.Count;
         }
 
-        public List<Param> Paramaters { get; set; }
+        public delegate void voidTask(Rule caller);
+
+        private bool PathsFixed = false;
+        private void FixStartAndEndPath()
+        {
+            if (PathsFixed) return;
+
+            if (Path.EndsInDirectorySeparator(StartPath))
+            {
+                StartPath = Path.GetDirectoryName(StartPath);
+            }
+
+            if (Path.EndsInDirectorySeparator(EndPath))
+            {
+                EndPath = Path.GetDirectoryName(EndPath);
+            }
+
+            PathsFixed = true;
+        }
+        public List<Param> Parameters { get; set; }
         public string StartPath { get; set; }
         public string EndPath { get; set; }
 
@@ -72,50 +87,39 @@ namespace Core.Sorter.MatchDetectors
 
         public bool ShouldMove(FileInfo fileInfo)
         {
-            if (File.Exists(Path.Combine(EndPath, fileInfo.Name)))
+            FixStartAndEndPath();
+            if (fileInfo.DirectoryName != (StartPath))
             {
                 return false;
             }
-
             return IsMatch(fileInfo);
         }
 
         public List<string> MatchingFiles { get; set; } = new();
         public bool IsMatch(FileInfo fileInfo)
         {
-            if (fileInfo.DirectoryName != (StartPath)) { return false; }
-
-            if (Paramaters.Any((parameter) =>
+            if (fileInfo == null)
             {
-                return parameter.IsMatch(fileInfo) == false;
-            }))
-            {
-                //A parameter didn't match the fileInfo.
-                //Check if it approximatly matches the fileInfo.
-                foreach (Param param in Paramaters)
-                {
-                    if (param.IsMatch(fileInfo)) { continue; }
-
-                    bool? isApproximateMatch = null;
-
-                    if (param?.MyApproximateMatch != null)
-                        isApproximateMatch = param?.MyApproximateMatch(fileInfo, param);
-                    if (isApproximateMatch == true) { continue; }
-
-                    return false;
-                }
-                return true;
+                return false;
             }
-            else
+
+            foreach (Param param in Parameters)
             {
-                return true;
+                if (param.IsMatch(fileInfo)) { continue; }
+                return false;
             }
+
+            return true;
 
         }
 
         public int Strength
         {
-            get => StartCertain * Paramaters.Count;
+            get
+            {
+                if (Parameters == null) return 0;
+                return StartCertain * Parameters.Count;
+            }
         }
 
         /// <summary>
@@ -126,10 +130,8 @@ namespace Core.Sorter.MatchDetectors
         {
             get
             {
-                List<string> properties = Paramaters.Select(param => { return param.FileProperty; }).ToList();
-                int notCertainUnique = properties.Count;
-                properties = properties.Distinct().ToList();
-                return properties.Count != notCertainUnique;
+                if(Parameters == null || Parameters?.Count == 0) return false;
+                return Parameters.Distinct().Count() != Parameters.Count;
             }
         }
 
@@ -139,31 +141,15 @@ namespace Core.Sorter.MatchDetectors
         /// <param name="rule">the rule to find matches for</param>
         /// <param name="corralationFiles">the list of files</param>
         /// <returns>The list of files that match the rule</returns>
-        public List<string> Matches(List<FileInfo> corralationFiles)
+        public List<string> Matches(HashSet<FileInfo> corralationFiles)
         {
-            List<FileInfo> UniqueCorralationFiles = /*new List<string>();
-
-            for (int i = corralationFiles.Count; i < 0; i--)
-            {
-                string cFile = corralationFiles[i];
-                if (UniqueCorralationFiles.Contains(cFile)) { }
-                else
-                {
-                    UniqueCorralationFiles.Add(cFile);
-                }
-            }*/ corralationFiles.Distinct().ToList();
-
             List<string> MatchingFiles = new();
 
-            for (int i = UniqueCorralationFiles.Count - 1; i >= 0; i--)
+            foreach(FileInfo file in corralationFiles)
             {
-                FileInfo fileInfo = UniqueCorralationFiles[i];
-                foreach (Param param in Paramaters)
+                if (IsMatch(file))
                 {
-                    if (param.IsMatch(fileInfo))
-                    {
-                        MatchingFiles.Add(fileInfo.FullName);
-                    }
+                    MatchingFiles.Add(file.FullName);
                 }
             }
             return MatchingFiles;
@@ -171,7 +157,12 @@ namespace Core.Sorter.MatchDetectors
 
         public bool CheapRuleEqualityCheck(Rule OtherRule)
         {
-            if (ParamListCorralation(OtherRule.Paramaters) > 0.9f)
+            if((OtherRule?.Parameters == null) != (Parameters == null))
+            {
+                return false;
+            }
+
+            if (ParamListCorralation(OtherRule.Parameters) > 0.9f)
             {
                 return true;
             }
@@ -184,10 +175,19 @@ namespace Core.Sorter.MatchDetectors
             return false;
         }
 
+        public IEnumerable<Rule> CheapRuleEqualityCheck(IEnumerable<Rule> OtherRules)
+        {
+            return OtherRules.Where(otherRule => CheapRuleEqualityCheck(otherRule));
+        }
+
         public float ParamListCorralation(List<Param> OtherParamList)
         {
-            List<Param> longList = Paramaters.Count > OtherParamList.Count ? Paramaters : OtherParamList;
-            List<Param> shortList = Paramaters.Count > OtherParamList.Count ? OtherParamList : Paramaters;
+            int shortListCount = Math.Min(OtherParamList.Count, Parameters.Count);
+            if (shortListCount == 0)
+                return 0;
+
+            List<Param> longList = Parameters.Count > OtherParamList.Count ? Parameters : OtherParamList;
+            List<Param> shortList = Parameters.Count > OtherParamList.Count ? OtherParamList : Parameters;
 
             float corralationAmmount = 0;
 
@@ -202,27 +202,51 @@ namespace Core.Sorter.MatchDetectors
                 }
             }
 
-            return Math.Max(0, corralationAmmount / shortList.Count);
+            return Math.Max(0, (float)corralationAmmount / (float)shortListCount);
         }
+        delegate bool CorralationMethod<T>(T value, HashSet<T> inHash);
 
         public float StringListCorralation(List<string> list1, List<string> list2)
         {
-            List<string> longList = list1.Count > list2.Count ? list1 : list2;
-            List<string> shortList = list1.Count > list2.Count ? list2 : list1;
+            int shortListCount = Math.Min(list1.Count, list2.Count);
 
-            float corralationAmmount = 0;
+            if (shortListCount == 0)
+                return 0;
 
-            for (int i = 0; i < shortList.Count; i++)
-            {
-                string longString = longList[i];
+            int CorralationCount = Corralation<string>(list1, list2, RegularContains);
 
-                if (shortList.Contains(longString))
+            return Math.Max(0, (float)CorralationCount / (float)shortListCount);
+        }
+        
+        public bool RegularContains<T>(T value, HashSet<T> inHash){
+            return inHash.Contains(value);
+        }
+
+        private static int Corralation<T>(List<T> list1, List<T> list2, CorralationMethod<T> MyCorralation)
+        {
+            bool List1Bigger = (list1.Count > list2.Count);
+            int SmallerListCount = List1Bigger ? list2.Count : list1.Count;
+
+            if (SmallerListCount == 0)
+                return 0;
+
+            HashSet<T> SmallerList = List1Bigger ? new HashSet<T>(list2) : new HashSet<T>(list1);
+            List<T> BiggerList = List1Bigger ? list1 : list2 ;
+
+            int CorralationAmmount = 0;
+
+            foreach (T value in BiggerList) {
+                if (MyCorralation(value, SmallerList))
                 {
-                    corralationAmmount++;
+                    CorralationAmmount++;
+                }
+                if (CorralationAmmount >= SmallerListCount)
+                {
+                    break;
                 }
             }
 
-            return Math.Max(0, corralationAmmount / shortList.Count);
+            return CorralationAmmount;
         }
     }
 }

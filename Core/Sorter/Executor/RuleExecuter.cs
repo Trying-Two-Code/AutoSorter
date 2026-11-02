@@ -30,7 +30,7 @@ namespace Core.Sorter.Executor
             string fullStartPath = Path.Combine(rule.StartPath, fileName);
             string fullEndPath = Path.Combine(rule.EndPath, fileName);
 
-            FileSystemManager.Move(fullStartPath, fullEndPath);
+            MoveFile(fullStartPath, fullEndPath);
 
             rule.ExecutionCount++;
 
@@ -40,6 +40,14 @@ namespace Core.Sorter.Executor
                 NewPath = fullEndPath
             };
             MoveHistoryJSON.Set(ExecutedMove);
+        }
+
+        public async void MoveFile(string start, string end)
+        {
+            await Task.Run(() =>
+            {
+                FileSystemManager.Move(start, end);
+            });
         }
 
         public void UndoExecution(FileMoveInfo UndoMove)
@@ -106,7 +114,7 @@ namespace Core.Sorter.Executor
 
         public async void SafeLoopThroughRules(List<MatchDetectors.Rule>? rules, FileInfo file, string? oldPath)
         {
-            while (!File.Exists(file.FullName))
+            while (!file.Exists)
                 await Task.Delay(100);
 
             LoopThroughRules(rules, file, oldPath);

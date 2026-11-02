@@ -49,7 +49,7 @@ namespace Core.Sorter.Test
                 {
                     StartPath = MyDirectory,
                     EndPath = Destination.FullName,
-                    Paramaters = new(),
+                    Parameters = new(),
                 };
 
                 MoveFile.Dispose();
@@ -87,7 +87,7 @@ namespace Core.Sorter.Test
             {
                 StartPath = TestDirectoryName,
                 EndPath = TestNewDirectoryName,
-                Paramaters = new() { new("Extension")
+                Parameters = new() { new("Extension")
                 {
                     PropertyContains = ".txt"
                 } }

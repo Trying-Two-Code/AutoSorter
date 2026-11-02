@@ -1,4 +1,5 @@
 ﻿using Core.Sorter.MatchDetectors;
+using Core.Sorter.Test.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,7 +25,6 @@ namespace Core.Sorter.Creator
         /// <param name="limit"></param>
         /// <returns></returns>
         public List<List<Param>> AllParams(
-            List<FileInfo> allData,
             FileInfo forFile, 
             int limit,
             int minParams)
@@ -122,22 +122,27 @@ namespace Core.Sorter.Creator
         /// <param name="limit"></param>
         /// <returns>The list of rules that can be created for a given file</returns>
         public List<Rule> AllRules(
-            List<FileInfo> allData,
+            HashSet<FileInfo> allData,
             List<FileMoveInfo> userActions,
             FileInfo newData,
             string oldPath,
             int limit,
             int minParams)
         {
-            List<List<Param>> allParameters = AllParams(allData, newData, limit, minParams);
+            myTimeLog.Start();
+            List<List<Param>> allParameters = AllParams(newData, limit, minParams);
+            myTimeLog.Log($"AllParams:{allParameters.Count}");
             List<Rule> allRules = FileUtility.ConvertParamsToRules(
                 allData, userActions, oldPath, newData.DirectoryName, allParameters);
+            myTimeLog.Log($"ConvertRules:{allRules.Count}");
 
             return allRules;
         }
 
+        TimeLog myTimeLog = new("RuleGenerator");
+
         public Rule? GenerateStrongRule(
-            List<FileInfo> allData, 
+            HashSet<FileInfo> allData, 
             List<FileMoveInfo> userActions, 
             FileInfo newData, 
             string oldPath,
@@ -147,15 +152,22 @@ namespace Core.Sorter.Creator
             int RuleLimit
             )
         {
+            allData.RemoveWhere(file => !file.Exists);
+
+            userActions = userActions.Where(useraction =>
+            {
+                return File.Exists(useraction.NewPath);
+            }).ToList();
+
             FilterData myFilterData = new();
             StrengthDetector myStrengthDetector = new();
-
             //generate a list of rules
             List<MatchDetectors.Rule> GeneratedRules = AllRules(
                 allData, userActions,
                 newData, oldPath,
                 RuleLimit,
                 MinimumParams);
+            myTimeLog.Log($"AllRules{GeneratedRules.Count}");
 
             //remove any weak rules
             List<MatchDetectors.Rule> StrongGeneratedRules = myStrengthDetector.StrongRules(
@@ -164,13 +176,16 @@ namespace Core.Sorter.Creator
                 requiredParams: MinimumParams,
                 requiredMatches: MinimumFileMatches,
                 limit: RuleLimit);
+            myTimeLog.Log($"strongRules{StrongGeneratedRules.Count}");
 
             //remove any rules if they already exist
             List<MatchDetectors.Rule> OldRules = RuleEditor.GetRules();
             StrongGeneratedRules = myFilterData.DetectDuplicateRules(StrongGeneratedRules, OldRules);
+            myTimeLog.Log($"strongRules{StrongGeneratedRules.Count}");
 
             //find the strongest rule
             List<MatchDetectors.Rule>? Strongest = myStrengthDetector.StrongestRules(StrongGeneratedRules);
+            myTimeLog.Log($"strongestRules{Strongest.Count}");
 
             MatchDetectors.Rule? newRule = null;
 

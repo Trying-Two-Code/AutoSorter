@@ -1,7 +1,6 @@
 ﻿using Core.Sorter.MatchDetectors;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -28,9 +27,10 @@ namespace Core.Sorter.Creator
         /// <param name="data">all old data</param>
         /// <param name="datapoint">just the newest datapoint</param>
         /// <returns>The dataset minus extra datapoints.</returns>
-        public List<FileInfo> Filter(List<FileInfo> data, FileInfo datapoint)
+        public HashSet<FileInfo> Filter(HashSet<FileInfo> data, FileInfo datapoint)
         {
-            List<FileInfo> filtered = new List<FileInfo>();
+            HashSet<FileInfo> filtered = new HashSet<FileInfo>();
+
             foreach (FileInfo filedatapoint in data)
             {
                 if (!filedatapoint.Exists)
@@ -53,28 +53,12 @@ namespace Core.Sorter.Creator
             List<MatchDetectors.Rule> NewRules, 
             List<MatchDetectors.Rule> OldRules)
         {
-            List<MatchDetectors.Rule> result = new();
-            result = NewRules.Distinct().ToList();
-            foreach (MatchDetectors.Rule oldRule in OldRules)
+            IEnumerable<Rule> result = NewRules.Distinct().Where(rule =>
             {
-                if (result.Contains(oldRule))
-                {
-                    result.Remove(oldRule);
-                }
-            }
+                return rule.CheapRuleEqualityCheck(OldRules.Distinct()).ToList().Count == 0;
+            }).ToList();
 
-            foreach (MatchDetectors.Rule oldRule in OldRules)
-            {
-                for (int i = result.Count - 1; i >= 0; i--)
-                {
-                    MatchDetectors.Rule newRule = result[i];
-                    if (newRule.CheapRuleEqualityCheck(oldRule))
-                    {
-                        result.Remove(newRule);
-                    }
-                }
-            }
-            return result;
+            return result.ToList();
         }
 
         /// <summary>

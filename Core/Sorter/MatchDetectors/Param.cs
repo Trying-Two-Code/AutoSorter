@@ -45,9 +45,13 @@ namespace Core.Sorter.MatchDetectors
         /// Detects if a file matches the paramater.
         /// </summary>
         /// <param name="fileInfo">The file detected.</param>
-        public bool IsMatch(FileInfo fileInfo)
+        public bool IsMatch(FileInfo file)
         {
-            string? value = GetValueOfFileInfo(fileInfo).ToString();
+            return IsMatch(file, false);
+        }
+        public bool IsMatch(FileInfo fileInfo, bool strictMatch)
+        {
+            string? value = GetValueOfFileInfo(fileInfo)?.ToString();
 
             if(value == null)
                 throw new ParamValueNullError();
@@ -58,9 +62,12 @@ namespace Core.Sorter.MatchDetectors
 
             if (!PerfectMatch)
             {
-                updateApproximateMatch();
-                bool? approximateMatch = MyApproximateMatch?.Invoke(fileInfo, this);
-                if (approximateMatch == true) return true;
+                if(strictMatch == false)
+                {
+                    updateApproximateMatch();
+                    bool? approximateMatch = MyApproximateMatch?.Invoke(fileInfo, this);
+                    if (approximateMatch == true) return true;
+                }
             }
 
             return PerfectMatch;
@@ -112,6 +119,18 @@ namespace Core.Sorter.MatchDetectors
         {
             return (FileProperty == otherParam.FileProperty) && 
                 (PropertyContains == otherParam.PropertyContains);
+        }
+
+        public bool CheapEqual(HashSet<Param> otherParams)
+        {
+            foreach(Param param in otherParams)
+            {
+                if (CheapEqual(param))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private class ParamValueNullError : Exception { }

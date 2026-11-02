@@ -51,14 +51,14 @@ namespace Core.Sorter
 
             if (Mut.WaitOne(1000))
             {
+                Debug.WriteLine("MY PATH:" + MyPath);
                 using (StreamReader r = new StreamReader(MyPath))
                 {
                     string d = r.ReadToEnd();
                     data = JsonSerializer.Deserialize<List<T>>(d);
                 }
+                Mut.ReleaseMutex();
             }
-
-            Mut.ReleaseMutex();
 
             return data;
         }
@@ -77,8 +77,8 @@ namespace Core.Sorter
                     string json = JsonSerializer.Serialize(data);
                     r.Write(json);
                 }
+                Mut.ReleaseMutex();
             }
-            Mut.ReleaseMutex();
         }
 
         public void Set(List<ClassType> data)

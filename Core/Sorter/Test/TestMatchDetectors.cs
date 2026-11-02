@@ -41,8 +41,8 @@ namespace Core.Sorter.Test
                 {
                     MyFileCreator.CreateAndForget(NewFiles);
 
-                    List<FileInfo> TestAllData = MyFileCreator.MyFileInfos;
-                    List<FileInfo> TestUserActions = new();
+                    HashSet<FileInfo> TestAllData = MyFileCreator.MyFileInfos.ToHashSet();
+                    HashSet<FileInfo> TestUserActions = new();
                     List<Param> TestParameters = new();
                     string TestStartPath = MyOldDirectory;
                     string TestEndPath = MyDirectory;
@@ -65,8 +65,8 @@ namespace Core.Sorter.Test
                         NewPaths.Add(Path.Combine(MyDirectory, filename));
                     }
 
-                    List<FileInfo> TestAllData = MyFileCreator.MyFileInfos;
-                    List<FileInfo> TestUserActions = new();
+                    HashSet<FileInfo> TestAllData = MyFileCreator.MyFileInfos.ToHashSet();
+                    HashSet<FileInfo> TestUserActions = new();
                     foreach (string path in NewPaths)
                     {
                         TestUserActions.Add(new(path));

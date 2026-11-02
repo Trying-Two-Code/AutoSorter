@@ -21,7 +21,7 @@ namespace Core.Sorter.Test.Helpers
         public static bool Logging = false;
         private DateTime LastLog { get; set; }
         public string Name { get; private set; }
-        private int Flag { get; set; } = 1000;
+        private int Flag { get; set; } = 500;
         
         public void Log(string _action, string _message = " took time to do action: ")
         {

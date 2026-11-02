@@ -60,8 +60,11 @@ namespace Core.Sorter.Creator
         {
             List<MatchDetectors.Rule> strongRules = allRules.Where(rule =>
             {
-                return  rule.StartCertain >= requiredMatches &&
-                        rule.Paramaters.Count >= requiredParams &&
+                //Debug.WriteLine($"rule.StartCertain >= requiredMatches{rule.StartCertain >= requiredMatches}"); true
+                //Debug.WriteLine($"rule.Paramaters.Count >= requiredParams{rule.Parameters.Count >= requiredParams}"); false
+                //Debug.WriteLine($"rule.Strength >= requiredStrength{rule.Strength >= requiredStrength}"); false
+                return rule.StartCertain >= requiredMatches &&
+                        rule.Parameters.Count >= requiredParams &&
                         rule.Strength >= requiredStrength;
             }).ToList();
 

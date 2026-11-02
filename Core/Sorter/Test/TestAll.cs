@@ -13,6 +13,7 @@ namespace Core.Sorter.Test
 
         public TestAll()
         {
+            TimeLog.Logging = true;
             TestExecutor MyTestExecutor = new TestExecutor();
             AllTests.Add(MyTestExecutor);
             TestRuleGenerator MyTestCreator = new TestRuleGenerator();

@@ -21,9 +21,18 @@ namespace Core.Sorter.Creator
             public string ExtraInfo { get; set; }
         }
 
+        private TimeSpan promptAmmount = new(0, 0, 30);
+        private DateTime lastCheck = DateTime.MinValue;
+        private bool isSpam { get
+            {
+                return (lastCheck - DateTime.Now) < promptAmmount;
+            } }
+
         public bool Prompt(Rule rule)
         {
             if (Mute) return false;
+            if (isSpam) return false;
+            lastCheck = DateTime.Now;
 
             PromptData data = GeneratePromptData(rule);
 
@@ -43,9 +52,9 @@ namespace Core.Sorter.Creator
                 $"{rule.StartPath} to {rule.EndPath}? ";
             string StrengthInfo = $"It is estimated that similar actions were done (manually) up to " +
                 $"{rule.StartEstimation} times already. ";
-            string ParameterInfo = $"The rule contains ${rule.Paramaters.Count} parameters. ";
+            string ParameterInfo = $"The rule contains ${rule.Parameters.Count} parameters. ";
 
-            foreach(Param param in rule.Paramaters)
+            foreach(Param param in rule.Parameters)
             {
                 ParameterInfo += 
                     $"{param.FileProperty} must be" +
