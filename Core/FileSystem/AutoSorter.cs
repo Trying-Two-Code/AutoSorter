@@ -1,0 +1,278 @@
+using Helper.DataGathering;
+using Helper.FileSystem;
+using Core.Sorter.Executor;
+using Core.Sorter.Creator;
+using Core.Sorter.Test;
+
+namespace Core.FileSystem;
+
+public class AutoSorter
+{
+    public SendAllData SendAllDataInstance;
+
+    private readonly TestAll AutoSorterTester;
+
+    private readonly FileSystemManager _fileSystem;
+
+    private readonly ClipboardWatcher _clipboardWatcher;
+
+    private readonly UserActionGather _userActionGather = new();
+
+    private readonly MoveCorrelator _moveCorrelator;
+
+    public readonly RuleExecuter _ruleExecuter;
+
+    public AutoSorter(
+        string watchRoot,
+        string sourceRoot)
+    {
+        Log.AppendLog(
+            $"AutoSorter initializing: watch={watchRoot}, sourceRoot={sourceRoot}");
+
+        _fileSystem = new FileSystemManager(watchRoot);
+        _clipboardWatcher = new ClipboardWatcher();
+        _moveCorrelator = new MoveCorrelator(sourceRoot);
+        _ruleExecuter = new RuleExecuter();
+
+        SetCallbacks();
+
+        SendAllDataInstance = new(_userActionGather);
+    }
+
+    private void SetCallbacks()
+    {
+        _fileSystem.FileChanged += OnFileChanged;
+        _clipboardWatcher.ClipboardChanged += OnClipboardChanged;
+    }
+
+    private void OnClipboardChanged(ClipboardChange change)
+    {
+        // A clipboard Copy must never be treated as a move.
+        if (change.Operation != ClipboardOperation.Cut)
+            return;
+
+        int queued = 0;
+
+        foreach (string path in change.Paths)
+        {
+            // Only sources inside the configured root (e.g. Downloads) are
+            // tracked; cuts of files anywhere else are ignored quietly.
+            if (_moveCorrelator.RecordCutSource(path, TryGetSize(path)))
+                queued++;
+        }
+
+        if (queued > 0)
+            Log.AppendLog($"[PendingMove] Queued {queued} cut source(s).");
+    }
+
+    private void OnFileChanged(FileChange change)
+    {
+        // Problem: totally bypasses drag and drop
+        // Keep the system quiet: when nothing has been cut from the monitored
+        // folder, unrelated filesystem activity is ignored entirely.
+        //if (!_moveCorrelator.HasActivePending())
+        //    return;
+
+        //TODO: replace the above with some filter?
+
+        //TODO: pass an event to the rule executer whenever a file is created or moved
+
+        switch (change.Type)
+        {
+            case FileChangeType.Deleted:
+            {
+                if (_moveCorrelator.NotifyDeleted(change.Path))
+                    Log.AppendLog($"[PendingMove] Source deleted: {change.Path}", change.Path);
+
+                break;
+            }
+
+            case FileChangeType.Created:
+            {
+                // Cheap check before a size lookup: unrelated creations must
+                // still not produce any logging or extra work.
+                if (!_moveCorrelator.IsCandidateCreated(change.Path))
+                {
+                    _ruleExecuter.OnFileCreated(change.Path);
+                    break;
+                }
+
+                MoveCorrelationResult? correlated =
+                    _moveCorrelator.NotifyCreated(
+                        change.Path,
+                        TryGetSize(change.Path));
+
+                if (correlated != null)
+                {
+                    OnFileMove(correlated.NewPath, correlated.OldPath);
+                    _ruleExecuter.OnFileMove(correlated.NewPath, correlated.OldPath);
+                }
+
+                break;
+                }
+
+            case FileChangeType.Renamed:
+            {
+                if (change.OldPath == null)
+                    break;
+
+                // Same-volume cut-and-paste shows up as a rename; the old path
+                // of the event directly identifies the pending source.
+                MoveCorrelationResult? correlated =
+                    _moveCorrelator.NotifyRenamed(
+                        change.OldPath,
+                        change.Path,
+                        TryGetSize(change.Path));
+
+                if (correlated != null)
+                    OnFileMove(correlated.NewPath, correlated.OldPath);
+
+                break;
+            }
+
+            case FileChangeType.Modified:
+                // Not used for move correlation.
+                break;
+        }
+    }
+
+    private static long TryGetSize(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                return new FileInfo(path).Length;
+        }
+        catch
+        {
+            // Size unavailable (for example a folder or a locked file).
+            // The correlator treats unknown sizes as non-conflicting.
+        }
+
+        return -1;
+    }
+
+    public void OnFileMove(string newPath, string oldPath)
+    {
+        Log.AppendLog(
+            "[FileMoved] " +
+            $"From={oldPath}, " +
+            $"To={newPath}", newPath);
+
+        _userActionGather.appendMove(
+            oldPath,
+            newPath);
+
+        //TODO: pass all new data or send/get all data another way
+        SendAllDataInstance.SendData(newPath, oldPath);
+    }
+
+    public void Start()
+    {
+        _fileSystem.Start();
+        _clipboardWatcher.Start();
+    }
+
+    public void Stop()
+    {
+        _fileSystem.Stop();
+        _clipboardWatcher.Stop();
+    }
+
+}
+
+public class OnFileMoveEventArgs : EventArgs
+{
+    public FileInfo? NewFile { get; set; }
+    public string? OldPath { get; set; }
+    public FileMoveInfo[]? AllData { get; set; }
+}
+
+
+/// <summary>
+/// A class that allows the autosorter to pass along relavent data
+/// whenever user data is received.
+/// </summary>
+public class SendAllData
+{
+    private UserActionGather _myUserActionGather;
+    public SendAllData(UserActionGather myUserActionGather)
+    {
+        _myUserActionGather = myUserActionGather;
+    }
+
+    public List<object> GetUserActions(object sender, EventArgs args)
+    {
+        UserActionGatherFile file = _myUserActionGather.getFileDataFromJSON();
+        List<UserActionGatherLine> lines = file.Lines;
+        List<object> lineObjects = new(); 
+        foreach(UserActionGatherLine line in lines)
+        {
+            lineObjects.Add(line);
+        }
+
+        return lineObjects;
+    }
+
+    public event EventHandler<OnFileMoveEventArgs>? OnFileMoveEvent;
+
+    public void SendData(string newPath, string oldPath)
+    {
+        OnFileMoveEvent?.Invoke(this,
+            new OnFileMoveEventArgs
+            {
+                NewFile = new FileInfo(newPath),
+                OldPath = oldPath,
+                AllData = AllData(newPath, oldPath)
+            });
+    }
+
+    public FileMoveInfo[] AllData(string newPath, string oldPath)
+    {
+        List<FileMoveInfo> allData = [];
+
+        List<FileMoveInfo>? oldData = OldData();
+        if(oldData != null)
+            allData.AddRange(oldData);
+
+        return allData.ToArray();
+    }
+
+    static List<UserActionGatherLine>? JsonData { get; set; }
+    public List<FileMoveInfo>? OldData(string? dataPath = null)
+    {
+        if (JsonData == null)
+        {
+            UserActionGatherFile? rootData = FetchJsonData(dataPath);
+            JsonData = rootData?.Lines;
+        }
+
+        List <FileMoveInfo> oldData = new List<FileMoveInfo>();
+
+        if(JsonData != null)
+        {
+            foreach (UserActionGatherLine data in JsonData)
+            {
+                if (data.To == null || data.From == null)
+                    continue;
+
+                FileMoveInfo fileMoveData = new()
+                {
+                    NewPath = data.To,
+                    OldPath = data.From
+                };
+
+                oldData.Add(fileMoveData);
+            }
+        }
+
+        return oldData;
+    }
+
+    public UserActionGatherFile? FetchJsonData(string? dataPath)
+    {
+        UserActionGatherFile data = _myUserActionGather.getFileDataFromJSON();
+
+        return data;
+    }
+}

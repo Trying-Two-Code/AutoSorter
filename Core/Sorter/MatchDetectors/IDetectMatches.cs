@@ -1,0 +1,8 @@
+﻿namespace Core.Sorter.MatchDetectors
+{
+    interface IDetectMatches
+    {
+        public List<string> MatchingFiles { get; set; }
+        public bool IsMatch(FileInfo fileInfo);
+    }
+}
