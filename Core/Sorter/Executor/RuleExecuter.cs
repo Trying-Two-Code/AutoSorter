@@ -109,10 +109,13 @@ namespace Core.Sorter.Executor
 
         public void OnFileMove(string NewFilePath, string OldFilePath)
         {
-            SafeLoopThroughRules(AllRules, new(NewFilePath), OldFilePath);
+            Task.Run(async () =>
+            {
+                await SafeLoopThroughRules(AllRules, new(NewFilePath), OldFilePath);
+            });
         }
 
-        public async void SafeLoopThroughRules(List<MatchDetectors.Rule>? rules, FileInfo file, string? oldPath)
+        public async Task SafeLoopThroughRules(List<MatchDetectors.Rule>? rules, FileInfo file, string? oldPath)
         {
             while (!file.Exists)
                 await Task.Delay(100);
