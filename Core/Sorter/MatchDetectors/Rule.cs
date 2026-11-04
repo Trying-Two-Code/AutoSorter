@@ -92,6 +92,11 @@ namespace Core.Sorter.MatchDetectors
             {
                 return false;
             }
+            string DestinationPath = Path.Combine(EndPath, fileInfo.Name);
+            if (File.Exists(DestinationPath))
+            {
+                return false;
+            }
             return IsMatch(fileInfo);
         }
 

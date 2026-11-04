@@ -9,7 +9,7 @@ namespace Core.Sorter.Creator
 {
     class RuleEditor
     {
-        readonly static string RuleDataPath = @"Sorter/Rule.json";
+        readonly static string RuleDataPath = @"Sorter\Rule.json";
         readonly static JSONDataMinipulator<Rule> JSONMinipulator = new(RuleDataPath, "RuleEditor");
 
         public void AddRule(Rule rule)
@@ -49,6 +49,7 @@ namespace Core.Sorter.Creator
 
         public static List<Rule> GetRules()
         {
+            Debug.WriteLine(JSONMinipulator.Get());
             return JSONMinipulator.Get();
         }
 
