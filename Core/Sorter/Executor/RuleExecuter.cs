@@ -4,6 +4,7 @@ using Core.FileSystem;
 using Core.Sorter.Creator;
 using Core.Sorter.MatchDetectors;
 using Helper.FileSystem;
+using Helpers.DataGathering;
 using System.Data;
 using System.Diagnostics;
 using System.Text.Json;
@@ -73,7 +74,6 @@ namespace Core.Sorter.Executor
             return ShouldExecute;
         }
 
-
         /// <summary>
         /// Checks a folders' contents for any file that complies with the rule.
         /// Executes on those files.
@@ -89,12 +89,13 @@ namespace Core.Sorter.Executor
             {
                 if (rule.ShouldMove(file))
                 {
+                    Debug.WriteLine("trying to execute...");
                     ExecuteRule(rule, file);
                 }
             }
         }
 
-        public void LoopThroughRules(List<MatchDetectors.Rule>? rules, FileInfo file, string? oldPath)
+        public async Task LoopThroughRules(List<MatchDetectors.Rule>? rules, FileInfo file, string? oldPath)
         {
             if(rules == null) return;
 
@@ -117,10 +118,16 @@ namespace Core.Sorter.Executor
 
         public async Task SafeLoopThroughRules(List<MatchDetectors.Rule>? rules, FileInfo file, string? oldPath)
         {
+            if (!Cleaner.IsClean(file.FullName))
+            {
+                return;
+            }
+
             while (!file.Exists)
                 await Task.Delay(100);
 
-            LoopThroughRules(rules, file, oldPath);
+            Debug.WriteLine("recieved move");
+            await LoopThroughRules(rules, file, oldPath);
         }
 
         public void OnFileCreated(string NewFilePath)

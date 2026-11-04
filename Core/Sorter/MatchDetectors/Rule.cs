@@ -123,7 +123,7 @@ namespace Core.Sorter.MatchDetectors
             get
             {
                 if (Parameters == null) return 0;
-                return StartCertain * Parameters.Count;
+                return StartCertain + Parameters.Count;
             }
         }
 

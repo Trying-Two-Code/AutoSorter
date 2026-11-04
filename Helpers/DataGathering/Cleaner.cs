@@ -22,7 +22,6 @@ namespace Helpers.DataGathering
             if (result == true)
             {
                 mut.ReleaseMutex();
-                return false;
                 return PreviousCalculations[content];
             }
 
