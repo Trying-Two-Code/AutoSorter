@@ -46,28 +46,69 @@ namespace Core.Sorter
             }
         }
 
+        /// <summary>
+        /// Overwrites the data file with an empty list. Called when the file
+        /// exists but does not contain valid JSON for the expected type
+        /// (for example a legacy "Rule.json" that holds "{}" instead of "[]").
+        /// A bad data file should never take down the whole app.
+        /// </summary>
+        private void RepairMalformedFile()
+        {
+            try
+            {
+                using (StreamWriter r = new StreamWriter(MyPath))
+                {
+                    string json = JsonSerializer.Serialize(new List<ClassType>());
+                    r.Write(json);
+                }
+
+                Debug.WriteLine($"Repaired malformed JSON data file: {MyPath}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
         public List<T> Get<T>()
         {
-            //try
-            //{
             if (Mut.WaitOne(1000))
             {
-                Debug.WriteLine("MY PATH:" + MyPath);
-                using (StreamReader r = new StreamReader(MyPath))
+                try
                 {
-                    string d = r.ReadToEnd();
-                    List<T>? data = JsonSerializer.Deserialize<List<T>>(d) ?? new();
+                    Debug.WriteLine("MY PATH:" + MyPath);
+
+                    if (!File.Exists(MyPath))
+                        EnsureFileExists();
+
+                    using (StreamReader r = new StreamReader(MyPath))
+                    {
+                        string d = r.ReadToEnd();
+
+                        if (string.IsNullOrWhiteSpace(d))
+                            return new();
+
+                        List<T>? data = JsonSerializer.Deserialize<List<T>>(d) ?? new();
+                        return data;
+                    }
+                }
+                catch (JsonException e)
+                {
+                    Debug.WriteLine(e);
+
+                    // The file exists but is not valid JSON for the expected
+                    // type (e.g. "Rule.json" holding "{}" instead of "[]").
+                    // Repair it so the rest of the app can keep running.
+                    RepairMalformedFile();
+
+                    return new();
+                }
+                finally
+                {
                     Mut.ReleaseMutex();
-                    return data;
                 }
             }
-            /*}
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-                EnsureFileExists();
-            }*/
-            
+
             return new();
         }
 
