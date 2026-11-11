@@ -1,6 +1,7 @@
 ﻿using App.Ui.UiComponents;
 using App.Ui.UiScripts;
 using BCore;
+using Core;
 using Syroot.Windows.IO;
 using System.Diagnostics;
 using System.IO;
@@ -181,15 +182,16 @@ class UserPrompter
         return falsey;
     }
 
-    public Task<bool> HandleRequest(object sender, EventArgs args)
+    public Task<bool> HandleRequest(object sender, PromptData args)
     {
         if (DateTime.Now - lastPromptTime < promptAmmount)
         {
             return FalseResult();
         }
 
-        string? promptString = (string?)args?.GetType()?.GetProperty("PromptString")?.GetValue(args);
-        string? promptExtra = (string?)args?.GetType()?.GetProperty("ExtraInfo")?.GetValue(args);
+        string? promptString = args.PromptString;
+        string? promptParamaters = args.ParameterInfos;
+        string? promptFileMovements = args.FileMoveInfos;
 
         if (promptString != null)
             return PromptUser(promptString);
