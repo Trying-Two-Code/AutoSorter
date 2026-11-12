@@ -1,0 +1,39 @@
+﻿<Window x:Class="App.Ui.PromptUser.PromptWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:App.Ui.PromptUser.Visuals"
+        mc:Ignorable="d"
+        Title="Autosorter - " Height="160" Width="320"
+        Background="Black">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <TextBlock Foreground="White" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Top">
+            Would you like to create a rule?
+            </TextBlock>
+        </Grid>
+        <Grid Grid.Row="1">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                <Button Width="30" Height="30" VerticalAlignment="Center" >Yes</Button>
+                <Separator Opacity="0" Width="30"></Separator>
+                <Button Width="30" Height="30" VerticalAlignment="Center" >No</Button>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="2">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <local:ExtraInfo />
+                <local:ExtraInfo />
+                <local:ExtraInfo />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
