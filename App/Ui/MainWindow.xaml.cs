@@ -6,6 +6,7 @@ using Syroot.Windows.IO;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime;
+using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Media;
 
@@ -144,7 +145,7 @@ public partial class MainWindow : Window
         UserData.Show();
     }
 
-    public Task<bool> OnUIEventRecieved(object sender, EventArgs args)
+    public Task<bool> OnUIEventRecieved(object sender, PromptData args)
     {
         return _userPrompter.HandleRequest(sender, args);
     }
@@ -160,17 +161,22 @@ class UserPrompter
     private readonly TimeSpan promptAmmount = new TimeSpan(0, 0, 10);
     private DateTime lastPromptTime = DateTime.MinValue;
 
-    public Task<bool> PromptUser(string prompt)
+    public Task<bool> PromptUser(PromptData promptData)
     {
         lastPromptTime = DateTime.Now;
 
         Task<bool> promptUserTask = Task.Run(() =>
         {
-            MessageBoxResult result = System.Windows.MessageBox.Show(prompt, "should AutoSorter make a rule?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
-            return result == MessageBoxResult.Yes;
+            bool result = CreatePrompt(promptData);
+            return result;
         });
 
         return promptUserTask;
+    }
+
+    public bool CreatePrompt(PromptData prompt)
+    {
+        return false;
     }
 
     public Task<bool> FalseResult()
@@ -194,9 +200,9 @@ class UserPrompter
         string? promptFileMovements = args.FileMoveInfos;
 
         if (promptString != null)
-            return PromptUser(promptString);
+            return PromptUser(args);
         else
-            return PromptUser("Create a rule? No info provided.");
+            return PromptUser(args.defaultPrompt);
     }
 }
 

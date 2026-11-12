@@ -34,9 +34,9 @@ internal class SortAlgorithm
     //never initialize this way unless you want to be lazy:
     public SortAlgorithm(string Directory)
     {
-        UITask TempTask = (object _, EventArgs _) => { return null; };
+        UITask TempTask = (object _, PromptData _) => { return null; };
         PromptUser TempPromptUser = new(TempTask);
-        GetSettingsTask TempGetSettings = new(TempTask);
+        GetSettingsTask TempGetSettings = (object _, EventArgs _) => { return null; };
         GetUserActionTask TempGetUserAction = new((object _, EventArgs _) => { return new(); });
         
         _myFolder = Directory;

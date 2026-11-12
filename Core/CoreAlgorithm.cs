@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Core;
 
-public delegate Task<bool> UITask(object sender, EventArgs args);
+public delegate Task<bool> UITask(object sender, PromptData args);
 public delegate object GetSettingsTask(object sender, EventArgs args);
 public delegate List<object> GetUserActionTask(object sender, EventArgs args);
 
