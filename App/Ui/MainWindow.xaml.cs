@@ -49,6 +49,15 @@ public partial class MainWindow : Window
         _userPrompter = new();
 
         StartApps();
+        promptUserTest();
+    }
+
+    private async void promptUserTest()
+    {
+        bool result = await _userPrompter.PromptUser(new() { FileMoveInfos = "", ParameterInfos = "", PromptString = "" });
+        Debug.WriteLine("\n\n\nstuff:\n");
+        Debug.WriteLine("\n\n\n" +
+            result);
     }
 
     private void StartApps()

@@ -23,9 +23,9 @@
         </Grid>
         <Grid Grid.Row="1">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                <Button Width="30" Height="30" VerticalAlignment="Center" >Yes</Button>
+                <Button Width="30" Height="30" VerticalAlignment="Center" Click="OnYesPressed">Yes</Button>
                 <Separator Opacity="0" Width="30"></Separator>
-                <Button Width="30" Height="30" VerticalAlignment="Center" >No</Button>
+                <Button Width="30" Height="30" VerticalAlignment="Center" Click="OnNoPressed">No</Button>
             </StackPanel>
         </Grid>
         <Grid Grid.Row="2">

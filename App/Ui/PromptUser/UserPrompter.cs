@@ -16,16 +16,17 @@ namespace App.Ui.PromptUser
         {
             lastPromptTime = DateTime.Now;
 
+            TaskCompletionSource<bool> PromptCompletionSource = CreatePrompt(promptData);
+
             Task<bool> promptUserTask = Task.Run(() =>
             {
-                bool result = CreatePrompt(promptData);
-                return result;
+                return PromptCompletionSource.Task.Result;
             });
 
             return promptUserTask;
         }
 
-        public bool CreatePrompt(PromptData prompt)
+        public TaskCompletionSource<bool> CreatePrompt(PromptData prompt)
         {
             MyPromptWindow = new PromptWindow(prompt.PromptString, null, "Create Rule?");
             MyPromptWindow.Show();

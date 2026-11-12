@@ -20,7 +20,54 @@ namespace App.Ui.PromptUser
         public PromptWindow(string MainPrompt, Dictionary<string, string> ExtraInformation, string title)
         {
             InitializeComponent();
-            Title = title;
+            Title = "AutoSorter - " + title;
+        }
+
+        private TaskCompletionSource<bool> MyTaskResult = new();
+        public TaskCompletionSource<bool> GetUserInput()
+        {
+            return MyTaskResult;
+        }
+
+        public void DecisionMade(bool result)
+        {
+            if (MyTaskResult != null)
+            {
+                MyTaskResult.SetResult(result);
+            }
+            Close();
+        }
+
+        public void OnYesPressed(object sender, EventArgs args)
+        {
+            //send true
+            DecisionMade(true);
+        }
+
+        public void OnNoPressed(object sender, EventArgs args)
+        {
+            //send false
+            DecisionMade(false);
+        }
+
+        public void OnHaltNotificationsPressed()
+        {
+
+        }
+
+        public void OnExtraInformationPressed()
+        {
+
+        }
+
+        public void OnClosed()
+        {
+            //send false
+        }
+
+        public void OnMinimized()
+        {
+            //wait
         }
     }
 }
