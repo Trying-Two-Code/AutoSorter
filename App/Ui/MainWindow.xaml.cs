@@ -1,12 +1,11 @@
 ﻿using App.Ui.UiComponents;
 using App.Ui.UiScripts;
+using App.Ui.PromptUser;
 using BCore;
 using Core;
 using Syroot.Windows.IO;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime;
-using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Media;
 
@@ -153,56 +152,6 @@ public partial class MainWindow : Window
     public object OnGetSettingsRecieved(object sender, EventArgs args)
     {
         return UserSettings.GetSettings();
-    }
-}
-
-class UserPrompter
-{
-    private readonly TimeSpan promptAmmount = new TimeSpan(0, 0, 10);
-    private DateTime lastPromptTime = DateTime.MinValue;
-
-    public Task<bool> PromptUser(PromptData promptData)
-    {
-        lastPromptTime = DateTime.Now;
-
-        Task<bool> promptUserTask = Task.Run(() =>
-        {
-            bool result = CreatePrompt(promptData);
-            return result;
-        });
-
-        return promptUserTask;
-    }
-
-    public bool CreatePrompt(PromptData prompt)
-    {
-        return false;
-    }
-
-    public Task<bool> FalseResult()
-    {
-        Task<bool> falsey = Task.Run(() =>
-        {
-            return false;
-        });
-        return falsey;
-    }
-
-    public Task<bool> HandleRequest(object sender, PromptData args)
-    {
-        if (DateTime.Now - lastPromptTime < promptAmmount)
-        {
-            return FalseResult();
-        }
-
-        string? promptString = args.PromptString;
-        string? promptParamaters = args.ParameterInfos;
-        string? promptFileMovements = args.FileMoveInfos;
-
-        if (promptString != null)
-            return PromptUser(args);
-        else
-            return PromptUser(args.defaultPrompt);
     }
 }
 
