@@ -36,6 +36,7 @@ namespace App.Ui.PromptUser
                 MyTaskResult.SetResult(result);
             }
             Close();
+            
         }
 
         public void OnYesPressed(object sender, EventArgs args)
@@ -60,12 +61,12 @@ namespace App.Ui.PromptUser
 
         }
 
-        public void OnClosed()
+        public void Window_Closed(object sender, EventArgs args)
         {
-            //send false
+            DecisionMade(false);
         }
 
-        public void OnMinimized()
+        public void Window_Deactivated(object sender, EventArgs args)
         {
             //wait
         }

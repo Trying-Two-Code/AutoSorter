@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:App.Ui.PromptUser.Visuals"
         mc:Ignorable="d"
         Title="Autosorter - " Height="160" Width="320"
-        Background="Black">
+        Background="Black"
+        Deactivated="Window_Deactivated"
+        Closed="Window_Closed">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"></RowDefinition>
