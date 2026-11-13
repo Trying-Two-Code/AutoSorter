@@ -2,5 +2,6 @@
 {
   "running": false,
   "promptUserAmm": 50,
-  "muted": false
+  "muted": false,
+  "haltPromptsUntil" : null
 }

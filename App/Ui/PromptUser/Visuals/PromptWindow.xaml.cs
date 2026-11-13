@@ -1,5 +1,7 @@
-﻿using System;
+﻿using App.Ui.PromptUser.Visuals;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -56,9 +58,24 @@ namespace App.Ui.PromptUser
 
         }
 
-        public void OnExtraInformationPressed()
+        public void OnNewRuleInfoClicked(object sender, RoutedEventArgs args)
         {
+            Debug.WriteLine("New Rule!");
+        }
 
+        public void OnFileInfoClicked(object sender, RoutedEventArgs args)
+        {
+            Debug.WriteLine("File Info!");
+        }
+
+        public void OnOldRuleInfoClicked(object sender, RoutedEventArgs args)
+        {
+            Debug.WriteLine("Old Rule!");
+        }
+
+        public void OnSettingsClicked(object sender, RoutedEventArgs args)
+        {
+            Debug.WriteLine("Settings!");
         }
 
         public void Window_Closed(object sender, EventArgs args)

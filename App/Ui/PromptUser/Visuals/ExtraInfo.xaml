@@ -8,8 +8,11 @@
              d:DesignHeight="50" d:DesignWidth="100">
     <Grid>
         <Button
-            Background="Black">
-            <TextBlock Foreground="White">See {something}</TextBlock>
+            Name="MainButton"
+            Background="Black"
+            MinWidth="60"
+            Width="100">
+            <TextBlock Name="LabelTextBlock" Foreground="White">See {something}</TextBlock>
         </Button>
     </Grid>
 </UserControl>
