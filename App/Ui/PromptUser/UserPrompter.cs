@@ -1,4 +1,5 @@
 ﻿using App.Ui.PromptUser.Visuals;
+using App.Ui.UiScripts;
 using Core;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,12 @@ namespace App.Ui.PromptUser
         private PromptWindow? MyPromptWindow;
         private readonly TimeSpan promptAmmount = new TimeSpan(0, 0, 10);
         private DateTime lastPromptTime = DateTime.MinValue;
+        private Settings mySettings;
+
+        public UserPrompter(Settings _settings)
+        {
+            mySettings = _settings;
+        }
 
         public Task<bool> PromptUser(PromptData promptData)
         {
@@ -26,9 +33,9 @@ namespace App.Ui.PromptUser
             return promptUserTask;
         }
 
-        public TaskCompletionSource<bool> CreatePrompt(PromptData prompt)
+        public TaskCompletionSource<bool> CreatePrompt(PromptData promptData)
         {
-            MyPromptWindow = new PromptWindow(prompt.PromptString, null, "Create Rule?");
+            MyPromptWindow = new PromptWindow("Create Rule?", promptData, mySettings);
             MyPromptWindow.Show();
             return MyPromptWindow.GetUserInput();
         }
@@ -45,11 +52,7 @@ namespace App.Ui.PromptUser
                 return FalseResult;
             }
 
-            string? promptString = args.PromptString;
-            string? promptParamaters = args.ParameterInfos;
-            string? promptFileMovements = args.FileMoveInfos;
-
-            if (promptString != null)
+            if (args != null)
                 return PromptUser(args);
             else
                 return PromptUser(args.defaultPrompt);

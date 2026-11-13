@@ -1,16 +1,12 @@
 ﻿using App.Ui.PromptUser.Visuals;
+using App.Ui.UiScripts;
+using Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace App.Ui.PromptUser
 {
@@ -19,10 +15,14 @@ namespace App.Ui.PromptUser
     /// </summary>
     public partial class PromptWindow : Window
     {
-        public PromptWindow(string MainPrompt, Dictionary<string, string> ExtraInformation, string title)
+        private PromptData myPromptInformation;
+        private Settings mySettings;
+        public PromptWindow(string title, PromptData _promptInformation, Settings _settings)
         {
             InitializeComponent();
             Title = "AutoSorter - " + title;
+            myPromptInformation = _promptInformation;
+            mySettings = _settings;
         }
 
         private TaskCompletionSource<bool> MyTaskResult = new();
@@ -58,24 +58,75 @@ namespace App.Ui.PromptUser
 
         }
 
+        private List<ExtraInfoDisplay> OpenExtraInfoDisplays = new();
+        private List<string> OpenExtraInfoDisplayNames = new();
+        public void CreateInformationWindow(string title, List<string> data)
+        {
+            ExtraInfoDisplay newInfoDisplay = new ExtraInfoDisplay(title, data);
+
+            if (OpenExtraInfoDisplayNames.Contains(title))
+            {
+                Debug.WriteLine($"Already exists: {newInfoDisplay.Name}\n in: {OpenExtraInfoDisplayNames[0]}");
+                newInfoDisplay.Close();
+                ExtraInfoDisplay MatchingDisplay = OpenExtraInfoDisplays.Where(display => display.Title == title).First();
+                MatchingDisplay.Focus();
+            }
+            else
+            {
+                newInfoDisplay.Show();
+                newInfoDisplay.OnCloseDisplay += OnCloseInformationWindow;
+                OpenExtraInfoDisplays.Add(newInfoDisplay);
+                OpenExtraInfoDisplayNames.Add(title);
+            }
+        }
+
+        public void OnCloseInformationWindow(ExtraInfoDisplay extraInfoDisplay, EventArgs args)
+        {
+            extraInfoDisplay.OnCloseDisplay -= OnCloseInformationWindow;
+            OpenExtraInfoDisplays.Remove(extraInfoDisplay);
+            OpenExtraInfoDisplayNames.Remove(extraInfoDisplay.Title);
+        }
+
         public void OnNewRuleInfoClicked(object sender, RoutedEventArgs args)
         {
             Debug.WriteLine("New Rule!");
+
+            List<string> newRuleInformation = new()
+            {
+                "Parameters: " + myPromptInformation.ParameterInfos
+            };
+            CreateInformationWindow("New Rule", newRuleInformation);
         }
 
         public void OnFileInfoClicked(object sender, RoutedEventArgs args)
         {
             Debug.WriteLine("File Info!");
+
+            List<string> fileInfos = new();
+            foreach(string fileInfo in myPromptInformation.FileMoveInfos)
+            {
+                fileInfos.Add(fileInfo);
+            }
+            CreateInformationWindow("Old File Info", fileInfos);
         }
 
         public void OnOldRuleInfoClicked(object sender, RoutedEventArgs args)
         {
             Debug.WriteLine("Old Rule!");
+
+            List<string> OldRuleInfo = myPromptInformation.OldRulesData;
+            CreateInformationWindow("Old Rules", OldRuleInfo);
         }
 
         public void OnSettingsClicked(object sender, RoutedEventArgs args)
         {
             Debug.WriteLine("Settings!");
+            List<string> settingsString = new(){
+                "sound muted: " + mySettings.muted.ToString(),
+                "prompt ammount: " + mySettings.promptUserAmm.ToString(),
+                "running: " + mySettings.running.ToString()
+                };
+            CreateInformationWindow("Settings", settingsString);
         }
 
         public void Window_Closed(object sender, EventArgs args)

@@ -46,14 +46,16 @@ public partial class MainWindow : Window
             SendToTray();
 
         _handleWindow = new();
-        _userPrompter = new();
+        _userPrompter = new(_settings);
 
         StartApps();
+        promptUserTest();
     }
 
     private async void promptUserTest()
     {
-        bool result = await _userPrompter.PromptUser(new() { FileMoveInfos = "", ParameterInfos = "", PromptString = "" });
+        bool result = await _userPrompter.PromptUser(new() 
+        { FileMoveInfos = new() { "Example move infos" }, ParameterInfos = "param info", PromptString = "prompt string", OldRules = new() });
         Debug.WriteLine("\n\n\nstuff:\n");
         Debug.WriteLine("\n\n\n" +
             result);

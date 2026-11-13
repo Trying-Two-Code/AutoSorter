@@ -1,5 +1,6 @@
 ﻿using Helper.DataGathering;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Helper.FileSystem;
 
@@ -76,7 +77,6 @@ public class FileSystemManager
             Path.Combine(destinationDirectory);
 
         Debug.WriteLine($"Move from {source} to {destination}");
-
         File.Move(source, destination);
 
         Log.AppendLog($"Move from {source} to {destination}");

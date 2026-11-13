@@ -22,13 +22,13 @@ namespace Core.Sorter.Creator
                 return (DateTime.Now - lastCheck) < promptAmmount;
             } }
 
-        public bool Prompt(Rule rule)
+        public bool Prompt(Rule rule, List<Rule> oldRules)
         {
             if (Mute) return false;
             if (isSpam) return false;
             lastCheck = DateTime.Now;
 
-            PromptData data = GeneratePromptData(rule);
+            PromptData data = GeneratePromptData(rule, oldRules);
 
             Task<bool> uiTask = UIEvent(this, data);
             Task<bool> uiResult = Task<bool>.Factory.StartNew(() =>
@@ -40,7 +40,7 @@ namespace Core.Sorter.Creator
             return result;
         }
 
-        public PromptData GeneratePromptData(Rule rule)
+        public PromptData GeneratePromptData(Rule rule, List<Rule> oldRules)
         {
             string folderPath = $"Would you like to make a rule that goes from " +
                 $"{rule.StartPath} to {rule.EndPath}? ";
@@ -55,18 +55,20 @@ namespace Core.Sorter.Creator
                     $"{param.PropertyContains}.\n";
             }
 
-            string FileMoveInfos = $"The following files support the creation of this rule:";
+            List<string> FileMoveInfos = new();
+            FileMoveInfos.Add($"The following files support the creation of this rule:");
 
             foreach(string matchingFile in rule.MatchingFiles)
             {
-                FileMoveInfos += $"- {matchingFile}";
+                FileMoveInfos.Add($"- {matchingFile}");
             }
 
             PromptData newData = new()
             {
                 PromptString = folderPath + StrengthInfo,
                 ParameterInfos = ParameterInfo,
-                FileMoveInfos = FileMoveInfos
+                FileMoveInfos = FileMoveInfos,
+                OldRules = oldRules
             };
 
             return newData;

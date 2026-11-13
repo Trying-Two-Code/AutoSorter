@@ -127,7 +127,8 @@ internal class SortAlgorithm
 
         if (newRule != null)
         {
-            if (_myPromptUser.Prompt(newRule))
+            List<Rule> OldRules = RuleEditor.GetRules();
+            if (_myPromptUser.Prompt(newRule, OldRules))
             {
                 //_myRuleGenerator.
                 _myRuleExecuter.OnRuleMade(newRule);
