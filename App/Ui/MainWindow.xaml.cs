@@ -49,7 +49,6 @@ public partial class MainWindow : Window
         _userPrompter = new();
 
         StartApps();
-        promptUserTest();
     }
 
     private async void promptUserTest()

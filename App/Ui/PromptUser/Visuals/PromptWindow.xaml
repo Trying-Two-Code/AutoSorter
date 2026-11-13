@@ -12,8 +12,8 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"></RowDefinition>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="2*"></RowDefinition>
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0">
@@ -28,17 +28,17 @@
                 <Button Width="30" Height="30" VerticalAlignment="Center" Click="OnYesPressed">Yes</Button>
                 <Separator Opacity="0" Width="30"></Separator>
                 <Button Width="30" Height="30" VerticalAlignment="Center" Click="OnNoPressed">No</Button>
-                <Separator Opacity="0" Width="30"></Separator>
-                <Button Width="30" Height="30" VerticalAlignment="Center" Click="OnNoPressed">Maybe Later</Button>
+                <!--Separator Opacity="0" Width="30"></Separator>
+                <Button Width="30" Height="30" VerticalAlignment="Center" Click="OnNoPressed">Maybe Later</Button-->
             </StackPanel>
         </Grid>
         <Grid Grid.Row="2">
             <StackPanel 
                 Orientation="Horizontal" 
                 HorizontalAlignment="Center" >
-                <local:ExtraInfo InfoLabel="This-Rule" Click="OnNewRuleInfoClicked" />
+                <local:ExtraInfo InfoLabel="This Rule" Click="OnNewRuleInfoClicked" />
                 <local:ExtraInfo InfoLabel="Files" Click="OnFileInfoClicked" />
-                <local:ExtraInfo InfoLabel="Old-Rules" Click="OnOldRuleInfoClicked" />
+                <local:ExtraInfo InfoLabel="Old Rules" Click="OnOldRuleInfoClicked" />
                 <local:ExtraInfo InfoLabel="Settings" Click="OnSettingsClicked" />
             </StackPanel>
         </Grid>
