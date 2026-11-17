@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Runtime;
 using System.Text;
 using System.Windows;
+using System.Windows.Input;
 
 namespace App.Ui.PromptUser
 {
@@ -131,6 +132,12 @@ namespace App.Ui.PromptUser
         public void Window_Deactivated(object sender, EventArgs args)
         {
             //wait
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
         }
     }
 }

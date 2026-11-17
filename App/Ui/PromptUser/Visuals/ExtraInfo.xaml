@@ -9,10 +9,16 @@
     <Grid>
         <Button
             Name="MainButton"
-            Background="Black"
             MinWidth="60"
-            Width="70">
-            <TextBlock Name="LabelTextBlock" Foreground="White">See {something}</TextBlock>
+            Width="70"
+            BorderBrush="White">
+            <Button.Background>
+                <SolidColorBrush Color="Black" Opacity=".5" />
+            </Button.Background>
+            <TextBlock Name="LabelTextBlock" 
+                       Foreground="White"
+                       FontFamily="Bahnschrift"
+                       >See {something}</TextBlock>
         </Button>
     </Grid>
 </UserControl>

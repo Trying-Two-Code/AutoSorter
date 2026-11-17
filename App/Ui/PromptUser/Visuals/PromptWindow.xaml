@@ -8,8 +8,15 @@
         Title="Autosorter - " Height="160" Width="320"
         Background="Black"
         Deactivated="Window_Deactivated"
-        Closed="Window_Closed">
+        Closed="Window_Closed"
+        AllowsTransparency="True"
+        WindowStyle="None"
+        MouseDown="Window_MouseDown">
     <Grid>
+        <Grid.Background>
+            <SolidColorBrush Opacity="0.7" Color="#131219"/>
+        </Grid.Background>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="20"></RowDefinition>
             <RowDefinition Height="1*"></RowDefinition>
@@ -19,15 +26,33 @@
         <Grid Grid.Row="0">
             <TextBlock Foreground="White" 
                    HorizontalAlignment="Center" 
-                   VerticalAlignment="Top">
-            Would you like to create a rule?
+                   VerticalAlignment="Top"
+                   FontFamily="Bahnschrift"
+                   FontSize="20">
+            Create a rule?
             </TextBlock>
         </Grid>
         <Grid Grid.Row="1">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                <Button Width="30" Height="30" VerticalAlignment="Center" Click="OnYesPressed">Yes</Button>
+                <Button 
+                    Width="30" 
+                    Height="30" 
+                    VerticalAlignment="Center" 
+                    Click="OnYesPressed"
+                    FontFamily="Bahnschrift"
+                    FontSize="15"
+                    BorderBrush="White"
+                    Background="LightGreen">Yes</Button>
                 <Separator Opacity="0" Width="30"></Separator>
-                <Button Width="30" Height="30" VerticalAlignment="Center" Click="OnNoPressed">No</Button>
+                <Button 
+                    Width="30" 
+                    Height="30" 
+                    VerticalAlignment="Center" 
+                    Click="OnNoPressed"
+                    FontFamily="Bahnschrift"
+                    FontSize="15"
+                    BorderBrush="White"
+                    Background="LightSalmon">No</Button>
                 <!--Separator Opacity="0" Width="30"></Separator>
                 <Button Width="30" Height="30" VerticalAlignment="Center" Click="OnNoPressed">Maybe Later</Button-->
             </StackPanel>
