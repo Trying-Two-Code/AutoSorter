@@ -26,7 +26,6 @@ namespace Core.Sorter.Test
 
         bool TestPrompt()
         {
-            Debug.WriteLine("starting prompt tests");
             PromptData nullData = PromptData.nullPrompt;
 
             PromptData TestTrueData = nullData.defaultPrompt;
@@ -48,8 +47,6 @@ namespace Core.Sorter.Test
                 }
             };
             bool TestFalseDataResult = myUITask(this, TestFalseData).Result;
-
-            Debug.WriteLine($"Results for TestPromptUser.cs: \ntruedata = {TestTrueDataResult}\nfalseData = {TestFalseDataResult}");
 
             return !TestFalseDataResult && TestTrueDataResult;
         }

@@ -20,7 +20,6 @@ namespace App.Ui.PromptUser
             promptWindow.NewInfoWindowMade += OnNewInfoWindowMade; 
 
             MyTestData = promptData.TestData;
-            Debug.WriteLine("count" + MyTestData!.actions.Count);
 
             for (int i = 0; i < MyTestData!.actions.Count; i++)
             {
@@ -29,7 +28,6 @@ namespace App.Ui.PromptUser
                 switch (action)
                 {
                     case (TestAction.ClickYes):
-                        Debug.WriteLine("clicking yes, should be yes");
                         promptWindow.OnYesPressed(this, EventArgs.Empty);
                         Debug.WriteLine(promptWindow.GetUserInput().Task.Result);
                         break;
@@ -63,15 +61,12 @@ namespace App.Ui.PromptUser
                 }
             }
 
-            Debug.WriteLine(promptWindow.GetUserInput().Task.Result);
             bool decision = GetDecision(promptWindow);
-            Debug.WriteLine(promptWindow.GetUserInput().Task.Result);
 
             if (promptWindow.IsLoaded)
             {
                 promptWindow.Close();
             }
-            Debug.WriteLine(promptWindow.GetUserInput().Task.Result);
 
             return decision;
         }
