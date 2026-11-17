@@ -1,11 +1,12 @@
 namespace Helper.DataGathering;
 
+using Core.Sorter;
+using Helpers.DataGathering;
+using JsonRepairSharp;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Windows;
-using JsonRepairSharp;
-using static JsonRepairSharp.JsonRepair;
 
 public enum Action
 {
@@ -41,119 +42,90 @@ public class UserActionGatherFile
 
 public class UserActionGather
 {
-    public static Lock _lock = new();
-    private static Mutex mut = new Mutex(false, "Global\\UserActionMutex");
-    private const string _path = @"./data/userAction.json";
+    //public static Lock _lock = new();
+    //private static Mutex mut = new Mutex(false, "Global\\UserActionMutex"); 
+    private JSONDataMinipulator<UserActionGatherLine> _JSONMinipulator = new(@"./data/userAction.json", "UserActionMutex");
 
     public void appendMove(string from, string to)
     {
-        UserActionGatherFile data = GetFileDataFromJSONQuick();
-        
-        data.Lines.Add(new UserActionGatherLine
+        UserActionGatherLine newData = new UserActionGatherLine()
         {
             Action = Action.Move,
             Content = $"move from:{from} to:{to}",
             From = from,
             To = to,
             Timestamp = DateTime.UtcNow
-        });
+        };
 
-        writeFileDataToJSON(data);
+        append(newData);
     }
 
     public void appendRename(string from, string to)
     {
-        UserActionGatherFile data = GetFileDataFromJSONQuick();
-
-        data.Lines.Add(new UserActionGatherLine
+        UserActionGatherLine newData = new UserActionGatherLine()
         {
             Action = Action.Rename,
             Content = $"rename from:{from} to:{to}",
             From = from,
             To = to,
             Timestamp = DateTime.UtcNow
-        });
+        };
 
-        writeFileDataToJSON(data);
+        append(newData);
     }
 
     public void appendCopy(string from, string to)
     {
-        UserActionGatherFile data = GetFileDataFromJSONQuick();
-        
-        data.Lines.Add(new UserActionGatherLine
+        UserActionGatherLine newData = new UserActionGatherLine()
         {
             Action = Action.Copy,
             Content = $"copy from:{from} to:{to}",
             From = from,
             To = to,
             Timestamp = DateTime.UtcNow
-        });
+        };
 
-        writeFileDataToJSON(data);
+        append(newData);
     }
 
     public void appendDelete(string file)
     {
-        UserActionGatherFile data = GetFileDataFromJSONQuick();
-
-        UserActionGatherLine userActionGatherLine = new UserActionGatherLine
+        UserActionGatherLine newData = new UserActionGatherLine()
         {
             Action = Action.Delete,
             Content = $"delete {file}",
             From = file,
             Timestamp = DateTime.UtcNow
         };
-        data.Lines.Add(userActionGatherLine);
 
-        writeFileDataToJSON(data);
+        append(newData);
+    }
+
+    public void append(UserActionGatherLine newData)
+    {
+        UserActionGatherFile data = GetOldFileData();
+        data.Lines.Add(newData);
+
+        _JSONMinipulator.Set(data.Lines);
     }
 
     private static UserActionGatherFile oldData = new();
     public UserActionGatherFile getFileDataFromJSON()
     {
-        if (!File.Exists(_path))
-            return new UserActionGatherFile();
-
-        UserActionGatherFile? fileData = null;
-        try
+        List<UserActionGatherLine> data = _JSONMinipulator.Get();
+        UserActionGatherFile file = new()
         {
-            mut.WaitOne();
-
-            string json = File.ReadAllText(_path);
-
-            if (string.IsNullOrWhiteSpace(json))
-                return new UserActionGatherFile();
-
-            //Todo: ensure user data does not get deleted randomly.
-            //Todo: check how long it takes to get user actions
-            try
-            {
-                fileData = JsonSerializer.Deserialize<UserActionGatherFile>(json);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-                string fixedJson = RepairJson(json, InputType.Other, false);
-                fileData = JsonSerializer.Deserialize<UserActionGatherFile>(fixedJson);
-            }
-        }
-        finally
-        {
-            mut.ReleaseMutex();
-        }
-
-        oldData = fileData ?? new();
-
-        return fileData ?? new UserActionGatherFile();
+            Lines = data
+        };
+        return file;
     }
 
     /// <summary>
-    /// makes sure that old data gets turned into new data, 
-    /// and just gives old data back
+    /// Old data gets turned into new data.
+    /// Reason this function exists: to be quick
     /// </summary>
     /// <returns>old data</returns>
-    public UserActionGatherFile GetFileDataFromJSONQuick()
+    public UserActionGatherFile GetOldFileData()
     {
         //no point in returning an old useless data
         if (oldData == null || oldData.Lines.Count == 0)
@@ -168,28 +140,5 @@ public class UserActionGather
             });
         }
         return oldData;
-    }
-
-    private void writeFileDataToJSON(UserActionGatherFile data)
-    {
-        try
-        {
-            mut.WaitOne();
-
-            Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-
-            File.WriteAllText(_path,
-                JsonSerializer.Serialize(
-                    data,
-                    new JsonSerializerOptions
-                    {
-                        WriteIndented = true
-                    })
-                );
-        }
-        finally
-        {
-            mut.ReleaseMutex();
-        }
     }
 }

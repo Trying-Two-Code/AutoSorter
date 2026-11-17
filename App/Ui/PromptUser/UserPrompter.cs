@@ -13,6 +13,7 @@ namespace App.Ui.PromptUser
         private readonly TimeSpan promptAmmount = new TimeSpan(0, 0, 10);
         private DateTime lastPromptTime = DateTime.MinValue;
         private Settings mySettings;
+        private PromptUserTest myTest = new();
 
         public UserPrompter(Settings _settings)
         {
@@ -23,14 +24,30 @@ namespace App.Ui.PromptUser
         {
             lastPromptTime = DateTime.Now;
 
-            TaskCompletionSource<bool> PromptCompletionSource = CreatePrompt(promptData);
-
-            Task<bool> promptUserTask = Task.Run(() =>
+            if (promptData.TestData != null)
             {
-                return PromptCompletionSource.Task.Result;
-            });
+                return TestPromptUser(promptData);
+            }
+            else
+            {
+                TaskCompletionSource<bool> PromptCompletionSource = CreatePrompt(promptData);
 
-            return promptUserTask;
+                Task<bool> promptUserTask = Task.Run(() =>
+                {
+                    return PromptCompletionSource.Task.Result;
+                });
+
+                return promptUserTask;
+            }
+        }
+
+        public Task<bool> TestPromptUser(PromptData promptData)
+        {
+            PromptWindow TestPromptWindow = new PromptWindow("Test Window", promptData, mySettings);
+
+            Task<bool> promptUserTestTask = myTest.TestPrompt(promptData, TestPromptWindow);
+
+            return promptUserTestTask;
         }
 
         public TaskCompletionSource<bool> CreatePrompt(PromptData promptData)
@@ -47,9 +64,12 @@ namespace App.Ui.PromptUser
 
         public Task<bool> HandleRequest(object sender, PromptData args)
         {
-            if (DateTime.Now - lastPromptTime < promptAmmount)
+            if(args.TestData == null)
             {
-                return FalseResult;
+                if (DateTime.Now - lastPromptTime < promptAmmount)
+                {
+                    return FalseResult;
+                }
             }
 
             if (args != null)

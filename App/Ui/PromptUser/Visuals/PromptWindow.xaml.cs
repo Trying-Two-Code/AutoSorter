@@ -15,6 +15,7 @@ namespace App.Ui.PromptUser
     /// </summary>
     public partial class PromptWindow : Window
     {
+        public EventHandler<Window> NewInfoWindowMade { get; set; }
         private PromptData myPromptInformation;
         private Settings mySettings;
         public PromptWindow(string title, PromptData _promptInformation, Settings _settings)
@@ -33,12 +34,11 @@ namespace App.Ui.PromptUser
 
         public void DecisionMade(bool result)
         {
-            if (MyTaskResult != null)
+            if (MyTaskResult != null && !MyTaskResult.Task.IsCompleted)
             {
                 MyTaskResult.SetResult(result);
             }
             Close();
-            
         }
 
         public void OnYesPressed(object sender, EventArgs args)
@@ -66,7 +66,6 @@ namespace App.Ui.PromptUser
 
             if (OpenExtraInfoDisplayNames.Contains(title))
             {
-                Debug.WriteLine($"Already exists: {newInfoDisplay.Name}\n in: {OpenExtraInfoDisplayNames[0]}");
                 newInfoDisplay.Close();
                 ExtraInfoDisplay MatchingDisplay = OpenExtraInfoDisplays.Where(display => display.Title == title).First();
                 MatchingDisplay.Focus();
@@ -78,6 +77,8 @@ namespace App.Ui.PromptUser
                 OpenExtraInfoDisplays.Add(newInfoDisplay);
                 OpenExtraInfoDisplayNames.Add(title);
             }
+
+            NewInfoWindowMade?.Invoke(this, newInfoDisplay);
         }
 
         public void OnCloseInformationWindow(ExtraInfoDisplay extraInfoDisplay, EventArgs args)
@@ -89,8 +90,6 @@ namespace App.Ui.PromptUser
 
         public void OnNewRuleInfoClicked(object sender, RoutedEventArgs args)
         {
-            Debug.WriteLine("New Rule!");
-
             List<string> newRuleInformation = new()
             {
                 "Parameters: " + myPromptInformation.ParameterInfos
@@ -100,8 +99,6 @@ namespace App.Ui.PromptUser
 
         public void OnFileInfoClicked(object sender, RoutedEventArgs args)
         {
-            Debug.WriteLine("File Info!");
-
             List<string> fileInfos = new();
             foreach(string fileInfo in myPromptInformation.FileMoveInfos)
             {
@@ -112,15 +109,12 @@ namespace App.Ui.PromptUser
 
         public void OnOldRuleInfoClicked(object sender, RoutedEventArgs args)
         {
-            Debug.WriteLine("Old Rule!");
-
             List<string> OldRuleInfo = myPromptInformation.OldRulesData;
             CreateInformationWindow("Old Rules", OldRuleInfo);
         }
 
         public void OnSettingsClicked(object sender, RoutedEventArgs args)
         {
-            Debug.WriteLine("Settings!");
             List<string> settingsString = new(){
                 "sound muted: " + mySettings.muted.ToString(),
                 "prompt ammount: " + mySettings.promptUserAmm.ToString(),

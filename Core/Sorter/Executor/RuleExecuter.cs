@@ -89,7 +89,6 @@ namespace Core.Sorter.Executor
             {
                 if (rule.ShouldMove(file))
                 {
-                    Debug.WriteLine("trying to execute...");
                     ExecuteRule(rule, file);
                 }
             }
@@ -126,7 +125,6 @@ namespace Core.Sorter.Executor
             while (!file.Exists)
                 await Task.Delay(100);
 
-            Debug.WriteLine("recieved move");
             await LoopThroughRules(rules, file, oldPath);
         }
 

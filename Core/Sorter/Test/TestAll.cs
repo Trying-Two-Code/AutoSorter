@@ -11,7 +11,7 @@ namespace Core.Sorter.Test
     {
         public List<ITestAutoSorter> AllTests = new();
 
-        public TestAll()
+        public TestAll(UITask uiTask)
         {
             TestExecutor MyTestExecutor = new TestExecutor();
             AllTests.Add(MyTestExecutor);
@@ -25,6 +25,8 @@ namespace Core.Sorter.Test
             AllTests.Add(MyTestStrengthDetector);
             TestFilter MyTestFilter = new TestFilter();
             AllTests.Add(MyTestFilter);
+            TestPromptUser MyTestPromptUser = new TestPromptUser(uiTask);
+            AllTests.Add(MyTestPromptUser);
         }
 
         private TimeLog _TimeLog = new("TestAll");

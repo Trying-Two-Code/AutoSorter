@@ -78,8 +78,6 @@ public class FileSystemManager
 
         Debug.WriteLine($"Move from {source} to {destination}");
         File.Move(source, destination);
-
-        Log.AppendLog($"Move from {source} to {destination}");
     }
 
     public void MoveList(List<string> sourceList, string destinationDirectory)

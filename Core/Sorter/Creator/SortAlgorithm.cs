@@ -31,7 +31,7 @@ internal class SortAlgorithm
     private int MinimumParams = 3;
     private int MinimumFileMatches = 2;
 
-    //never initialize this way unless you want to be lazy:
+    //never initialize this way unless your name is JSON:
     public SortAlgorithm(string Directory)
     {
         UITask TempTask = (object _, PromptData _) => { return null; };

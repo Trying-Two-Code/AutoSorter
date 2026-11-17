@@ -21,8 +21,6 @@ namespace Core.Sorter.MatchDetectors
             string startPath,
             string endPath)
         {
-            //Debug.WriteIf(allData.Count <= 0, "all data no good\n");
-            //Debug.WriteIf(userActions.Count <= 0, "useractions no good\n");
             Parameters = parameters;
             StartPath = startPath;
             EndPath = endPath;
@@ -30,12 +28,10 @@ namespace Core.Sorter.MatchDetectors
             FixStartAndEndPath();
 
             List<string> MatchingUserActions = Matches(userActions);
-            //Debug.WriteIf(MatchingUserActions.Count <= 0, "MatchingUserActions useractions no good\n");
             StartEstimation = MatchingUserActions.Count;
 
             List<string> matchingFileList = Matches(allData);
 
-            //Debug.WriteLine($"matchingFiles:{matchingFileList.Count}\nMatchingUserActions:{MatchingUserActions.Count}");
             List<string> MinimumMatchingFileList = matchingFileList.Intersect(MatchingUserActions).ToList();
 
             MatchingFiles = MinimumMatchingFileList;

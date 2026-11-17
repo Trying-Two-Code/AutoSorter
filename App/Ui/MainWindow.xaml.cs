@@ -25,13 +25,11 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         Directory.SetCurrentDirectory(AppContext.BaseDirectory);
-
+        
         InitializeComponent();
+        _handleWindow = new HandleWindow(this);
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        _app_Download = new AppAPI( path, KnownFolders.Downloads.Path, OnUIEventRecieved, OnGetSettingsRecieved);
-        _app_Desktop = new AppAPI(  path, KnownFolders.Desktop.Path,   OnUIEventRecieved, OnGetSettingsRecieved);
-        _app_Documents = new AppAPI(path, KnownFolders.Documents.Path, OnUIEventRecieved, OnGetSettingsRecieved);
 
         Loaded += new RoutedEventHandler(Window_Loaded);
 
@@ -40,25 +38,17 @@ public partial class MainWindow : Window
         {
             MainStartStopButton.ToggleRunning();
         }
+        _userPrompter = new(_settings);
 
         ActivateOnStartup.RegisterApp();
         if(ActivateOnStartup.DetectClose())
             SendToTray();
 
-        _handleWindow = new();
-        _userPrompter = new(_settings);
+        _app_Download = new AppAPI(path, KnownFolders.Downloads.Path, OnUIEventRecieved, OnGetSettingsRecieved);
+        _app_Desktop = new AppAPI(path, KnownFolders.Desktop.Path, OnUIEventRecieved, OnGetSettingsRecieved);
+        _app_Documents = new AppAPI(path, KnownFolders.Documents.Path, OnUIEventRecieved, OnGetSettingsRecieved);
 
         StartApps();
-        promptUserTest();
-    }
-
-    private async void promptUserTest()
-    {
-        bool result = await _userPrompter.PromptUser(new() 
-        { FileMoveInfos = new() { "Example move infos" }, ParameterInfos = "param info", PromptString = "prompt string", OldRules = new() });
-        Debug.WriteLine("\n\n\nstuff:\n");
-        Debug.WriteLine("\n\n\n" +
-            result);
     }
 
     private void StartApps()
@@ -167,29 +157,35 @@ public partial class MainWindow : Window
 
 class HandleWindow
 {
+    private Window myWindow;
+    public HandleWindow(Window _window)
+    {
+        myWindow = _window;
+    }
+
     public void BringBackWindow(object sender, EventArgs e, bool translucent = false)
     {
         var window = (Window)sender;
         window.Topmost = true;
 
-        DealWithWindowOpacity(window, translucent);
+        DealWithWindowOpacity(translucent);
     }
 
     CancellationTokenSource? cts;
 
-    private void DealWithWindowOpacity(Window window, bool translucent)
+    private void DealWithWindowOpacity(bool translucent)
     {
         const float highestOpacity = 1f;
         if (translucent)
         {
             cts = new CancellationTokenSource();
-            Fadeout(window, cts.Token);
+            Fadeout(cts.Token);
         }
-        else if (window.Opacity <= highestOpacity)
+        else if (myWindow.Opacity <= highestOpacity)
         {
             if (cts != null)
                 cts.Cancel();
-            window.Opacity = highestOpacity;
+            myWindow.Opacity = highestOpacity;
         }
         else
         {
@@ -197,21 +193,20 @@ class HandleWindow
         }
     }
 
-    async private void Fadeout(Window window, CancellationToken fadeCancel)
+    async private void Fadeout(CancellationToken fadeCancel)
     {
-        while (window.Opacity > 0f)
+        while (myWindow.Opacity > 0f)
         {
             if (fadeCancel.IsCancellationRequested)
             {
                 return;
             }
-            window.Opacity -= .01f;
+            myWindow.Opacity -= .01f;
             await Task.Delay(500);
         }
 
         return;
     }
-
 }
 
 static class UserData 

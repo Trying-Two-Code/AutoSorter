@@ -25,8 +25,6 @@ public class CoreAlgorithm
     public CoreAlgorithm(String path, String sourceRoot, UITask _uIEvent, GetSettingsTask _getSettings)
     {
         _autoSorter = new AutoSorter(path, sourceRoot);
-        AutoSorterTester = new TestAll();
-        AutoSorterTester.Start();
         PromptUser _promptUser = new PromptUser(_uIEvent);
 
         GetUserActionTask _getUserAction = _autoSorter.SendAllDataInstance.GetUserActions;
@@ -35,6 +33,8 @@ public class CoreAlgorithm
         GetSettingsTask _myGetSettings = _getSettings;
 
         _autoSorter.SendAllDataInstance.OnFileMoveEvent += _sortAlgorithm.OnDataGained;
+        AutoSorterTester = new TestAll(_uIEvent);
+        AutoSorterTester.Start();
     }
 
     public void Start()

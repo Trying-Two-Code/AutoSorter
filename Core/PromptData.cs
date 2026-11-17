@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Core.Sorter.Test;
 
 namespace Core
 {
@@ -11,6 +12,7 @@ namespace Core
         required public string ParameterInfos { get; set; }
         required public List<string> FileMoveInfos { get; set; }
         required public List<Rule> OldRules { private get; init; }
+        public TestData? TestData { get; set; } = null;
         
         public List<string> OldRulesData { get {
                 List<string> OldRuleData = new();
@@ -36,5 +38,19 @@ namespace Core
                     OldRules = new()
                 };
             } }
+
+        public static PromptData nullPrompt
+        {
+            get
+            {
+                return new PromptData()
+                {
+                    FileMoveInfos = null,
+                    PromptString = null,
+                    ParameterInfos = null,
+                    OldRules = null
+                };
+            }
+        }
     }
 }

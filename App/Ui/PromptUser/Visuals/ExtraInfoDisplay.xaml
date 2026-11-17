@@ -8,9 +8,8 @@
         Title="ExtraInfoDisplay" Height="450" Width="800"
         Closed="Window_Closed">
     <Grid>
-        <StackPanel Name="AllInfo" Orientation="Horizontal">
-            
+        <StackPanel Name="AllInfo" Orientation="Vertical">
+
         </StackPanel>
-        
     </Grid>
 </Window>

@@ -297,19 +297,19 @@ namespace Core.Sorter.Test
             {
                 List<object> testResult = MyAutoSorter.SendAllDataInstance.GetUserActions(MyAutoSorter, new());
 
-                UserActionGatherFile? myResult = null;
+                List<UserActionGatherLine>? myResult = null;
 
                 if (useractionmut.WaitOne(10000))
                 {
-                    myResult = JsonSerializer.Deserialize<UserActionGatherFile>(File.ReadAllText(UserMoveFilePath));
+                    myResult = JsonSerializer.Deserialize<List<UserActionGatherLine>>(File.ReadAllText(UserMoveFilePath));
                 }
                 useractionmut.ReleaseMutex();
 
-                List<UserActionGatherLine>? myResultList = myResult?.Lines;
+                List<UserActionGatherLine>? myResultList = myResult ?? new();
 
 
 
-                if (testResult.Count == 0 || myResultList.Count == 0)
+                if (testResult.Count == 0 || myResult?.Count == 0)
                     return testResult.Count == myResultList.Count;
                 else
                     return ((UserActionGatherLine)testResult[0]).To == myResultList[0].To;

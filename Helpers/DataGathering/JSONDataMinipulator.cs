@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Core.Sorter
 {
@@ -35,13 +32,27 @@ namespace Core.Sorter
             {
                 if (Mut.WaitOne(10000))
                 {
-                    using (FileStream fs = File.Create(MyPath))
+                    try
                     {
-                        string d = JsonSerializer.Serialize(new List<ClassType>());
-                        byte[] info = new UTF8Encoding(true).GetBytes(d);
-                        fs.Write(info, 0, info.Length);
+                        using (FileStream fs = File.Create(MyPath))
+                        {
+                            string d = JsonSerializer.Serialize(new List<ClassType>());
+                            byte[] info = new UTF8Encoding(true).GetBytes(d);
+                            fs.Write(info, 0, info.Length);
+                        }
+                    } 
+                    catch (FileNotFoundException)
+                    {
+                        File.Create(MyPath);
                     }
-                    Mut.ReleaseMutex();
+                    catch (DirectoryNotFoundException)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(MyPath)!);
+                    }
+                    finally
+                    {
+                        Mut.ReleaseMutex();
+                    }
                 }
             }
         }
@@ -56,11 +67,7 @@ namespace Core.Sorter
         {
             try
             {
-                using (StreamWriter r = new StreamWriter(MyPath))
-                {
-                    string json = JsonSerializer.Serialize(new List<ClassType>());
-                    r.Write(json);
-                }
+                File.WriteAllText(MyPath, "[]");
 
                 Debug.WriteLine($"Repaired malformed JSON data file: {MyPath}");
             }
@@ -72,15 +79,13 @@ namespace Core.Sorter
 
         public List<T> Get<T>()
         {
+            if (!File.Exists(MyPath))
+                EnsureFileExists();
+
             if (Mut.WaitOne(1000))
             {
                 try
                 {
-                    Debug.WriteLine("MY PATH:" + MyPath);
-
-                    if (!File.Exists(MyPath))
-                        EnsureFileExists();
-
                     using (StreamReader r = new StreamReader(MyPath))
                     {
                         string d = r.ReadToEnd();
@@ -121,12 +126,22 @@ namespace Core.Sorter
         {
             if (Mut.WaitOne(1000))
             {
-                using (StreamWriter r = new StreamWriter(MyPath))
+                try
                 {
-                    string json = JsonSerializer.Serialize(data);
-                    r.Write(json);
+                    using (StreamWriter r = new StreamWriter(MyPath))
+                    {
+                        string json = JsonSerializer.Serialize(data);
+                        r.Write(json);
+                    }
                 }
-                Mut.ReleaseMutex();
+                catch (JsonException)
+                {
+                    RepairMalformedFile();
+                }
+                finally
+                {
+                    Mut.ReleaseMutex();
+                }
             }
         }
 

@@ -47,7 +47,6 @@ namespace Core.Sorter.Creator
                     AllParamList.Add(paramList);
                 }
             }
-            Debug.WriteLine($"AllParamList.Count={AllParamList.Count}");
 
             return AllParamList;
         }
