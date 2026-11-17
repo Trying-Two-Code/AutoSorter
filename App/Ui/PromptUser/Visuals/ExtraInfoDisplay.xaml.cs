@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace App.Ui.PromptUser.Visuals
 {
@@ -41,8 +33,17 @@ namespace App.Ui.PromptUser.Visuals
             MyTextBlocks.Add(newTextBlock);
 
             AllInfo.Children.Add(newTextBlock);
+            StyleTextBlock(newTextBlock);
 
             return newTextBlock;
+        }
+
+        private void StyleTextBlock(TextBlock textBlock)
+        {
+            textBlock.FontFamily = new System.Windows.Media.FontFamily("Bahnschrift");
+            textBlock.Foreground = System.Windows.Media.Brushes.White;
+            textBlock.FontSize = 20;
+            textBlock.Padding = new System.Windows.Thickness(10, 10, 10, 10);
         }
 
         public EventHandler<ExtraInfoDisplay, EventArgs>? OnCloseDisplay;

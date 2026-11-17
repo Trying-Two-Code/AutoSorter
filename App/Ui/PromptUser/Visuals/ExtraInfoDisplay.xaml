@@ -6,8 +6,12 @@
         xmlns:local="clr-namespace:App.Ui.PromptUser.Visuals"
         mc:Ignorable="d"
         Title="ExtraInfoDisplay" Height="450" Width="800"
-        Closed="Window_Closed">
+        Closed="Window_Closed"
+        Background="Black">
     <Grid>
+        <Grid.Background>
+            <SolidColorBrush Opacity="0.7" Color="#131219"/>
+        </Grid.Background>
         <StackPanel Name="AllInfo" Orientation="Vertical">
 
         </StackPanel>

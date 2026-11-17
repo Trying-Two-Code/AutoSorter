@@ -11,6 +11,7 @@
             Name="MainButton"
             MinWidth="60"
             Width="70"
+            Height="30"
             BorderBrush="White">
             <Button.Background>
                 <SolidColorBrush Color="Black" Opacity=".5" />
