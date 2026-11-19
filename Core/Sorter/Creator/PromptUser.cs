@@ -42,7 +42,7 @@ namespace Core.Sorter.Creator
                 $"{rule.StartPath} to {rule.EndPath}? ";
             string StrengthInfo = $"It is estimated that similar actions were done (manually) up to " +
                 $"{rule.StartCertain} times already. ";
-            string ParameterInfo = $"The rule contains ${rule?.Parameters?.Count ?? 0} parameters.\n\n";
+            string ParameterInfo = $"The rule contains {rule?.Parameters?.Count ?? 0} parameters.\n\n";
             List<string> FileMoveInfos = new();
 
             if(rule.Parameters != null)
@@ -50,7 +50,7 @@ namespace Core.Sorter.Creator
                 foreach (Param param in rule.Parameters)
                 {
                     ParameterInfo +=
-                        $"{param.FileProperty} must be" +
+                        $"{param.FileProperty} must be " +
                         $"{param.PropertyContains}.\n";
                 }
             }
@@ -70,7 +70,9 @@ namespace Core.Sorter.Creator
                 PromptString = folderPath + StrengthInfo,
                 ParameterInfos = ParameterInfo,
                 FileMoveInfos = FileMoveInfos,
-                OldRules = oldRules
+                OldRules = oldRules,
+                StartPath = rule.StartPath,
+                EndPath = rule.EndPath
             };
 
             return newData;

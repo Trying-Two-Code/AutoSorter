@@ -93,7 +93,8 @@ namespace App.Ui.PromptUser
         {
             List<string> newRuleInformation = new()
             {
-                "Parameters: " + myPromptInformation.ParameterInfos
+                $"Rule sends files from ({myPromptInformation.StartPath}) to ({myPromptInformation.EndPath})\n",
+                "Parameters: \n" + myPromptInformation.ParameterInfos
             };
             CreateInformationWindow("New Rule", newRuleInformation);
         }

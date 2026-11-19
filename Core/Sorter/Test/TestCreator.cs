@@ -237,26 +237,26 @@ namespace Core.Sorter.Test
             
             AutoSorterTestMethod TestRedundantData = () =>
             {
+                using (FileStream file = File.Create(Path.Combine(MyDirectory, "example.txt")))
+                {
+                    MyFilterData.promptAmmount = 2;
 
-                FileStream file = File.Create(Path.Combine(MyDirectory, "example.txt"));
+                    bool take1 = MyFilterData.RedundantData(new FileInfo(file.Name));
+                    MyFilterData.AddOldData(file.Name, take1);
+                    bool take2 = MyFilterData.RedundantData(new FileInfo(file.Name));
+                    MyFilterData.AddOldData(file.Name, take2);
+                    bool take3 = MyFilterData.RedundantData(new FileInfo(file.Name));
+                    MyFilterData.AddOldData(file.Name, take3);
+                    bool take4 = MyFilterData.RedundantData(new FileInfo(file.Name));
+                    MyFilterData.AddOldData(file.Name, take4);
 
-                MyFilterData.promptAmmount = 2;
+                    Debug.WriteLine($"1:{take1}2:{take2}3:{take3}4:{take4}");
 
-                bool take1 = MyFilterData.RedundantData(new FileInfo(file.Name));
-                MyFilterData.AddOldData(file.Name, take1);
-                bool take2 = MyFilterData.RedundantData(new FileInfo(file.Name));
-                MyFilterData.AddOldData(file.Name, take2);
-                bool take3 = MyFilterData.RedundantData(new FileInfo(file.Name));
-                MyFilterData.AddOldData(file.Name, take3);
-                bool take4 = MyFilterData.RedundantData(new FileInfo(file.Name));
-                MyFilterData.AddOldData(file.Name, take4);
-
-                Debug.WriteLine($"1:{take1}2:{take2}3:{take3}4:{take4}");
-
-                return
-                    take1 == !take2 &&
-                    take2 == !take3 &&
-                    take3 == !take4;
+                    return
+                        take1 == !take2 &&
+                        take2 == !take3 &&
+                        take3 == !take4;
+                };
             };
         }
         internal class TestSortAlgorithm : ITestAutoSorter
@@ -300,18 +300,18 @@ namespace Core.Sorter.Test
 
                 if (useractionmut.WaitOne(10000))
                 {
-                    myResult = JsonSerializer.Deserialize<List<UserActionGatherLine>>(File.ReadAllText(UserMoveFilePath));
+                    string rawJson = File.ReadAllText(UserMoveFilePath);
+                    
+                    myResult = JsonSerializer.Deserialize<List<UserActionGatherLine>>(rawJson);
                 }
                 useractionmut.ReleaseMutex();
 
-                List<UserActionGatherLine>? myResultList = myResult ?? new();
-
-
+                List<UserActionGatherLine> mySafeResult = myResult ?? new();
 
                 if (testResult.Count == 0 || myResult?.Count == 0)
-                    return testResult.Count == myResultList.Count;
+                    return testResult.Count == mySafeResult.Count;
                 else
-                    return ((UserActionGatherLine)testResult[0]).To == myResultList[0].To;
+                    return ((UserActionGatherLine)testResult[0]).To == mySafeResult[0].To;
             };
             
         }

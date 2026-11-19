@@ -12,12 +12,22 @@ namespace Core
         required public string ParameterInfos { get; set; }
         required public List<string> FileMoveInfos { get; set; }
         required public List<Rule> OldRules { private get; init; }
+        required public string StartPath { get; set; }
+        required public string EndPath { get; set; }
         public TestData? TestData { get; set; } = null;
-        
-        public List<string> OldRulesData { get {
+
+        public List<string> OldRulesData
+        {
+            get
+            {
                 List<string> OldRuleData = new();
                 int OldRuleIndex = 0;
-                foreach(Rule OldRule in OldRules)
+                OldRuleData.Add("List of all old rules:\n");
+                if (OldRules.Count == 0)
+                {
+                    OldRuleData.Add("[empty]");
+                }
+                foreach (Rule OldRule in OldRules)
                 {
                     OldRuleIndex++;
                     OldRuleData.Add($"Rule {OldRuleIndex}: " +
@@ -35,7 +45,9 @@ namespace Core
                     PromptString = "Create a rule? No info provided.",
                     ParameterInfos = "",
                     FileMoveInfos = new(),
-                    OldRules = new()
+                    OldRules = new(),
+                    StartPath = "",
+                    EndPath = ""
                 };
             } }
 
@@ -48,7 +60,9 @@ namespace Core
                     FileMoveInfos = null,
                     PromptString = null,
                     ParameterInfos = null,
-                    OldRules = null
+                    OldRules = null,
+                    StartPath = null,
+                    EndPath = null
                 };
             }
         }
