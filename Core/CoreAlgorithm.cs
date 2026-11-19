@@ -34,7 +34,7 @@ public class CoreAlgorithm
 
         _autoSorter.SendAllDataInstance.OnFileMoveEvent += _sortAlgorithm.OnDataGained;
         AutoSorterTester = new TestAll(_uIEvent);
-        AutoSorterTester.Start();
+        Task.Run(() => { AutoSorterTester.Start(); });
     }
 
     public void Start()

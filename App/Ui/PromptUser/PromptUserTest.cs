@@ -29,7 +29,6 @@ namespace App.Ui.PromptUser
                 {
                     case (TestAction.ClickYes):
                         promptWindow.OnYesPressed(this, EventArgs.Empty);
-                        Debug.WriteLine(promptWindow.GetUserInput().Task.Result);
                         break;
 
                     case (TestAction.ClickNo):
@@ -84,7 +83,7 @@ namespace App.Ui.PromptUser
         /// </summary>
         private bool GetDecision(PromptWindow promptWindow)
         {
-            bool result = promptWindow.GetUserInput().Task.Result;
+            bool result = promptWindow.GetUserInput().Result;
             return result;
         }
 

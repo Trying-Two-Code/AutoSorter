@@ -106,7 +106,7 @@ internal class SortAlgorithm
     /// <summary>
     /// Generates an appropriate rule and saves said rule.
     /// </summary>
-    public void ManageRules(List<FileInfo> allData, FileInfo newData, string oldPath)
+    public async void ManageRules(List<FileInfo> allData, FileInfo newData, string oldPath)
     {
         HashSet<FileInfo> allUniqueData = allData.ToHashSet();
 
@@ -128,7 +128,7 @@ internal class SortAlgorithm
         if (newRule != null)
         {
             List<Rule> OldRules = RuleEditor.GetRules();
-            if (_myPromptUser.Prompt(newRule, OldRules))
+            if (await _myPromptUser.Prompt(newRule, OldRules))
             {
                 //_myRuleGenerator.
                 _myRuleExecuter.OnRuleMade(newRule);
@@ -162,16 +162,13 @@ internal class SortAlgorithm
 
 
     //Called when, for example, a data entry is added to userAction.json
-    public void OnDataGained(object? sender, OnFileMoveEventArgs? e)
+    public async void OnDataGained(object? sender, OnFileMoveEventArgs? e)
     {
-        Task.Run(() =>
-        {
-            if (IsEnabled)
-                HandleData(sender, e);
-        });
+        if (IsEnabled)
+            HandleData(sender, e);
     }
 
-    private void HandleData(object? sender, OnFileMoveEventArgs? e)
+    private async void HandleData(object? sender, OnFileMoveEventArgs? e)
     {
         if(sender == null || e == null || e.NewFile == null || e.NewFile.DirectoryName == null)
         {

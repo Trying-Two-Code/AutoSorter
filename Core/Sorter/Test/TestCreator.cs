@@ -253,11 +253,10 @@ namespace Core.Sorter.Test
 
                 Debug.WriteLine($"1:{take1}2:{take2}3:{take3}4:{take4}");
 
-                return 
-                    take1 == false && 
-                    take2 == true && 
-                    take3 == false && 
-                    take4 == true;
+                return
+                    take1 == !take2 &&
+                    take2 == !take3 &&
+                    take3 == !take4;
             };
         }
         internal class TestSortAlgorithm : ITestAutoSorter

@@ -28,9 +28,9 @@ namespace App.Ui.PromptUser
         }
 
         private TaskCompletionSource<bool> MyTaskResult = new();
-        public TaskCompletionSource<bool> GetUserInput()
+        public async Task<bool> GetUserInput()
         {
-            return MyTaskResult;
+            return await MyTaskResult.Task;
         }
 
         public void DecisionMade(bool result)

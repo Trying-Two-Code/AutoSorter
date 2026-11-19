@@ -4,6 +4,7 @@ using Core;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows.Threading;
 
 namespace App.Ui.PromptUser
 {
@@ -13,48 +14,58 @@ namespace App.Ui.PromptUser
         private readonly TimeSpan promptAmmount = new TimeSpan(0, 0, 10);
         private DateTime lastPromptTime = DateTime.MinValue;
         private Settings mySettings;
+        private Dispatcher myUiDispatcher;
         private PromptUserTest myTest = new();
 
-        public UserPrompter(Settings _settings)
+        public UserPrompter(Settings _settings, Dispatcher dispatcher)
         {
             mySettings = _settings;
+            myUiDispatcher = dispatcher;
         }
 
-        public Task<bool> PromptUser(PromptData promptData)
+        public async Task<bool> PromptUser(PromptData promptData)
         {
             lastPromptTime = DateTime.Now;
 
             if (promptData.TestData != null)
             {
-                return TestPromptUser(promptData);
+                return await TestPromptUser(promptData);
             }
             else
             {
-                TaskCompletionSource<bool> PromptCompletionSource = CreatePrompt(promptData);
-
-                Task<bool> promptUserTask = Task.Run(() =>
-                {
-                    return PromptCompletionSource.Task.Result;
-                });
-
-                return promptUserTask;
+                return await CreatePrompt(promptData);
             }
         }
 
-        public Task<bool> TestPromptUser(PromptData promptData)
+        public async Task<bool> TestPromptUser(PromptData promptData)
         {
-            PromptWindow TestPromptWindow = new PromptWindow("Test Window", promptData, mySettings);
+            PromptWindow? TestPromptWindow = null;
+            Task<bool>? promptUserTestTask = null;
 
-            Task<bool> promptUserTestTask = myTest.TestPrompt(promptData, TestPromptWindow);
+            await myUiDispatcher.InvokeAsync(() =>
+            {
+                TestPromptWindow = new PromptWindow("Test Window", promptData, mySettings);
+                TestPromptWindow.Show();
 
-            return promptUserTestTask;
+                promptUserTestTask = myTest.TestPrompt(promptData, TestPromptWindow);
+
+                return promptUserTestTask;
+            });
+
+            return await promptUserTestTask!;
         }
 
-        public TaskCompletionSource<bool> CreatePrompt(PromptData promptData)
+        public async Task<bool> CreatePrompt(PromptData promptData)
         {
-            MyPromptWindow = new PromptWindow("Create Rule?", promptData, mySettings);
-            MyPromptWindow.Show();
-            return MyPromptWindow.GetUserInput();
+            PromptWindow? MyPromptWindow = null;
+
+            await myUiDispatcher.InvokeAsync(() =>
+            {
+                MyPromptWindow = new PromptWindow("Create Rule?", promptData, mySettings);
+                MyPromptWindow.Show();
+            });
+
+            return await MyPromptWindow!.GetUserInput();
         }
 
         public Task<bool> FalseResult = Task.Run(() =>
@@ -62,20 +73,20 @@ namespace App.Ui.PromptUser
                 return false;
             });
 
-        public Task<bool> HandleRequest(object sender, PromptData args)
+        public async Task<bool> HandleRequest(object sender, PromptData args)
         {
             if(args.TestData == null)
             {
                 if (DateTime.Now - lastPromptTime < promptAmmount)
                 {
-                    return FalseResult;
+                    return await FalseResult;
                 }
             }
 
             if (args != null)
-                return PromptUser(args);
+                return await PromptUser(args);
             else
-                return PromptUser(args.defaultPrompt);
+                return await PromptUser(args.defaultPrompt);
         }
     }
 }

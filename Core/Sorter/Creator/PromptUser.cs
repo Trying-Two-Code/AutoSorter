@@ -22,7 +22,7 @@ namespace Core.Sorter.Creator
                 return (DateTime.Now - lastCheck) < promptAmmount;
             } }
 
-        public bool Prompt(Rule rule, List<Rule> oldRules)
+        public async Task<bool> Prompt(Rule rule, List<Rule> oldRules)
         {
             if (Mute) return false;
             if (isSpam) return false;
@@ -31,11 +31,7 @@ namespace Core.Sorter.Creator
             PromptData data = GeneratePromptData(rule, oldRules);
 
             Task<bool> uiTask = UIEvent(this, data);
-            Task<bool> uiResult = Task<bool>.Factory.StartNew(() =>
-            {
-                return uiTask.Result;
-            });
-            bool result = uiResult.Result;
+            bool result = await uiTask;
 
             return result;
         }
