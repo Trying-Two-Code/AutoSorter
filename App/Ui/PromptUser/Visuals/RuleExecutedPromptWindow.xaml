@@ -1,0 +1,89 @@
+﻿<Window x:Class="App.Ui.PromptUser.Visuals.RuleExecutedPromptWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:App.Ui.PromptUser.Visuals"
+        mc:Ignorable="d"
+        Title="Autosorter - Rule was executed" Height="200" Width="350"
+        Background="Black"
+        Closed="Window_Closed"
+        MouseDown="Window_MouseDown">
+    <Window.Resources>
+        <Style x:Key="PositionText" TargetType="TextBlock">
+            <Setter Property="Padding" Value="7" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="NiceText" TargetType="TextBlock" BasedOn="{StaticResource PositionText}">
+            <Setter Property="FontFamily" Value="Bahnschrift"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="15"/>
+        </Style>
+        <Style x:Key="PromptButton" TargetType="Button">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Bahnschrift" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="BorderBrush" Value="White" />
+        </Style>
+    </Window.Resources>
+    <Grid>
+
+        <Grid.Background>
+            <SolidColorBrush Opacity="0.7" Color="#131219"/>
+        </Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <TextBlock
+                Style="{StaticResource NiceText}"
+                Width="250"
+                TextWrapping="Wrap"
+                Name="MainText"
+                VerticalAlignment="Top">
+                Autosorter moved a file from blank to blank</TextBlock>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                <Button Style="{StaticResource PromptButton}"
+                        Name="ok"
+                        Background="LightGreen"
+                        VerticalAlignment="Bottom"
+                        Click="ok_Click">
+                    ok
+                </Button>
+                <Separator Opacity="0" Width="30"></Separator>
+                <Button Style="{StaticResource PromptButton}"
+                        Name="Undo"
+                        Background="LightSalmon"
+                        VerticalAlignment="Bottom"
+                        Width="40"
+                        Click="Undo_Click">
+                    undo
+                </Button>
+            </StackPanel>
+        </Grid>
+
+
+        <Grid Grid.Row="1">
+            <Separator VerticalAlignment="Top"></Separator>
+            <TextBlock
+                Style="{StaticResource NiceText}"
+                VerticalAlignment="Top"
+            >Information:</TextBlock>
+            <StackPanel 
+                Orientation="Horizontal" 
+                HorizontalAlignment="Center">
+                    <local:ExtraInfo InfoLabel="Rule" Click="OnRuleInfoClicked" />
+                    <local:ExtraInfo InfoLabel="History" Click="OnHistoryClicked" />
+                    <local:ExtraInfo InfoLabel="Other Rules" Click="OnOtherRuleInfoClicked" />
+                    <local:ExtraInfo InfoLabel="Settings" Click="OnSettingsClicked" />
+            </StackPanel>
+        </Grid>
+        
+
+    </Grid>
+</Window>

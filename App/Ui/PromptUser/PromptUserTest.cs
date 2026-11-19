@@ -13,7 +13,7 @@ namespace App.Ui.PromptUser
     {
         public TestData? MyTestData { get; set; } = null;
 
-        public async Task<bool> TestPrompt(PromptData promptData, PromptWindow promptWindow)
+        public async Task<bool> TestPrompt(PromptData promptData, RuleMadePromptWindow promptWindow)
         {
             CurrentWindow = promptWindow;
 
@@ -81,7 +81,7 @@ namespace App.Ui.PromptUser
         /// bypasses user decision since during testing it would not 
         /// be chill to force the dev to manually input buttons
         /// </summary>
-        private bool GetDecision(PromptWindow promptWindow)
+        private bool GetDecision(RuleMadePromptWindow promptWindow)
         {
             bool result = promptWindow.GetUserInput().Result;
             return result;

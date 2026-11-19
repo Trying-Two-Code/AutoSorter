@@ -10,7 +10,7 @@ namespace App.Ui.PromptUser
 {
     public class UserPrompter
     {
-        private PromptWindow? MyPromptWindow;
+        private RuleMadePromptWindow? MyPromptWindow;
         private readonly TimeSpan promptAmmount = new TimeSpan(0, 0, 10);
         private DateTime lastPromptTime = DateTime.MinValue;
         private Settings mySettings;
@@ -39,12 +39,12 @@ namespace App.Ui.PromptUser
 
         public async Task<bool> TestPromptUser(PromptData promptData)
         {
-            PromptWindow? TestPromptWindow = null;
+            RuleMadePromptWindow? TestPromptWindow = null;
             Task<bool>? promptUserTestTask = null;
 
             await myUiDispatcher.InvokeAsync(() =>
             {
-                TestPromptWindow = new PromptWindow("Test Window", promptData, mySettings);
+                TestPromptWindow = new RuleMadePromptWindow("Test Window", promptData, mySettings);
                 TestPromptWindow.Show();
 
                 promptUserTestTask = myTest.TestPrompt(promptData, TestPromptWindow);
@@ -57,11 +57,11 @@ namespace App.Ui.PromptUser
 
         public async Task<bool> CreatePrompt(PromptData promptData)
         {
-            PromptWindow? MyPromptWindow = null;
+            RuleMadePromptWindow? MyPromptWindow = null;
 
             await myUiDispatcher.InvokeAsync(() =>
             {
-                MyPromptWindow = new PromptWindow("Create Rule?", promptData, mySettings);
+                MyPromptWindow = new RuleMadePromptWindow("Create Rule?", promptData, mySettings);
                 MyPromptWindow.Show();
             });
 
