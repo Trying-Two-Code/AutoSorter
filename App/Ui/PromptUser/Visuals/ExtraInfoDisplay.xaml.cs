@@ -32,7 +32,7 @@ namespace App.Ui.PromptUser.Visuals
             newTextBlock.Text = text;
             MyTextBlocks.Add(newTextBlock);
 
-            AllInfo.Children.Add(newTextBlock);
+            AllInfo.Items.Add(newTextBlock);
             StyleTextBlock(newTextBlock);
 
             return newTextBlock;
@@ -43,7 +43,7 @@ namespace App.Ui.PromptUser.Visuals
             textBlock.FontFamily = new System.Windows.Media.FontFamily("Bahnschrift");
             textBlock.Foreground = System.Windows.Media.Brushes.White;
             textBlock.FontSize = 20;
-            textBlock.Padding = new System.Windows.Thickness(10, 10, 10, 10);
+            textBlock.Padding = new Thickness(10, 10, 10, 10);
         }
 
         public EventHandler<ExtraInfoDisplay, EventArgs>? OnCloseDisplay;
