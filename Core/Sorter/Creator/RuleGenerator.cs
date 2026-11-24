@@ -173,7 +173,7 @@ namespace Core.Sorter.Creator
                 MinimumParams);
 
             //remove any weak rules
-            List<Rule> StrongGeneratedRules = myStrengthDetector.StrongRules(
+            List<Rule> StrongGeneratedRules = MyStrengthDetector.RemoveWeakRules(
                 allRules: GeneratedRules,
                 requiredStrength: RequiredStrength,
                 requiredParams: MinimumParams,

@@ -167,7 +167,7 @@ namespace Core.Sorter.Test
             public static StrengthDetector MyStrengthDetector { get; } = new();
             public TestStrengthDetector()
             {
-                TestMethods.Add(TestStrongRules);
+                TestMethods.Add(TestRemoveWeakRules);
             }
 
             public bool TestsAllSucceed()
@@ -178,7 +178,7 @@ namespace Core.Sorter.Test
                 });
             }
 
-            AutoSorterTestMethod TestStrongRules = () =>
+            AutoSorterTestMethod TestRemoveWeakRules = () =>
             {
                 List<Rule> TestAllRules = new();
 
@@ -205,7 +205,7 @@ namespace Core.Sorter.Test
                 int TestRequiredMatches = 3;
                 int TestLimit = 100;
 
-                List<Rule> StrongRules = MyStrengthDetector.StrongRules(
+                List<Rule> StrongRules = MyStrengthDetector.RemoveWeakRules(
                     TestAllRules, TestRequiredStrength,
                     TestRequiredParams, TestRequiredMatches,
                     TestLimit);

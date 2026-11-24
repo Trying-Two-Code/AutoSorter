@@ -8,22 +8,23 @@ namespace Core.Sorter.Creator
 {
     public class StrengthDetector
     {
+        /// <returns>The strongest rules in a list of rules. 
+        /// (Only plural if there are multiple rules with the same highest strength.)</returns>
         public List<Rule> StrongestRules(List<Rule> rules)
         {
             int LargestStrength = GetLargestStrength(rules);
             List<Rule> StrongestRules = new();
 
-            foreach (Rule rule in rules)
+            StrongestRules = rules.Where(rule =>
             {
-                if (rule.Strength == LargestStrength) 
-                {
-                    StrongestRules.Add(rule);
-                }
-            }
+                return rule.Strength == LargestStrength;
+            }).ToList();
 
             return StrongestRules;
         }
 
+
+        /// <returns>The strength of the strongest rule in a list of rules</returns>
         public static int GetLargestStrength(List<Rule> Rules)
         {
             int largestStrength = 0;
@@ -36,10 +37,10 @@ namespace Core.Sorter.Creator
             return largestStrength;
         }
 
-        //NOTE: if tied for first, chooses the first strongest rule
-        public MatchDetectors.Rule? StrongestRule(List<MatchDetectors.Rule>? Rules)
+        /// <returns>The first strongest rule in a list of rules.</returns>
+        public Rule? StrongestRule(List<Rule>? Rules)
         {
-            if (Rules == null) return null;
+            Debug.Assert(Rules != null && Rules.Count > 0);
 
             int LargestStrength = StrengthDetector.GetLargestStrength(Rules);
             for (int i = 0; i < Rules.Count; i++)
@@ -51,21 +52,23 @@ namespace Core.Sorter.Creator
             return null;
         }
 
-        public List<MatchDetectors.Rule> StrongRules(
-            List<MatchDetectors.Rule> allRules,
+        /// <param name="requiredStrength">filter for strength</param>
+        /// <param name="requiredParams">filter for paramater count</param>
+        /// <param name="requiredMatches">filter for the ammount of certain matches</param>
+        /// <param name="limit"></param>
+        /// <returns>a list of rules that match or exceed all the filters</returns>
+        public List<Rule> RemoveWeakRules(
+            List<Rule> allRules,
             int requiredStrength = 10,
             int requiredParams = 2,
             int requiredMatches = 2,
             int limit = 1000)
         {
-            List<MatchDetectors.Rule> strongRules = allRules.Where(rule =>
+            List<Rule> strongRules = allRules.Where(rule =>
             {
-                //Debug.WriteLine($"rule.StartCertain >= requiredMatches{rule.StartCertain >= requiredMatches}"); true
-                //Debug.WriteLine($"rule.Paramaters.Count >= requiredParams{rule.Parameters.Count >= requiredParams}"); false
-                //Debug.WriteLine($"rule.Strength >= requiredStrength{rule.Strength >= requiredStrength}"); false
                 return rule.StartCertain >= requiredMatches &&
-                        rule.Parameters.Count >= requiredParams &&
-                        rule.Strength >= requiredStrength;
+                       rule.Parameters.Count >= requiredParams &&
+                       rule.Strength >= requiredStrength;
             }).ToList();
 
             return strongRules;
