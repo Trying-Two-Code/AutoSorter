@@ -55,6 +55,12 @@ namespace Core.Sorter.Executor
                 StartPath = rule.StartPath,
                 EndPath = rule.EndPath
             };
+
+            if(MyPromptUser == null)
+            {
+                throw new NoUserPrompterException();
+            }
+
             bool promptResult = await MyPromptUser.Prompt(data);
 
             if (promptResult)
@@ -62,6 +68,8 @@ namespace Core.Sorter.Executor
                 ExecuteRule(rule, currentFileInfo);
             }
         }
+
+        private class NoUserPrompterException : Exception { }
 
         public async void ExecuteRule(MatchDetectors.Rule rule, FileInfo currentFileInfo)
         {
@@ -144,7 +152,16 @@ namespace Core.Sorter.Executor
             //issue, what if ExecuteRules.Count > 1
             foreach(MatchDetectors.Rule rule in ExecuteRules)
             {
-                DetectExecuteRule(rule, file);
+                try
+                {
+                    DetectExecuteRule(rule, file);
+                } catch (NoUserPrompterException)
+                {
+                    Debug.WriteLine("There was no user prompter to prompt!");
+
+                    Debug.WriteLine("Executing anyways.");
+                    ExecuteRule(rule, file);
+                }
             }
         }
 
