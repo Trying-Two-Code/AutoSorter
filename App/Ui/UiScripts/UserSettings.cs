@@ -142,4 +142,6 @@ public class Settings()
     public bool running { get; set; } = true;
     public int promptUserAmm { get; set; } = 50;
     public bool muted { get; set; } = false;
+    public DateTime haltRuleMadePromptsUntil { get; set; } = DateTime.MinValue;
+    public DateTime haltRuleExecutedPromptsUntil { get; set; } = DateTime.MinValue;
 }

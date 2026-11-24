@@ -1,5 +1,6 @@
 ﻿using Core.Sorter.MatchDetectors;
 using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Core.Sorter.Creator
 {
@@ -22,21 +23,26 @@ namespace Core.Sorter.Creator
                 return (DateTime.Now - lastCheck) < promptAmmount;
             } }
 
-        public async Task<bool> Prompt(Rule rule, List<Rule> oldRules)
+        public async Task<bool> Prompt(Rule rule, List<Rule> oldRules, PromptData.PromptReason reason)
         {
             if (Mute) return false;
             if (isSpam) return false;
             lastCheck = DateTime.Now;
 
-            PromptData data = GeneratePromptData(rule, oldRules);
+            PromptData data = GeneratePromptData(rule, oldRules, reason);
 
-            Task<bool> uiTask = UIEvent(this, data);
+            return await Prompt(data);
+        }
+
+        public async Task<bool> Prompt(PromptData promptData)
+        {
+            Task<bool> uiTask = UIEvent(this, promptData);
             bool result = await uiTask;
 
             return result;
         }
 
-        public PromptData GeneratePromptData(Rule rule, List<Rule> oldRules)
+        public PromptData GeneratePromptData(Rule rule, List<Rule> oldRules, PromptData.PromptReason reason)
         {
             string folderPath = $"Would you like to make a rule that goes from " +
                 $"{rule.StartPath} to {rule.EndPath}? ";
@@ -67,6 +73,7 @@ namespace Core.Sorter.Creator
 
             PromptData newData = new()
             {
+                MyPromptReason = reason,
                 PromptString = folderPath + StrengthInfo,
                 ParameterInfos = ParameterInfo,
                 FileMoveInfos = FileMoveInfos,

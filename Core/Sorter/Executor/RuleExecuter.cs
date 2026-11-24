@@ -1,29 +1,69 @@
 ﻿//Overview: Executes on all the rules made by SortAlgorithm
 
-using Core.FileSystem;
 using Core.Sorter.Creator;
-using Core.Sorter.MatchDetectors;
 using Helper.FileSystem;
 using Helpers.DataGathering;
 using System.Data;
 using System.Diagnostics;
-using System.Text.Json;
+using System.Globalization;
+using static Core.Sorter.Test.TestMatchDetectors;
 
 namespace Core.Sorter.Executor
 {
     public class RuleExecuter
     {
-        private RuleEditor myRuleEditor;
+        private RuleEditor MyRuleEditor { get; set; }
+        private PromptUser? MyPromptUser { get; set; }
         private JSONDataMinipulator<FileMoveInfo> MoveHistoryJSON;
 
-        public RuleExecuter()
+        public RuleExecuter(PromptUser _promptUser)
         {
             MoveHistoryJSON = new JSONDataMinipulator<FileMoveInfo>("RuleExecutionHistory.json", "RuleExecutor");
-            myRuleEditor = new RuleEditor();
+            MyRuleEditor = new RuleEditor();
             AllRules = RuleEditor.GetRules();
+            MyPromptUser = _promptUser;
+
+            //TEST DETECT RULE:
+            /*if (MyPromptUser != null && MyPromptUser.UIEvent != null)
+            {
+                Debug.WriteLine($"EXECUTING PROMPT: |{MyPromptUser.UIEvent}|");
+                MatchDetectors.Rule testRule = new MatchDetectors.Rule()
+                {
+                    Parameters = new()
+                    {
+                        new("")
+                    },
+                    StartPath = "",
+                    EndPath = ""
+                };
+                FileInfo testInfo = new FileInfo("C:\\NonExistant");
+                DetectExecuteRule(testRule, testInfo);
+            }*/
         }
 
-        public void ExecuteRule(MatchDetectors.Rule rule, FileInfo currentFileInfo)
+        public async void DetectExecuteRule(MatchDetectors.Rule rule, FileInfo currentFileInfo)
+        {
+            PromptData data = new PromptData()
+            {
+                MyPromptReason = PromptData.PromptReason.RuleExecuted,
+                PromptString = $"Rule executed on folder: {currentFileInfo.DirectoryName}",
+                ParameterInfos = rule.Parameters.Select(
+                    param => { return $"{param.FileProperty} contains: {param.PropertyContains}"; })
+                    .ToString()!,
+                FileMoveInfos = null,
+                OldRules = AllRules,
+                StartPath = rule.StartPath,
+                EndPath = rule.EndPath
+            };
+            bool promptResult = await MyPromptUser.Prompt(data);
+
+            if (promptResult)
+            {
+                ExecuteRule(rule, currentFileInfo);
+            }
+        }
+
+        public async void ExecuteRule(MatchDetectors.Rule rule, FileInfo currentFileInfo)
         {
             Debug.Assert(rule.ShouldMove(currentFileInfo));
 
@@ -40,6 +80,7 @@ namespace Core.Sorter.Executor
                 OldPath = fullStartPath,
                 NewPath = fullEndPath
             };
+
             MoveHistoryJSON.Set(ExecutedMove);
         }
 
@@ -103,7 +144,7 @@ namespace Core.Sorter.Executor
             //issue, what if ExecuteRules.Count > 1
             foreach(MatchDetectors.Rule rule in ExecuteRules)
             {
-                ExecuteRule(rule, file);
+                DetectExecuteRule(rule, file);
             }
         }
 
@@ -145,7 +186,7 @@ namespace Core.Sorter.Executor
                 ExecuteRuleOnFolder(rule, startDirectory);
             }
 
-            myRuleEditor.AddRule(rule);
+            MyRuleEditor.AddRule(rule);
         }
     }
 }

@@ -3,6 +3,7 @@ using App.Ui.UiScripts;
 using Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Windows.Threading;
 
@@ -23,17 +24,25 @@ namespace App.Ui.PromptUser
             myUiDispatcher = dispatcher;
         }
 
+        /// <summary>
+        /// Translates prompts into a resulting method that
+        /// matches the reason the prompt was sent here.
+        /// </summary>
         public async Task<bool> PromptUser(PromptData promptData)
         {
+            Debug.WriteLine("prompting user now.");
             lastPromptTime = DateTime.Now;
 
-            if (promptData.TestData != null)
+            switch (promptData.MyPromptReason) 
             {
-                return await TestPromptUser(promptData);
-            }
-            else
-            {
-                return await CreatePrompt(promptData);
+                case PromptData.PromptReason.Test:
+                    return await TestPromptUser(promptData);
+                case PromptData.PromptReason.RuleCreated:
+                    return await CreateRuleCreatedPrompt(promptData);
+                case PromptData.PromptReason.RuleExecuted:
+                    return await CreateRuleExecutedPrompt(promptData);
+                default:
+                    return await TestPromptUser(promptData);
             }
         }
 
@@ -55,13 +64,27 @@ namespace App.Ui.PromptUser
             return await promptUserTestTask!;
         }
 
-        public async Task<bool> CreatePrompt(PromptData promptData)
+        public async Task<bool> CreateRuleCreatedPrompt(PromptData promptData)
         {
             RuleMadePromptWindow? MyPromptWindow = null;
 
             await myUiDispatcher.InvokeAsync(() =>
             {
                 MyPromptWindow = new RuleMadePromptWindow("Create Rule?", promptData, mySettings);
+                MyPromptWindow.Show();
+            });
+
+            return await MyPromptWindow!.GetUserInput();
+        }
+
+        public async Task<bool> CreateRuleExecutedPrompt(PromptData promptData)
+        {
+            Debug.WriteLine("MakingRuleExecutedPrompt");
+            RuleExecutedPromptWindow? MyPromptWindow = null;
+
+            await myUiDispatcher.InvokeAsync(() =>
+            {
+                MyPromptWindow = new RuleExecutedPromptWindow(promptData);
                 MyPromptWindow.Show();
             });
 
@@ -86,7 +109,7 @@ namespace App.Ui.PromptUser
             if (args != null)
                 return await PromptUser(args);
             else
-                return await PromptUser(args.defaultPrompt);
+                return await PromptUser(PromptData.nullPrompt);
         }
     }
 }

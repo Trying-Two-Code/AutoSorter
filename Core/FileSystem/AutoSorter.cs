@@ -24,7 +24,8 @@ public class AutoSorter
 
     public AutoSorter(
         string watchRoot,
-        string sourceRoot)
+        string sourceRoot,
+        PromptUser promptUser)
     {
         Log.AppendLog(
             $"AutoSorter initializing: watch={watchRoot}, sourceRoot={sourceRoot}");
@@ -32,7 +33,7 @@ public class AutoSorter
         _fileSystem = new FileSystemManager(watchRoot);
         _clipboardWatcher = new ClipboardWatcher();
         _moveCorrelator = new MoveCorrelator(sourceRoot);
-        _ruleExecuter = new RuleExecuter();
+        _ruleExecuter = new RuleExecuter(promptUser);
 
         SetCallbacks();
 

@@ -4,7 +4,6 @@ using Core.Sorter.MatchDetectors;
 using Core.Sorter.Test.Helpers;
 using Helper.DataGathering;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using static Core.Sorter.Creator.FilterData;
 
@@ -278,7 +277,7 @@ namespace Core.Sorter.Test
 
                 TestMethods.Add(TestGetUserActions);
 
-                MyAutoSorter = new(MyDirectory, MyRootDirectory);
+                MyAutoSorter = new(MyDirectory, MyRootDirectory, new(null));
                 MySortAlgorithm = new(MyDirectory);
             }
 
@@ -308,7 +307,7 @@ namespace Core.Sorter.Test
 
                 List<UserActionGatherLine> mySafeResult = myResult ?? new();
 
-                if (testResult.Count == 0 || myResult?.Count == 0)
+                if (testResult.Count == 0 || mySafeResult.Count == 0)
                     return testResult.Count == mySafeResult.Count;
                 else
                     return ((UserActionGatherLine)testResult[0]).To == mySafeResult[0].To;

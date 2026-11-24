@@ -20,6 +20,7 @@ namespace App.Ui.PromptUser
         public EventHandler<Window> NewInfoWindowMade { get; set; }
         private PromptData myPromptInformation;
         private Settings mySettings;
+
         public RuleMadePromptWindow(string title, PromptData _promptInformation, Settings _settings)
         {
             InitializeComponent();

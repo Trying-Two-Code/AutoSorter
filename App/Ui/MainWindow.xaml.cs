@@ -39,7 +39,6 @@ public partial class MainWindow : Window
             MainStartStopButton.ToggleRunning();
         }
         _userPrompter = new(_settings, Dispatcher);
-        //_userPrompter.CreatePrompt(PromptData.nullPrompt);
 
         ActivateOnStartup.RegisterApp();
         if(ActivateOnStartup.DetectClose())

@@ -24,8 +24,8 @@ public class CoreAlgorithm
 
     public CoreAlgorithm(String path, String sourceRoot, UITask _uIEvent, GetSettingsTask _getSettings)
     {
-        _autoSorter = new AutoSorter(path, sourceRoot);
         PromptUser _promptUser = new PromptUser(_uIEvent);
+        _autoSorter = new AutoSorter(path, sourceRoot, _promptUser);
 
         GetUserActionTask _getUserAction = _autoSorter.SendAllDataInstance.GetUserActions;
 

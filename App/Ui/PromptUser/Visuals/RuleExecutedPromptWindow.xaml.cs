@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -18,11 +19,18 @@ namespace App.Ui.PromptUser.Visuals
     public partial class RuleExecutedPromptWindow : Window
     {
         private PromptWindow MyPromptWindow;
+        private PromptData MyPromptData;
 
-        public RuleExecutedPromptWindow()
+        public RuleExecutedPromptWindow(PromptData _promptData)
         {
             InitializeComponent();
+            MyPromptData = _promptData;
             MyPromptWindow = new PromptWindow();
+        }
+
+        public async Task<bool> GetUserInput()
+        {
+            return await MyPromptWindow.MyTaskResult.Task;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -42,7 +50,12 @@ namespace App.Ui.PromptUser.Visuals
 
         private void OnRuleInfoClicked(object sender, RoutedEventArgs e)
         {
-
+            List<string> newRuleInformation = new()
+            {
+                $"Rule sends files from ({MyPromptData.StartPath}) to ({MyPromptData.EndPath})\n",
+                "Parameters: \n" + MyPromptData.ParameterInfos
+            };
+            MyPromptWindow.CreateInformationWindow("Rule Executed", newRuleInformation);
         }
         
         private void OnHistoryClicked(object sender, RoutedEventArgs e)

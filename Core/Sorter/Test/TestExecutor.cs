@@ -25,7 +25,7 @@ namespace Core.Sorter.Test
             });
         }
 
-        private static RuleExecuter myRuleExecutor = new();
+        private static RuleExecuter myRuleExecutor = new(null);
         public static readonly string MyDirectory = Path.Combine(AppContext.BaseDirectory, "test\\testexec");
         public static readonly string MyNewDirectory = Path.Combine(AppContext.BaseDirectory, "test\\testexecnew");
         public static MassFileCreator MyFileCreator { get; set; } = new(MyDirectory);

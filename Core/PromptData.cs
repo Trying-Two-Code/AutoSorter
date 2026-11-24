@@ -8,6 +8,7 @@ namespace Core
 {
     public class PromptData : EventArgs
     {
+        required public PromptReason? MyPromptReason;
         required public string PromptString { get; set; }
         required public string ParameterInfos { get; set; }
         required public List<string> FileMoveInfos { get; set; }
@@ -42,6 +43,7 @@ namespace Core
             {
                 return new PromptData()
                 {
+                    MyPromptReason = PromptReason.Test,
                     PromptString = "Create a rule? No info provided.",
                     ParameterInfos = "",
                     FileMoveInfos = new(),
@@ -57,6 +59,7 @@ namespace Core
             {
                 return new PromptData()
                 {
+                    MyPromptReason = null,
                     FileMoveInfos = null,
                     PromptString = null,
                     ParameterInfos = null,
@@ -65,6 +68,12 @@ namespace Core
                     EndPath = null
                 };
             }
+        }
+
+        public enum PromptReason {
+            Test,
+            RuleCreated,
+            RuleExecuted
         }
     }
 }

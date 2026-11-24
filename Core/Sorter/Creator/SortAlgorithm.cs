@@ -13,6 +13,7 @@ using Core.Sorter.Executor;
 using Core.Sorter.MatchDetectors;
 using Core.Sorter.Test.Helpers;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 
 namespace Core.Sorter.Creator;
 
@@ -31,7 +32,7 @@ internal class SortAlgorithm
     private int MinimumParams = 3;
     private int MinimumFileMatches = 2;
 
-    //never initialize this way unless your name is JSON:
+    [JsonConstructor]
     public SortAlgorithm(string Directory)
     {
         UITask TempTask = (object _, PromptData _) => { return null; };
@@ -45,11 +46,10 @@ internal class SortAlgorithm
         _myGetUserActionTask = TempGetUserAction;
         _myStrengthDetector = new StrengthDetector();
         _myRuleGenerator = new RuleGenerator(_myStrengthDetector);
-        _myRuleExecuter = new();
         _myFilterData = new FilterData();
     }
 
-    //always initialize this way:
+    //always initialize this way unless your name is JSON:
     public SortAlgorithm(
         string myfolder,
         PromptUser _promptUser, 
@@ -128,7 +128,7 @@ internal class SortAlgorithm
         if (newRule != null)
         {
             List<Rule> OldRules = RuleEditor.GetRules();
-            if (await _myPromptUser.Prompt(newRule, OldRules))
+            if (await _myPromptUser.Prompt(newRule, OldRules, PromptData.PromptReason.RuleCreated))
             {
                 //_myRuleGenerator.
                 _myRuleExecuter.OnRuleMade(newRule);
