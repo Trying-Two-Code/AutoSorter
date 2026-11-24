@@ -103,6 +103,15 @@ namespace Core.Sorter.Executor
         public void UndoExecution(FileMoveInfo UndoMove)
         {
             Debug.Assert(File.Exists(UndoMove.NewPath));
+            FileSystemManager.Move(UndoMove.NewPath, UndoMove.OldPath);
+        }
+
+        public void UndoExecution(List<FileMoveInfo> UndoMoves)
+        {
+            foreach(FileMoveInfo MoveInfo in UndoMoves)
+            {
+                UndoExecution(MoveInfo);
+            }
         }
 
         private static List<MatchDetectors.Rule> ShouldExecuteRules(
