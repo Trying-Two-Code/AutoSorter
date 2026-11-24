@@ -1,14 +1,12 @@
 ﻿using Core.Sorter.MatchDetectors;
 using Core.Sorter.Test.Helpers;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Formats.Tar;
-using System.Numerics;
-using System.Text;
 
 namespace Core.Sorter.Creator
 {
+    /// <summary>
+    /// A class that creates rules.
+    /// </summary>
     internal class RuleGenerator
     {
         public StrengthDetector MyStrengthDetector {get; set;}
@@ -19,32 +17,36 @@ namespace Core.Sorter.Creator
         }
 
         /// <summary>
-        /// Returns the power set of all possible param combinations for a file. Keep in mind
-        /// this method is a time sinker: O((2^AllParameters) * AllParameters)
+        /// Generates the power set of all possible param combinations for a file. Keep in mind
+        /// this method is a time sinker: ((2^AllParameters) * AllParameters)
         /// </summary>
         /// <param name="limit"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// The power set of all possible param combinations for a file.
+        /// Minus all the param combinations that have less params than
+        /// minParams.
+        /// </returns>
         public List<List<Param>> AllParams(
             FileInfo forFile, 
             int limit,
-            int minParams)
+            int minParams = 2)
         {
             List<List<Param>> AllParamList = new();
 
             int possibleSubsetCount = (int)Math.Pow((double)2, (double)ParamOptions.AllParamaters.Count);
 
-            for (int subsetI = 0; subsetI < Math.Min(possibleSubsetCount, limit); subsetI += 1)
+            int SubsetCount = Math.Min(possibleSubsetCount, limit);
+
+            for (int SubsetIndex = 0; SubsetIndex < SubsetCount; SubsetIndex++)
             {
-                int Count = GetSubsetCount(subsetI);
-                if (Count >= minParams)
+                int ExpectedCount = GetSubsetCount(SubsetIndex);
+                if(ExpectedCount >= minParams)
                 {
-                    List<Param> paramList = CreateParamList(subsetI, forFile);
-                    //Debug.Assert(paramList.Count == Count);
-                    if(paramList.Count != Count)
-                    {
-                        continue;
-                    }
-                    AllParamList.Add(paramList);
+                    List<Param> SubsetParamList = CreateParamList(SubsetIndex, forFile);
+
+                    Debug.Assert(SubsetParamList.Count == ExpectedCount);
+
+                    AllParamList.Add(SubsetParamList);
                 }
             }
 
@@ -52,29 +54,35 @@ namespace Core.Sorter.Creator
         }
 
         /// <summary>
-        /// returns the amount of params that a subsetI would generate
+        /// returns the length of the list of params that a subset int would contain
         /// </summary>
         public int GetSubsetCount(
             int subsetI)
         {
-            int count = int.PopCount(subsetI);
-            return count;
+            return int.PopCount(subsetI);
         }
 
+        /// <summary>
+        /// Creates a list of paramaters. 
+        /// It uses an int called subsetI
+        /// </summary>
+        /// <param name="ParamaterMask">An integer that effeciently stores the bits
+        /// that decide which paramaters belong in the param list</param>
+        /// <returns>A list of params that matches the paramater mask</returns>
         public List<Param> CreateParamList(
-            int subsetI,
+            int ParamaterMask,
             FileInfo forFile,
             bool canContainNullParams = false
             )
         {
-            List<Param> tempList = new();
+            List<Param> ResultList = new();
 
             for (int i = 0; i < ParamOptions.AllParamaters.Count; i += 1)
             {
-                int mask = (1 << i);
-                bool subsetInMask = (subsetI & mask) != 0;
+                int bitMask = (1 << i);
+                bool BitMaskInParamaterMask = (ParamaterMask & bitMask) != 0;
 
-                if (subsetInMask)
+                if (BitMaskInParamaterMask)
                 {
                     ParamOptions defaultParam = ParamOptions.AllParamaters[i];
                     string PropertyName = defaultParam.name;
@@ -94,32 +102,21 @@ namespace Core.Sorter.Creator
                             ?.GetValue(forFile)!;
                     }
 
-                    //Important:
-                    if (value?.GetType() == defaultParam.ValueType)
-                    {
-                        newParameter.PropertyContains = value.ToString();
-                    }
-                    else
-                    {
-                        if(!canContainNullParams)
-                            break;
-                    }
+                    Debug.Assert(value?.GetType() == defaultParam.ValueType, 
+                        $"Value of file metadata {value} dost not match expected value type {defaultParam.ValueType}.");
+                    newParameter.PropertyContains = value.ToString();
 
-                    tempList.Add(newParameter);
+                    ResultList.Add(newParameter);
                 }
             }
 
-            return tempList;
+            return ResultList;
         }
 
         /// <summary>
-        /// Returns the power set of possible rule paramaters as rules.
+        /// Generates the power set of possible rule paramaters as rules.
         /// </summary>
-        /// <param name="allData"></param>
-        /// <param name="newData"></param>
-        /// <param name="oldPath"></param>
-        /// <param name="limit"></param>
-        /// <returns>The list of rules that can be created for a given file</returns>
+        /// <returns>The list of rules that can be created for a given file (limited in Count by limit)</returns>
         public List<Rule> AllRules(
             HashSet<FileInfo> allData,
             List<FileMoveInfo> userActions,
@@ -128,18 +125,26 @@ namespace Core.Sorter.Creator
             int limit,
             int minParams)
         {
-            myTimeLog.Start();
             List<List<Param>> allParameters = AllParams(newData, limit, minParams);
-            myTimeLog.Log($"AllParams:{allParameters.Count}");
             List<Rule> allRules = FileUtility.ConvertParamsToRules(
                 allData, userActions, oldPath, newData.DirectoryName, allParameters);
-            myTimeLog.Log($"ConvertRules:{allRules.Count}");
 
             return allRules;
         }
 
-        TimeLog myTimeLog = new("RuleGenerator");
-
+        /// <summary>
+        /// Calls all the functions necessary to generate a strong rule
+        /// that matches a dataset
+        /// </summary>
+        /// <param name="allData"></param>
+        /// <param name="userActions"></param>
+        /// <param name="newData"></param>
+        /// <param name="oldPath"></param>
+        /// <param name="MinimumParams"></param>
+        /// <param name="MinimumFileMatches"></param>
+        /// <param name="RequiredStrength"></param>
+        /// <param name="RuleLimit"></param>
+        /// <returns></returns>
         public Rule? GenerateStrongRule(
             HashSet<FileInfo> allData, 
             List<FileMoveInfo> userActions, 
@@ -161,32 +166,28 @@ namespace Core.Sorter.Creator
             FilterData myFilterData = new();
             StrengthDetector myStrengthDetector = new();
             //generate a list of rules
-            List<MatchDetectors.Rule> GeneratedRules = AllRules(
+            List<Rule> GeneratedRules = AllRules(
                 allData, userActions,
                 newData, oldPath,
                 RuleLimit,
                 MinimumParams);
-            myTimeLog.Log($"AllRules{GeneratedRules.Count}");
 
             //remove any weak rules
-            List<MatchDetectors.Rule> StrongGeneratedRules = myStrengthDetector.StrongRules(
+            List<Rule> StrongGeneratedRules = myStrengthDetector.StrongRules(
                 allRules: GeneratedRules,
                 requiredStrength: RequiredStrength,
                 requiredParams: MinimumParams,
                 requiredMatches: MinimumFileMatches,
                 limit: RuleLimit);
-            myTimeLog.Log($"strongRules{StrongGeneratedRules.Count}");
 
             //remove any rules if they already exist
-            List<MatchDetectors.Rule> OldRules = RuleEditor.GetRules();
+            List<Rule> OldRules = RuleEditor.GetRules();
             StrongGeneratedRules = myFilterData.DetectDuplicateRules(StrongGeneratedRules, OldRules);
-            myTimeLog.Log($"strongRules{StrongGeneratedRules.Count}");
 
             //find the strongest rule
-            List<MatchDetectors.Rule>? Strongest = myStrengthDetector.StrongestRules(StrongGeneratedRules);
-            myTimeLog.Log($"strongestRules{Strongest.Count}");
+            List<Rule>? Strongest = myStrengthDetector.StrongestRules(StrongGeneratedRules);
 
-            MatchDetectors.Rule? newRule = null;
+             Rule? newRule = null;
 
             //arbitrary, since all the strongest rules are equal in their effectiveness
             //TODO: make rules slightly stronger depending on if param has an approximate
