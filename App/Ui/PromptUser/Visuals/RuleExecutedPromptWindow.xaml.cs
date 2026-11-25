@@ -1,4 +1,5 @@
 ﻿using Core;
+using Core.Sorter.Creator;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -33,19 +34,16 @@ namespace App.Ui.PromptUser.Visuals
             return await MyPromptWindow.MyTaskResult.Task;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void ok_Click(object sender, RoutedEventArgs e)
         {
             MyPromptWindow.DecisionMade(true);
+            Close();
         }
 
         private void Undo_Click(object sender, RoutedEventArgs e)
         {
             MyPromptWindow.DecisionMade(false);
+            Close();
         }
 
         private void OnRuleInfoClicked(object sender, RoutedEventArgs e)
@@ -60,12 +58,34 @@ namespace App.Ui.PromptUser.Visuals
         
         private void OnHistoryClicked(object sender, RoutedEventArgs e)
         {
+            List<string> historyInformation = new()
+            {
+                $"All automatic file movements: \n",
 
+            };
+            if(MyPromptData.FileMoveHistory != null)
+            {
+                foreach (FileMoveInfo fileMove in MyPromptData.FileMoveHistory)
+                {
+                    historyInformation.Add(
+                        $"file moved from {fileMove.OldPath} to {fileMove.NewPath}"
+                    );
+                }
+            }
+            else
+            {
+                historyInformation.Add("Is empty (:");
+            }
+            MyPromptWindow.CreateInformationWindow("File Movement History", historyInformation);
         }
 
         private void OnOtherRuleInfoClicked(object sender, RoutedEventArgs e)
         {
+            List<string> otherRuleData = new List<string>()
+            {
+                "Other Rules:",
 
+            };
         }
 
         private void OnSettingsClicked(object sender, RoutedEventArgs e)

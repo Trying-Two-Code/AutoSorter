@@ -79,7 +79,6 @@ namespace App.Ui.PromptUser
 
         public async Task<bool> CreateRuleExecutedPrompt(PromptData promptData)
         {
-            Debug.WriteLine("MakingRuleExecutedPrompt");
             RuleExecutedPromptWindow? MyPromptWindow = null;
 
             await myUiDispatcher.InvokeAsync(() =>

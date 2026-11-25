@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace App.Ui.PromptUser
 {
-    class PromptWindow : Window
+    class PromptWindow
     {
         public EventHandler<Window> NewInfoWindowMade { get; set; }
 
@@ -49,7 +49,6 @@ namespace App.Ui.PromptUser
             {
                 MyTaskResult.SetResult(result);
             }
-            Close();
         }
     }
 }
