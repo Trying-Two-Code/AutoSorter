@@ -6,6 +6,9 @@ namespace Core.Sorter.Creator
 {
     /// <summary>
     /// A class that creates rules.
+    /// 
+    /// The way it does this is by generating every possible rule.
+    /// Then finding the strongest rule in the list.
     /// </summary>
     internal class RuleGenerator
     {
@@ -64,7 +67,6 @@ namespace Core.Sorter.Creator
 
         /// <summary>
         /// Creates a list of paramaters. 
-        /// It uses an int called subsetI
         /// </summary>
         /// <param name="ParamaterMask">An integer that effeciently stores the bits
         /// that decide which paramaters belong in the param list</param>
