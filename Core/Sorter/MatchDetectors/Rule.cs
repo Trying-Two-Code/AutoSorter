@@ -158,17 +158,22 @@ namespace Core.Sorter.MatchDetectors
 
         public bool CheapRuleEqualityCheck(Rule OtherRule)
         {
+            if(OtherRule == this)
+            {
+                return true;
+            }
+
             if((OtherRule?.Parameters == null) != (Parameters == null))
             {
                 return false;
             }
 
-            if (ParamListCorralation(OtherRule.Parameters) > 0.9f)
+            if (ParamListCorralation(OtherRule!.Parameters) == 1f)
             {
                 return true;
             }
 
-            if (StringListCorralation(MatchingFiles, OtherRule.MatchingFiles) > 0.9f)
+            if (StringListCorralation(MatchingFiles, OtherRule!.MatchingFiles) > 0.9f)
             {
                 return true;
             }

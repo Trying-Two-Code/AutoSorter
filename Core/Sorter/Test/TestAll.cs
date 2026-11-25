@@ -14,20 +14,20 @@ namespace Core.Sorter.Test
 
         public TestAll(UITask uiTask)
         {
-                TestExecutor MyTestExecutor = new TestExecutor();
-                AllTests.Add(MyTestExecutor);
-                TestRuleGenerator MyTestCreator = new TestRuleGenerator();
-                AllTests.Add(MyTestCreator);
-                TestMatchDetectors.TestRule MyTestRule = new TestMatchDetectors.TestRule();
-                AllTests.Add(MyTestRule);
-                TestSortAlgorithm MyTestSortAlgorithm = new TestSortAlgorithm();
-                AllTests.Add(MyTestSortAlgorithm);
-                TestStrengthDetector MyTestStrengthDetector = new TestStrengthDetector();
-                AllTests.Add(MyTestStrengthDetector);
-                TestFilter MyTestFilter = new TestFilter();
-                AllTests.Add(MyTestFilter);
-                TestPromptUser MyTestPromptUser = new TestPromptUser(uiTask);
-                AllTests.Add(MyTestPromptUser);
+            TestExecutor MyTestExecutor = new TestExecutor();
+            AllTests.Add(MyTestExecutor);
+            TestRuleGenerator MyTestCreator = new TestRuleGenerator();
+            AllTests.Add(MyTestCreator);
+            TestMatchDetectors.TestRule MyTestRule = new TestMatchDetectors.TestRule();
+            AllTests.Add(MyTestRule);
+            TestSortAlgorithm MyTestSortAlgorithm = new TestSortAlgorithm();
+            AllTests.Add(MyTestSortAlgorithm);
+            TestStrengthDetector MyTestStrengthDetector = new TestStrengthDetector();
+            AllTests.Add(MyTestStrengthDetector);
+            TestFilter MyTestFilter = new TestFilter();
+            AllTests.Add(MyTestFilter);
+            TestPromptUser MyTestPromptUser = new TestPromptUser(uiTask);
+            AllTests.Add(MyTestPromptUser);
         }
 
         private TimeLog _TimeLog = new("TestAll");

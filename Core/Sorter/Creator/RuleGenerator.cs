@@ -104,6 +104,16 @@ namespace Core.Sorter.Creator
                             ?.GetValue(forFile)!;
                     }
 
+                    if (value == null)
+                    {
+                        if (canContainNullParams)
+                        {
+                            ResultList.Add(newParameter);
+                        }
+
+                        continue;
+                    }
+
                     Debug.Assert(value?.GetType() == defaultParam.ValueType, 
                         $"Value of file metadata {value} dost not match expected value type {defaultParam.ValueType}.");
                     newParameter.PropertyContains = value.ToString();
@@ -189,7 +199,7 @@ namespace Core.Sorter.Creator
             //find the strongest rule
             List<Rule>? Strongest = myStrengthDetector.StrongestRules(StrongGeneratedRules);
 
-             Rule? newRule = null;
+            Rule? newRule = null;
 
             //arbitrary, since all the strongest rules are equal in their effectiveness
             //TODO: make rules slightly stronger depending on if param has an approximate

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Core.Sorter.Test;
+using Core.Sorter.Creator;
 
 namespace Core
 {
@@ -11,10 +12,11 @@ namespace Core
         required public PromptReason? MyPromptReason;
         required public string PromptString { get; set; }
         required public string ParameterInfos { get; set; }
-        required public List<string> FileMoveInfos { get; set; }
+        public List<string>? FileMoveInfos { get; set; }
         required public List<Rule> OldRules { private get; init; }
         required public string StartPath { get; set; }
         required public string EndPath { get; set; }
+        public List<FileMoveInfo>? FileMoveHistory { get; set; }
         public TestData? TestData { get; set; } = null;
 
         public List<string> OldRulesData

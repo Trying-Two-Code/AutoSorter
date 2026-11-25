@@ -5,7 +5,7 @@ using System.Text;
 namespace Core.Sorter.Creator
 {
     /// <summary>
-    /// A struct that is made to easily and without much data hold
+    /// A struct that is made to easily hold
     /// important data pertaining to file movements. 
     /// </summary>
     public struct FileMoveInfo()

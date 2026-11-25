@@ -39,7 +39,7 @@ namespace Core.Sorter.Creator
         }
 
         /// <summary>
-        /// Makes sure that the rules are distint and that none of them exist
+        /// Makes sure that the rules are distinct and that none of them exist
         /// in the rule file already.
         /// </summary>
         /// <param name="Rules"></param>
@@ -50,13 +50,15 @@ namespace Core.Sorter.Creator
         {
             IEnumerable<Rule> DistinctRules = NewRules.Distinct();
 
-            Debug.WriteLine("fix this, if there are two distinct rules, it shouldn't remove both");
-            IEnumerable<Rule> result = DistinctRules.Where(rule =>
-            {
-                return rule.CheapRuleEqualityCheck(DistinctRules).ToList().Count == 0;
-            }).ToList();
+            DistinctRules = DistinctRules.DistinctBy(rule => new
+                {
+                    rule.Parameters,
+                    rule.Strength
+                }
+            ).ToList();
+            Debug.Assert(NewRules.Count <= DistinctRules.Count());
 
-            return result.ToList();
+            return DistinctRules.ToList();
         }
 
         /// <summary>
