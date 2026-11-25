@@ -177,7 +177,7 @@ internal class SortAlgorithm
         }
 
         bool isInCorrectFolder = e.NewFile.DirectoryName.Contains(_myFolder);
-        bool isRedundantData = _myFilterData.RedundantData(e.NewFile);
+        bool isRedundantData = _myFilterData.RedundantPrompt(e.NewFile);
 
         if (isInCorrectFolder && !isRedundantData)
         {
@@ -193,14 +193,14 @@ internal class SortAlgorithm
 
                 string? oldPath = Path.GetDirectoryName(e.OldPath);
 
-                _myFilterData.AddOldData(e.NewFile.FullName, true);
+                _myFilterData.AddPromptHistory(e.NewFile.FullName, true);
 
                 if (oldPath != null)
                     ManageRules(AllFileInfo, e.NewFile, oldPath);
             }
         } else if (isRedundantData)
         {
-            _myFilterData.AddOldData(e.NewFile.FullName, false);
+            _myFilterData.AddPromptHistory(e.NewFile.FullName, false);
         }
     }
 }

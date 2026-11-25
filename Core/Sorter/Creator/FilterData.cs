@@ -1,10 +1,5 @@
 ﻿using Core.Sorter.MatchDetectors;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
-using System.Text.Json;
-using static Core.Sorter.Creator.FilterData;
 
 namespace Core.Sorter.Creator
 {
@@ -48,30 +43,36 @@ namespace Core.Sorter.Creator
         /// in the rule file already.
         /// </summary>
         /// <param name="Rules"></param>
-        /// <returns></returns>
-        public List<MatchDetectors.Rule> DetectDuplicateRules(
-            List<MatchDetectors.Rule> NewRules, 
-            List<MatchDetectors.Rule> OldRules)
+        /// <returns>Rule list without duplicates.</returns>
+        public List<Rule> DetectDuplicateRules(
+            List<Rule> NewRules, 
+            List<Rule> OldRules)
         {
-            IEnumerable<Rule> result = NewRules.Distinct().Where(rule =>
+            IEnumerable<Rule> DistinctRules = NewRules.Distinct();
+
+            Debug.WriteLine("fix this, if there are two distinct rules, it shouldn't remove both");
+            IEnumerable<Rule> result = DistinctRules.Where(rule =>
             {
-                return rule.CheapRuleEqualityCheck(OldRules.Distinct()).ToList().Count == 0;
+                return rule.CheapRuleEqualityCheck(DistinctRules).ToList().Count == 0;
             }).ToList();
 
             return result.ToList();
         }
 
         /// <summary>
-        /// How long to wait before prompting the user about a folder after they said no.
+        /// How many prompts to skip
+        /// before prompting the user about a folder.
         /// </summary>
-        public int promptAmmount { get; set; } = 10;
+        public int PromptAmmount { get; set; } = 10;
         private List<FilePromptDatapoint> PreviousDatapoints { get; set; }
-        public bool RedundantData(FileInfo newDatapoint)
+
+        /// <returns>Wether a fileinfo has been prompted about too much or not</returns>
+        public bool RedundantPrompt(FileInfo newDatapoint)
         {
             List<string> PreviousPrompts = FilePromptDatapoint.GetPromptedFiles(PreviousDatapoints);
 
             if (PreviousPrompts.Count == 0)
-                return promptAmmount >= 0;
+                return PromptAmmount >= 0;
 
             List<FilePromptDatapoint> Matches = PreviousDatapoints.Where(match =>
             {
@@ -83,18 +84,19 @@ namespace Core.Sorter.Creator
                 FilePromptDatapoint data = PreviousDatapoints[i];
                 if (data.WasPrompted)
                 {
-                    //Negative index is how many falses preceded the true
                     //aka: how many prompts didn't happen before now
-                    int NegativeIndex = PreviousDatapoints.Count - i; 
-                    return NegativeIndex >= promptAmmount;
+                    int NegativeIndex = PreviousDatapoints.Count - i;
+                    return NegativeIndex >= PromptAmmount;
                 }
             }
-
-            // (if statement is implied)
-            // if (matches.Count == 0)
-            return promptAmmount >= 0;
+            
+            Debug.Assert(Matches.Count == 0);
+            return PromptAmmount >= 0;
         }
 
+        /// <summary>
+        /// stores when a file was considered for prompting
+        /// </summary>
         public class FilePromptDatapoint
         {
             public FilePromptDatapoint(string file, bool wasPrompted)
@@ -106,6 +108,7 @@ namespace Core.Sorter.Creator
             public string File { get; set; }
             public bool WasPrompted { get; set; }
 
+            /// <returns>A list of files that were previously prompted for</returns>
             public static List<string> GetPromptedFiles(List<FilePromptDatapoint> FromFilePrompts)
             {
                 return FromFilePrompts.Where(filePrompt =>
@@ -122,7 +125,10 @@ namespace Core.Sorter.Creator
             }
         }
 
-        public void AddOldData(string newDatapoint, bool prompted)
+        /// <summary>
+        /// Adds a datapoint to the prompt history
+        /// </summary>
+        public void AddPromptHistory(string newDatapoint, bool prompted)
         {
             FilePromptDatapoint NewData = new FilePromptDatapoint(newDatapoint, prompted);
             PreviousDatapoints.Add(NewData);

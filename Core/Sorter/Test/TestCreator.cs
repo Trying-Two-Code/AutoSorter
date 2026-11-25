@@ -238,16 +238,16 @@ namespace Core.Sorter.Test
             {
                 using (FileStream file = File.Create(Path.Combine(MyDirectory, "example.txt")))
                 {
-                    MyFilterData.promptAmmount = 2;
+                    MyFilterData.PromptAmmount = 2;
 
-                    bool take1 = MyFilterData.RedundantData(new FileInfo(file.Name));
-                    MyFilterData.AddOldData(file.Name, take1);
-                    bool take2 = MyFilterData.RedundantData(new FileInfo(file.Name));
-                    MyFilterData.AddOldData(file.Name, take2);
-                    bool take3 = MyFilterData.RedundantData(new FileInfo(file.Name));
-                    MyFilterData.AddOldData(file.Name, take3);
-                    bool take4 = MyFilterData.RedundantData(new FileInfo(file.Name));
-                    MyFilterData.AddOldData(file.Name, take4);
+                    bool take1 = MyFilterData.RedundantPrompt(new FileInfo(file.Name));
+                    MyFilterData.AddPromptHistory(file.Name, take1);
+                    bool take2 = MyFilterData.RedundantPrompt(new FileInfo(file.Name));
+                    MyFilterData.AddPromptHistory(file.Name, take2);
+                    bool take3 = MyFilterData.RedundantPrompt(new FileInfo(file.Name));
+                    MyFilterData.AddPromptHistory(file.Name, take3);
+                    bool take4 = MyFilterData.RedundantPrompt(new FileInfo(file.Name));
+                    MyFilterData.AddPromptHistory(file.Name, take4);
 
                     Debug.WriteLine($"1:{take1}2:{take2}3:{take3}4:{take4}");
 
