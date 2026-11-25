@@ -38,12 +38,14 @@ namespace App.Ui.PromptUser
         {
             //send true
             MyPromptWindow.DecisionMade(true);
+            Close();
         }
 
         public void OnNoPressed(object sender, EventArgs args)
         {
             //send false
             MyPromptWindow.DecisionMade(false);
+            Close();
         }
 
         public void OnHaltNotificationsPressed()
