@@ -1,4 +1,5 @@
-﻿using Core.Sorter.MatchDetectors;
+﻿using Core.PromptUser;
+using Core.Sorter.MatchDetectors;
 using System.Diagnostics;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -23,10 +24,10 @@ namespace Core.Sorter.Creator
                 return (DateTime.Now - lastCheck) < promptAmmount;
             } }
 
-        public async Task<bool> Prompt(Rule rule, List<Rule> oldRules, PromptData.PromptReason reason)
+        public async Task<PromptResponse> Prompt(Rule rule, List<Rule> oldRules, PromptData.PromptReason reason)
         {
-            if (Mute) return false;
-            if (isSpam) return false;
+            if (Mute) return PromptResponse.MutedPrompt;
+            if (isSpam) return PromptResponse.SpamPrompt;
             lastCheck = DateTime.Now;
 
             PromptData data = GeneratePromptData(rule, oldRules, reason);
@@ -34,10 +35,10 @@ namespace Core.Sorter.Creator
             return await Prompt(data);
         }
 
-        public async Task<bool> Prompt(PromptData promptData)
+        public async Task<PromptResponse> Prompt(PromptData promptData)
         {
-            Task<bool> uiTask = UIEvent(this, promptData);
-            bool result = await uiTask;
+            Task<PromptResponse> uiTask = UIEvent(this, promptData);
+            PromptResponse result = await uiTask;
 
             return result;
         }

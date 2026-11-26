@@ -1,6 +1,7 @@
 ﻿using App.Ui.PromptUser.Visuals;
 using App.Ui.UiScripts;
 using Core;
+using Core.PromptUser;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,7 +30,7 @@ namespace App.Ui.PromptUser
             MyPromptWindow = new PromptWindow();
         }
 
-        public async Task<bool> GetUserInput()
+        public async Task<PromptResponse> GetUserInput()
         {
             return await MyPromptWindow.MyTaskResult.Task;
         }
@@ -37,14 +38,14 @@ namespace App.Ui.PromptUser
         public void OnYesPressed(object sender, EventArgs args)
         {
             //send true
-            MyPromptWindow.DecisionMade(true);
+            MyPromptWindow.DecisionMade(PromptResponse.ResponseOk);
             Close();
         }
 
         public void OnNoPressed(object sender, EventArgs args)
         {
             //send false
-            MyPromptWindow.DecisionMade(false);
+            MyPromptWindow.DecisionMade(PromptResponse.ResponseNo);
             Close();
         }
 
@@ -92,7 +93,7 @@ namespace App.Ui.PromptUser
 
         public void Window_Closed(object sender, EventArgs args)
         {
-            MyPromptWindow.DecisionMade(false);
+            MyPromptWindow.DecisionMade(PromptResponse.ResponseClosed);
         }
 
         public void Window_Deactivated(object sender, EventArgs args)

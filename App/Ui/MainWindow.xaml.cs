@@ -1,8 +1,9 @@
-﻿using App.Ui.UiComponents;
+﻿using App.Ui.PromptUser;
+using App.Ui.UiComponents;
 using App.Ui.UiScripts;
-using App.Ui.PromptUser;
 using BCore;
 using Core;
+using Core.PromptUser;
 using Syroot.Windows.IO;
 using System.Diagnostics;
 using System.IO;
@@ -144,7 +145,7 @@ public partial class MainWindow : Window
         UserData.Show();
     }
 
-    public async Task<bool> OnUIEventRecieved(object sender, PromptData args)
+    public async Task<PromptResponse> OnUIEventRecieved(object sender, PromptData args)
     {
         return await _userPrompter.HandleRequest(sender, args);
     }

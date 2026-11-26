@@ -25,7 +25,7 @@ public class AutoSorter
     public AutoSorter(
         string watchRoot,
         string sourceRoot,
-        PromptUser promptUser)
+        Sorter.Creator.PromptUser promptUser)
     {
         Log.AppendLog(
             $"AutoSorter initializing: watch={watchRoot}, sourceRoot={sourceRoot}");

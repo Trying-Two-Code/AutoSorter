@@ -1,4 +1,5 @@
-﻿using Core.Sorter.Creator;
+﻿using Core.PromptUser;
+using Core.Sorter.Creator;
 using Core.Sorter.MatchDetectors;
 using System.Diagnostics;
 using static Core.Sorter.Test.TestData;
@@ -36,7 +37,8 @@ namespace Core.Sorter.Test
                     TestAction.ClickYes
                 }
             };
-            bool TestTrueDataResult = myUITask(this, TestTrueData).Result;
+            PromptResponse TestTrueDataResult = myUITask(this, TestTrueData).Result;
+            bool TestTrueDataResultExpected = TestTrueDataResult.MyCode == PromptResponse.Code.UserOk;
 
             PromptData TestFalseData = nullData.defaultPrompt;
             TestFalseData.TestData = new TestData()
@@ -46,9 +48,10 @@ namespace Core.Sorter.Test
                     TestAction.ClickNo
                 }
             };
-            bool TestFalseDataResult = myUITask(this, TestFalseData).Result;
+            PromptResponse TestFalseDataResult = myUITask(this, TestFalseData).Result;
+            bool TestFalseDataResultExpected = TestFalseDataResult.MyCode == PromptResponse.Code.UserNo;
 
-            return !TestFalseDataResult && TestTrueDataResult;
+            return TestFalseDataResultExpected && TestTrueDataResultExpected;
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using Core;
+using Core.PromptUser;
 using Core.Sorter.Test;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace App.Ui.PromptUser
     {
         public TestData? MyTestData { get; set; } = null;
 
-        public async Task<bool> TestPrompt(PromptData promptData, RuleMadePromptWindow promptWindow)
+        public async Task<PromptResponse> TestPrompt(PromptData promptData, RuleMadePromptWindow promptWindow)
         {
             CurrentWindow = promptWindow;
 
@@ -60,7 +61,7 @@ namespace App.Ui.PromptUser
                 }
             }
 
-            bool decision = GetDecision(promptWindow);
+            PromptResponse decision = GetDecision(promptWindow);
 
             if (promptWindow.IsLoaded)
             {
@@ -81,9 +82,9 @@ namespace App.Ui.PromptUser
         /// bypasses user decision since during testing it would not 
         /// be chill to force the dev to manually input buttons
         /// </summary>
-        private bool GetDecision(RuleMadePromptWindow promptWindow)
+        private PromptResponse GetDecision(RuleMadePromptWindow promptWindow)
         {
-            bool result = promptWindow.GetUserInput().Result;
+            PromptResponse result = promptWindow.GetUserInput().Result;
             return result;
         }
 

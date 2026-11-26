@@ -1,4 +1,5 @@
 ﻿using App.Ui.PromptUser.Visuals;
+using Core.PromptUser;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -41,9 +42,9 @@ namespace App.Ui.PromptUser
             OpenExtraInfoDisplayNames.Remove(extraInfoDisplay.Title);
         }
 
-        public TaskCompletionSource<bool> MyTaskResult { get; private set; } = new();
+        public TaskCompletionSource<PromptResponse> MyTaskResult { get; private set; } = new();
 
-        public void DecisionMade(bool result)
+        public void DecisionMade(PromptResponse result)
         {
             if (MyTaskResult != null && !MyTaskResult.Task.IsCompleted)
             {

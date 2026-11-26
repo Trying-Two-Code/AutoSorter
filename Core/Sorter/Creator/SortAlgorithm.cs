@@ -9,6 +9,7 @@
 // - StartPath == C://Downloads/A && EndPath == C://Downloads/B
 //is returned
 using Core.FileSystem;
+using Core.PromptUser;
 using Core.Sorter.Executor;
 using Core.Sorter.MatchDetectors;
 using Core.Sorter.Test.Helpers;
@@ -128,7 +129,8 @@ internal class SortAlgorithm
         if (newRule != null)
         {
             List<Rule> OldRules = RuleEditor.GetRules();
-            if (await _myPromptUser.Prompt(newRule, OldRules, PromptData.PromptReason.RuleCreated))
+            PromptResponse response = await _myPromptUser.Prompt(newRule, OldRules, PromptData.PromptReason.RuleCreated);
+            if (response.MyCode == PromptResponse.Code.UserOk)
             {
                 //_myRuleGenerator.
                 _myRuleExecuter.OnRuleMade(newRule);

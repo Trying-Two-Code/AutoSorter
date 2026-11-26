@@ -1,5 +1,6 @@
 ﻿//Overview: Executes on all the rules made by SortAlgorithm
 
+using Core.PromptUser;
 using Core.Sorter.Creator;
 using Helper.FileSystem;
 using Helpers.DataGathering;
@@ -13,10 +14,10 @@ namespace Core.Sorter.Executor
     public class RuleExecuter
     {
         private RuleEditor MyRuleEditor { get; set; }
-        private PromptUser? MyPromptUser { get; set; }
+        private Creator.PromptUser? MyPromptUser { get; set; }
         private JSONDataMinipulator<FileMoveInfo> MoveHistoryJSON;
 
-        public RuleExecuter(PromptUser _promptUser)
+        public RuleExecuter(Creator.PromptUser _promptUser)
         {
             MoveHistoryJSON = new JSONDataMinipulator<FileMoveInfo>("RuleExecutionHistory.json", "RuleExecutor");
             MyRuleEditor = new RuleEditor();
@@ -61,9 +62,9 @@ namespace Core.Sorter.Executor
                 throw new NoUserPrompterException();
             }
 
-            bool promptResult = await MyPromptUser.Prompt(data);
+            PromptResponse promptResult = await MyPromptUser.Prompt(data);
 
-            if (promptResult)
+            if (promptResult.MyCode == PromptResponse.Code.UserOk)
             {
                 ExecuteRule(rule, currentFileInfo);
             }

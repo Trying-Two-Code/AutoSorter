@@ -1,4 +1,5 @@
 ﻿using Core.FileSystem;
+using Core.PromptUser;
 using Core.Sorter.Creator;
 using Core.Sorter.Test;
 using System;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace Core;
 
-public delegate Task<bool> UITask(object sender, PromptData args);
+public delegate Task<PromptResponse> UITask(object sender, PromptData args);
 public delegate object GetSettingsTask(object sender, EventArgs args);
 public delegate List<object> GetUserActionTask(object sender, EventArgs args);
 
@@ -24,7 +25,7 @@ public class CoreAlgorithm
 
     public CoreAlgorithm(String path, String sourceRoot, UITask _uIEvent, GetSettingsTask _getSettings)
     {
-        PromptUser _promptUser = new PromptUser(_uIEvent);
+        Sorter.Creator.PromptUser _promptUser = new Sorter.Creator.PromptUser(_uIEvent);
         _autoSorter = new AutoSorter(path, sourceRoot, _promptUser);
 
         GetUserActionTask _getUserAction = _autoSorter.SendAllDataInstance.GetUserActions;

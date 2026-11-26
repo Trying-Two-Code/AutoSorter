@@ -1,4 +1,5 @@
 ﻿using Core;
+using Core.PromptUser;
 using Core.Sorter.Creator;
 using System;
 using System.Collections.Generic;
@@ -8,9 +9,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace App.Ui.PromptUser.Visuals
 {
@@ -29,20 +27,20 @@ namespace App.Ui.PromptUser.Visuals
             MyPromptWindow = new PromptWindow();
         }
 
-        public async Task<bool> GetUserInput()
+        public async Task<PromptResponse> GetUserInput()
         {
             return await MyPromptWindow.MyTaskResult.Task;
         }
 
         private void ok_Click(object sender, RoutedEventArgs e)
         {
-            MyPromptWindow.DecisionMade(true);
+            MyPromptWindow.DecisionMade(PromptResponse.ResponseOk);
             Close();
         }
 
         private void Undo_Click(object sender, RoutedEventArgs e)
         {
-            MyPromptWindow.DecisionMade(false);
+            MyPromptWindow.DecisionMade(PromptResponse.ResponseUndo);
             Close();
         }
 
@@ -95,7 +93,7 @@ namespace App.Ui.PromptUser.Visuals
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            MyPromptWindow.DecisionMade(false);
+            MyPromptWindow.DecisionMade(PromptResponse.ResponseClosed);
         }
 
         public void Window_MouseDown(object sender, MouseButtonEventArgs e)

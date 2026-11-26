@@ -1,6 +1,7 @@
 ﻿using App.Ui.PromptUser.Visuals;
 using App.Ui.UiScripts;
 using Core;
+using Core.PromptUser;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,7 +29,7 @@ namespace App.Ui.PromptUser
         /// Translates prompts into a resulting method that
         /// matches the reason the prompt was sent here.
         /// </summary>
-        public async Task<bool> PromptUser(PromptData promptData)
+        public async Task<PromptResponse> PromptUser(PromptData promptData)
         {
             Debug.WriteLine("prompting user now.");
             lastPromptTime = DateTime.Now;
@@ -46,10 +47,10 @@ namespace App.Ui.PromptUser
             }
         }
 
-        public async Task<bool> TestPromptUser(PromptData promptData)
+        public async Task<PromptResponse> TestPromptUser(PromptData promptData)
         {
             RuleMadePromptWindow? TestPromptWindow = null;
-            Task<bool>? promptUserTestTask = null;
+            Task<PromptResponse>? promptUserTestTask = null;
 
             await myUiDispatcher.InvokeAsync(() =>
             {
@@ -64,7 +65,7 @@ namespace App.Ui.PromptUser
             return await promptUserTestTask!;
         }
 
-        public async Task<bool> CreateRuleCreatedPrompt(PromptData promptData)
+        public async Task<PromptResponse> CreateRuleCreatedPrompt(PromptData promptData)
         {
             RuleMadePromptWindow? MyPromptWindow = null;
 
@@ -77,7 +78,7 @@ namespace App.Ui.PromptUser
             return await MyPromptWindow!.GetUserInput();
         }
 
-        public async Task<bool> CreateRuleExecutedPrompt(PromptData promptData)
+        public async Task<PromptResponse> CreateRuleExecutedPrompt(PromptData promptData)
         {
             RuleExecutedPromptWindow? MyPromptWindow = null;
 
@@ -90,12 +91,12 @@ namespace App.Ui.PromptUser
             return await MyPromptWindow!.GetUserInput();
         }
 
-        public Task<bool> FalseResult = Task.Run(() =>
+        public Task<PromptResponse> FalseResult = Task.Run(() =>
             {
-                return false;
+                return PromptResponse.NeverPrompted;
             });
 
-        public async Task<bool> HandleRequest(object sender, PromptData args)
+        public async Task<PromptResponse> HandleRequest(object sender, PromptData args)
         {
             if(args.TestData == null)
             {
