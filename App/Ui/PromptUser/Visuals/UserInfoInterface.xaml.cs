@@ -7,29 +7,30 @@ namespace App.Ui.PromptUser.Visuals
     /// <summary>
     /// Interaction logic for ExtraInfoDisplay.xaml
     /// </summary>
-    public partial class ExtraInfoDisplay : Window
+    public partial class UserInfoInterface : Window
     {
         private List<TextBlock> MyTextBlocks = new();
 
-        public ExtraInfoDisplay(string _title, List<string> _information)
+        public UserInfoInterface(string _title, List<InfoInterfaceItem> _information)
         {
             InitializeComponent();
             Title = _title;
-            CreateTexts(_information);
+            CreateInfoItems(_information);
         }
 
-        public void CreateTexts(List<string> texts)
+        public void CreateInfoItems(List<InfoInterfaceItem> _items)
         {
-            foreach(string text in texts)
+            foreach(InfoInterfaceItem InfoInterfaceItem in _items)
             {
-                CreateTextBlock(text);
+                CreateInfoItem(InfoInterfaceItem);
             }
         }
 
-        public TextBlock CreateTextBlock(string text)
+        public TextBlock CreateInfoItem(InfoInterfaceItem item)
         {
             TextBlock newTextBlock = new();
-            newTextBlock.Text = text;
+            newTextBlock.Name = item.Name;
+            newTextBlock.Text = item.LabelText;
             MyTextBlocks.Add(newTextBlock);
 
             AllInfo.Items.Add(newTextBlock);
@@ -46,12 +47,12 @@ namespace App.Ui.PromptUser.Visuals
             textBlock.Padding = new Thickness(10, 10, 10, 10);
         }
 
-        public EventHandler<ExtraInfoDisplay, EventArgs>? OnCloseDisplay;
+        public EventHandler<UserInfoInterface, EventArgs>? OnCloseDisplay;
 
         private void Window_Closed(object sender, EventArgs e)
         {
             OnCloseDisplay?.Invoke(
-                (ExtraInfoDisplay)this, 
+                (UserInfoInterface)this, 
                 EventArgs.Empty);
         }
     }

@@ -57,38 +57,57 @@ namespace App.Ui.PromptUser
 
         public void OnNewRuleInfoClicked(object sender, RoutedEventArgs args)
         {
-            List<string> newRuleInformation = new()
+            List<InfoInterfaceItem> newRuleInformation = new()
             {
-                $"Rule sends files from ({myPromptInformation.StartPath}) to ({myPromptInformation.EndPath})\n",
-                "Parameters: \n" + myPromptInformation.ParameterInfos
+                new()
+                {
+                    LabelText = $"Rule sends files from ({myPromptInformation.StartPath}) to ({myPromptInformation.EndPath})\n"
+                },
+                new()
+                {
+                    LabelText = "Parameters: \n" + myPromptInformation.ParameterInfos
+                }
             };
-            MyPromptWindow.CreateInformationWindow("New Rule", newRuleInformation);
+            MyPromptWindow.CreateInformationInterface("New Rule", newRuleInformation);
         }
 
         public void OnFileInfoClicked(object sender, RoutedEventArgs args)
         {
-            List<string> fileInfos = new();
+            List<InfoInterfaceItem> fileInfos = new();
             foreach(string fileInfo in myPromptInformation.FileMoveInfos)
             {
-                fileInfos.Add(fileInfo);
+                fileInfos.Add(
+                    new() { LabelText = fileInfo });
             }
-            MyPromptWindow.CreateInformationWindow("Old File Info", fileInfos);
+            MyPromptWindow.CreateInformationInterface("Old File Info", fileInfos);
         }
 
         public void OnOldRuleInfoClicked(object sender, RoutedEventArgs args)
         {
-            List<string> OldRuleInfo = myPromptInformation.OldRulesData;
-            MyPromptWindow.CreateInformationWindow("Old Rules", OldRuleInfo);
+            List<InfoInterfaceItem> OldRuleInfo = myPromptInformation
+                .OldRulesData
+                .Select(stringdata =>
+                {
+                    return new InfoInterfaceItem() { LabelText = stringdata };
+                }).ToList();
+            MyPromptWindow.CreateInformationInterface("Old Rules", OldRuleInfo);
         }
 
         public void OnSettingsClicked(object sender, RoutedEventArgs args)
         {
-            List<string> settingsString = new(){
-                "sound muted: " + mySettings.muted.ToString(),
-                "prompt ammount: " + mySettings.promptUserAmm.ToString(),
-                "running: " + mySettings.running.ToString()
-                };
-            MyPromptWindow.CreateInformationWindow("Settings", settingsString);
+            List<InfoInterfaceItem> settingsString = new()
+            {
+                new(){
+                    LabelText = "sound muted: " + mySettings.muted.ToString(),
+                },
+                new(){
+                    LabelText = "prompt ammount: " + mySettings.promptUserAmm.ToString(),
+                },
+                new(){
+                    LabelText = "running: " + mySettings.running.ToString()
+                },
+            };
+            MyPromptWindow.CreateInformationInterface("Settings", settingsString);
         }
 
         public void Window_Closed(object sender, EventArgs args)

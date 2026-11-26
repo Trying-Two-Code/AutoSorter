@@ -1,8 +1,10 @@
-﻿using Core;
+﻿using App.Ui.UiScripts;
+using Core;
 using Core.PromptUser;
 using Core.Sorter.Creator;
 using System;
 using System.Collections.Generic;
+using System.Runtime;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,11 +21,13 @@ namespace App.Ui.PromptUser.Visuals
     {
         private PromptWindow MyPromptWindow;
         private PromptData MyPromptData;
+        private Settings mySettings;
 
-        public RuleExecutedPromptWindow(PromptData _promptData)
+        public RuleExecutedPromptWindow(PromptData _promptData, Settings _settings)
         {
             InitializeComponent();
             MyPromptData = _promptData;
+            mySettings = _settings;
             MyPromptWindow = new PromptWindow();
         }
 
@@ -46,19 +50,28 @@ namespace App.Ui.PromptUser.Visuals
 
         private void OnRuleInfoClicked(object sender, RoutedEventArgs e)
         {
-            List<string> newRuleInformation = new()
+            List<InfoInterfaceItem> newRuleInformation = new()
             {
-                $"Rule sends files from ({MyPromptData.StartPath}) to ({MyPromptData.EndPath})\n",
-                "Parameters: \n" + MyPromptData.ParameterInfos
+                new("")
+                {
+                    LabelText = $"Rule sends files from ({MyPromptData.StartPath}) to ({MyPromptData.EndPath})\n",
+                },
+                new("")
+                {
+                    LabelText = "Parameters: \n" + MyPromptData.ParameterInfos
+                }
             };
-            MyPromptWindow.CreateInformationWindow("Rule Executed", newRuleInformation);
+            MyPromptWindow.CreateInformationInterface("Rule Executed", newRuleInformation);
         }
         
         private void OnHistoryClicked(object sender, RoutedEventArgs e)
         {
-            List<string> historyInformation = new()
+            List<InfoInterfaceItem> historyInformation = new()
             {
-                $"All automatic file movements: \n",
+                new()
+                {
+                    LabelText = $"All automatic file movements: \n",
+                }
 
             };
             if(MyPromptData.FileMoveHistory != null)
@@ -66,15 +79,21 @@ namespace App.Ui.PromptUser.Visuals
                 foreach (FileMoveInfo fileMove in MyPromptData.FileMoveHistory)
                 {
                     historyInformation.Add(
-                        $"file moved from {fileMove.OldPath} to {fileMove.NewPath}"
+                        new()
+                        { 
+                            LabelText = $"file moved from {fileMove.OldPath} to {fileMove.NewPath}"
+                        }
                     );
                 }
             }
             else
             {
-                historyInformation.Add("Is empty (:");
+                historyInformation.Add(new()
+                {
+                    LabelText = $"Is Empty."
+                });
             }
-            MyPromptWindow.CreateInformationWindow("File Movement History", historyInformation);
+            MyPromptWindow.CreateInformationInterface("File Movement History", historyInformation);
         }
 
         private void OnOtherRuleInfoClicked(object sender, RoutedEventArgs e)
@@ -88,7 +107,19 @@ namespace App.Ui.PromptUser.Visuals
 
         private void OnSettingsClicked(object sender, RoutedEventArgs e)
         {
-
+            List<InfoInterfaceItem> settingsString = new()
+            {
+                new(){
+                    LabelText = "sound muted: " + mySettings.muted.ToString(),
+                },
+                new(){
+                    LabelText = "prompt ammount: " + mySettings.promptUserAmm.ToString(),
+                },
+                new(){
+                    LabelText = "running: " + mySettings.running.ToString()
+                },
+            };
+            MyPromptWindow.CreateInformationInterface("Settings", settingsString);
         }
 
         private void Window_Closed(object sender, EventArgs e)

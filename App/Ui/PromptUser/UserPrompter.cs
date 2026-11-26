@@ -84,7 +84,7 @@ namespace App.Ui.PromptUser
 
             await myUiDispatcher.InvokeAsync(() =>
             {
-                MyPromptWindow = new RuleExecutedPromptWindow(promptData);
+                MyPromptWindow = new RuleExecutedPromptWindow(promptData, mySettings);
                 MyPromptWindow.Show();
             });
 

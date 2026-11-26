@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Core.Sorter.Creator;
 
 namespace Core.PromptUser
 {
@@ -13,6 +11,7 @@ namespace Core.PromptUser
 
         public Code? MyCode { get; set; }
         public List<InfoWindow> OpenedInfoWindows { get; set; }
+        public List<FileMoveInfo> UndoMoves { get; set; } = new();
 
         public enum Code
         {

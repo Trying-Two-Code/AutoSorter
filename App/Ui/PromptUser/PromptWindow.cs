@@ -10,32 +10,32 @@ namespace App.Ui.PromptUser
 {
     class PromptWindow
     {
-        public EventHandler<Window> NewInfoWindowMade { get; set; }
+        public EventHandler<Window> NewInfoInterfaceMade { get; set; }
 
-        private List<ExtraInfoDisplay> OpenExtraInfoDisplays = new();
+        private List<UserInfoInterface> OpenExtraInfoDisplays = new();
         private List<string> OpenExtraInfoDisplayNames = new();
-        public void CreateInformationWindow(string title, List<string> data)
+        public void CreateInformationInterface(string title, List<InfoInterfaceItem> data)
         {
-            ExtraInfoDisplay newInfoDisplay = new ExtraInfoDisplay(title, data);
+            UserInfoInterface NewInfoInterface = new UserInfoInterface(title, data);
             bool AlreadyOpened = OpenExtraInfoDisplayNames.Contains(title);
 
             if (AlreadyOpened)
             {
-                newInfoDisplay.Close();
-                ExtraInfoDisplay MatchingDisplay = OpenExtraInfoDisplays.Where(display => display.Title == title).First();
+                NewInfoInterface.Close();
+                UserInfoInterface MatchingDisplay = OpenExtraInfoDisplays.Where(display => display.Title == title).First();
                 MatchingDisplay.Focus();
             }
             else
             {
-                newInfoDisplay.Show();
-                newInfoDisplay.OnCloseDisplay += OnCloseInformationWindow;
-                OpenExtraInfoDisplays.Add(newInfoDisplay);
+                NewInfoInterface.Show();
+                NewInfoInterface.OnCloseDisplay += OnCloseInformationWindow;
+                OpenExtraInfoDisplays.Add(NewInfoInterface);
                 OpenExtraInfoDisplayNames.Add(title);
             }
 
-            NewInfoWindowMade?.Invoke(this, newInfoDisplay);
+            NewInfoInterfaceMade?.Invoke(this, NewInfoInterface);
         }
-        public void OnCloseInformationWindow(ExtraInfoDisplay extraInfoDisplay, EventArgs args)
+        public void OnCloseInformationWindow(UserInfoInterface extraInfoDisplay, EventArgs args)
         {
             extraInfoDisplay.OnCloseDisplay -= OnCloseInformationWindow;
             OpenExtraInfoDisplays.Remove(extraInfoDisplay);
