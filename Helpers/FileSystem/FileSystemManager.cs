@@ -73,11 +73,18 @@ public class FileSystemManager
 
     public static void Move(string source, string destinationDirectory)
     {
-        string destination =
-            Path.Combine(destinationDirectory);
+        try
+        {
+            string destination =
+                Path.Combine(destinationDirectory);
 
-        Debug.WriteLine($"Move from {source} to {destination}");
-        File.Move(source, destination);
+            Debug.WriteLine($"Move from {source} to {destination}");
+            File.Move(source, destination);
+        }
+        catch (FileNotFoundException)
+        {
+            Debug.Write(source + " not found during move operation.");
+        }
     }
 
     public void MoveList(List<string> sourceList, string destinationDirectory)
