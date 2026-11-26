@@ -19,7 +19,37 @@ internal class TrayIconHandler
         m_notifyIcon.BalloonTipTitle = "Open Autosorter";
         m_notifyIcon.Text = "Autosorter";
         m_notifyIcon.Icon = GetIcon("Ui/Assets/Visual/logo2x48.ico"); // TODO null check
+        m_notifyIcon.ContextMenuStrip = new ContextMenuStrip();
+        m_notifyIcon.ContextMenuStrip.Items.Add(
+            "force shutdown", Image.FromFile("Ui/Assets/Visual/x.png"), ForceShutDownPressed);
+        m_notifyIcon.ContextMenuStrip.Items.Add(
+            "open", Image.FromFile("Ui/Assets/Visual/start.png"), OpenPressed);
+        m_notifyIcon.ContextMenuStrip.Font = new System.Drawing.Font("Bahnschrift", 9f);
         m_notifyIcon.Click += new EventHandler(m_notifyIcon_Click);
+        m_notifyIcon.DoubleClick += new EventHandler(m_notifyIcon_DoubleClick);
+    }
+
+    private void OpenPressed(object? sender, EventArgs e)
+    {
+        ShowWindow();
+    }
+
+    private void ShowWindow()
+    {
+        Window window = System.Windows.Application.Current.MainWindow;
+
+        window.Show();
+        window.WindowState = m_storedWindowState;
+    }
+
+    private void m_notifyIcon_DoubleClick(object? sender, EventArgs e)
+    {
+        ShowWindow();
+    }
+
+    private void ForceShutDownPressed(object? sender, EventArgs e)
+    {
+        System.Windows.Application.Current.Shutdown();
     }
 
     static public Icon? GetIcon(string path)
@@ -51,10 +81,6 @@ internal class TrayIconHandler
 
     private void m_notifyIcon_Click(object? sender, EventArgs? e)
     {
-        Window window = System.Windows.Application.Current.MainWindow;
-
-        window.Show();
-        window.WindowState = m_storedWindowState;
     }
 
     public void ShowTrayIcon(bool show)
