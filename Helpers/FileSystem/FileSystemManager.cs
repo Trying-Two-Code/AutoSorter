@@ -85,6 +85,11 @@ public class FileSystemManager
         {
             Debug.Write(source + " not found during move operation.");
         }
+        catch (DirectoryNotFoundException DirectoryException)
+        {
+            Directory.CreateDirectory(destinationDirectory);
+            Debug.Write(DirectoryException);
+        }
     }
 
     public void MoveList(List<string> sourceList, string destinationDirectory)
