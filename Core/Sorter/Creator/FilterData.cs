@@ -1,5 +1,6 @@
 ﻿using Core.Sorter.MatchDetectors;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace Core.Sorter.Creator
 {
@@ -65,7 +66,7 @@ namespace Core.Sorter.Creator
         /// How many prompts to skip
         /// before prompting the user about a folder.
         /// </summary>
-        public int PromptAmmount { get; set; } = 10;
+        public int PromptAmount { get; set; } = 10;
         private List<FilePromptDatapoint> PreviousDatapoints { get; set; }
 
         /// <returns>Wether a fileinfo has been prompted about too much or not</returns>
@@ -74,7 +75,7 @@ namespace Core.Sorter.Creator
             List<string> PreviousPrompts = FilePromptDatapoint.GetPromptedFiles(PreviousDatapoints);
 
             if (PreviousPrompts.Count == 0)
-                return PromptAmmount >= 0;
+                return PromptAmount >= 0;
 
             List<FilePromptDatapoint> Matches = PreviousDatapoints.Where(match =>
             {
@@ -88,12 +89,12 @@ namespace Core.Sorter.Creator
                 {
                     //aka: how many prompts didn't happen before now
                     int NegativeIndex = PreviousDatapoints.Count - i;
-                    return NegativeIndex >= PromptAmmount;
+                    return NegativeIndex < PromptAmount;
                 }
             }
             
             Debug.Assert(Matches.Count == 0);
-            return PromptAmmount >= 0;
+            return PromptAmount >= 0;
         }
 
         /// <summary>

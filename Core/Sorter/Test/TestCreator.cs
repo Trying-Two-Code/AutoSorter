@@ -238,7 +238,7 @@ namespace Core.Sorter.Test
             {
                 using (FileStream file = File.Create(Path.Combine(MyDirectory, "example.txt")))
                 {
-                    MyFilterData.PromptAmmount = 2;
+                    MyFilterData.PromptAmount = 2;
 
                     bool take1 = MyFilterData.RedundantPrompt(new FileInfo(file.Name));
                     MyFilterData.AddPromptHistory(file.Name, take1);

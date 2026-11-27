@@ -179,7 +179,9 @@ internal class SortAlgorithm
         }
 
         bool isInCorrectFolder = e.NewFile.DirectoryName.Contains(_myFolder);
-        bool isRedundantData = _myFilterData.RedundantPrompt(e.NewFile);
+        bool isRedundantData = false;
+        if (isInCorrectFolder)
+            isRedundantData = _myFilterData.RedundantPrompt(e.NewFile);
 
         if (isInCorrectFolder && !isRedundantData)
         {
