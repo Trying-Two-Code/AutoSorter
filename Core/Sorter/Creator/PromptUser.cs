@@ -71,7 +71,6 @@ namespace Core.Sorter.Creator
                 }
             }
 
-
             PromptData newData = new()
             {
                 MyPromptReason = reason,

@@ -105,9 +105,28 @@ namespace App.Ui.PromptUser.Visuals
             };
         }
 
+        public void OnHaltNotificationsPressed(object? sender, InterfaceItemClickArgs e)
+        {
+            if(e.DataElement != null)
+            {
+                System.Windows.Controls.ComboBox myComboBox = (System.Windows.Controls.ComboBox)e.DataElement;
+                System.Windows.Controls.TextBox SelectedItem = (System.Windows.Controls.TextBox)myComboBox.SelectionBoxItem;
+                TimeSpan? SelectedItemDataContext = (TimeSpan?)SelectedItem.DataContext;
+
+                if (SelectedItemDataContext != null)
+                {
+                    mySettings.haltRuleExecutedPromptsUntil = (DateTime)(DateTime.Now + SelectedItemDataContext);
+                }
+            }
+            if(e.MuteUntil != null)
+            {
+                mySettings.haltRuleExecutedPromptsUntil = (DateTime)e.MuteUntil;
+            }
+        }
+
         private void OnSettingsClicked(object sender, RoutedEventArgs e)
         {
-            List<InfoInterfaceItem> settingsString = new()
+            List<InfoInterfaceItem> SettingsInterface = new()
             {
                 new(){
                     LabelText = "sound muted: " + mySettings.muted.ToString(),
@@ -118,8 +137,14 @@ namespace App.Ui.PromptUser.Visuals
                 new(){
                     LabelText = "running: " + mySettings.running.ToString()
                 },
+                new("MutePrompts")
+                {
+                    LabelText = "prompts muted: " + (mySettings.haltRuleExecutedPromptsUntil > DateTime.Now),
+                    ClickHandler = new EventHandler<InterfaceItemClickArgs>(OnHaltNotificationsPressed),
+                    ChildContent = InfoInterfaceUserControls.MuteComboBox
+                }
             };
-            MyPromptWindow.CreateInformationInterface("Settings", settingsString);
+            MyPromptWindow.CreateInformationInterface("Settings", SettingsInterface);
         }
 
         private void Window_Closed(object sender, EventArgs e)

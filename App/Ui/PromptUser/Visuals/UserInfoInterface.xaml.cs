@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -28,13 +29,31 @@ namespace App.Ui.PromptUser.Visuals
 
         public TextBlock CreateInfoItem(InfoInterfaceItem item)
         {
+            StackPanel Parent = new();
+            AllInfo.Items.Add(Parent);
+
             TextBlock newTextBlock = new();
+            Parent.Children.Add(newTextBlock);
+            if(item?.ChildContent != null)
+            {
+                Parent.Children.Add(item.ChildContent);
+            }
+
             newTextBlock.Name = item.Name;
             newTextBlock.Text = item.LabelText;
             MyTextBlocks.Add(newTextBlock);
 
-            AllInfo.Items.Add(newTextBlock);
             StyleTextBlock(newTextBlock);
+
+
+            if (item?.ClickHandler != null)
+            {
+                newTextBlock.MouseLeftButtonDown += (s, e) =>
+                {
+                    Debug.WriteLine("PRESSED -- not working...");
+                    item.ClickHandler?.Invoke(this, new() { DataElement = item?.ChildContent });
+                };
+            }
 
             return newTextBlock;
         }

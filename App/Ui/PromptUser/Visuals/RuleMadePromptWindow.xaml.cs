@@ -49,9 +49,34 @@ namespace App.Ui.PromptUser
             Close();
         }
 
-        public void OnHaltNotificationsPressed()
+        public void OnHaltNotificationsPressed(object? sender, InterfaceItemClickArgs e)
         {
+            Debug.WriteLine("RECIEVED");
+            if (e.DataElement != null)
+            {
+                try
+                {
+                    System.Windows.Controls.ComboBox myComboBox = (System.Windows.Controls.ComboBox)e.DataElement;
+                    Debug.WriteLine(myComboBox.SelectedValue);
+                    System.Windows.Controls.ComboBoxItem SelectedItem = (System.Windows.Controls.ComboBoxItem)myComboBox.SelectedItem;
+                    TimeSpan? SelectedItemDataContext = (TimeSpan?)SelectedItem.Tag;
 
+                    Debug.WriteLine(SelectedItemDataContext.ToString());
+
+                    if (SelectedItemDataContext != null)
+                    {
+                        mySettings.haltRuleMadePromptsUntil = (DateTime)(DateTime.Now + SelectedItemDataContext);
+                    }
+                } 
+                catch(System.InvalidCastException InvalidCastEx)
+                {
+                    Debug.WriteLine(InvalidCastEx);
+                }
+            }
+            if (e.MuteUntil != null)
+            {
+                mySettings.haltRuleExecutedPromptsUntil = (DateTime)e.MuteUntil;
+            }
         }
 
 
@@ -95,7 +120,7 @@ namespace App.Ui.PromptUser
 
         public void OnSettingsClicked(object sender, RoutedEventArgs args)
         {
-            List<InfoInterfaceItem> settingsString = new()
+            List<InfoInterfaceItem> SettingsInterface = new()
             {
                 new(){
                     LabelText = "sound muted: " + mySettings.muted.ToString(),
@@ -106,8 +131,14 @@ namespace App.Ui.PromptUser
                 new(){
                     LabelText = "running: " + mySettings.running.ToString()
                 },
+                new("MutePrompts")
+                {
+                    LabelText = "prompts muted: " + (mySettings.haltRuleExecutedPromptsUntil > DateTime.Now),
+                    ClickHandler = new EventHandler<InterfaceItemClickArgs>(OnHaltNotificationsPressed),
+                    ChildContent = InfoInterfaceUserControls.MuteComboBox
+                }
             };
-            MyPromptWindow.CreateInformationInterface("Settings", settingsString);
+            MyPromptWindow.CreateInformationInterface("Settings", SettingsInterface);
         }
 
         public void Window_Closed(object sender, EventArgs args)
